@@ -1,0 +1,36 @@
+flowchart TD
+    classDef default fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    linkStyle default stroke:#000000,stroke-width:1.5px,color:#000000;
+
+    Mulai([Mulai]) --> Login[/Input Username & Password/]
+    
+    Login --> CekLogin{Login Valid?}
+    CekLogin -- Tidak --> Login
+    CekLogin -- Ya --> CekRole{Hak Akses?}
+    
+    CekRole -- Kasir --> MenuKasir{Pilih Menu Kasir}
+    
+    MenuKasir -->|Penjualan / POS| Scan[/Scan Barcode / Pilih Produk/]
+    Scan --> Keranjang[Masuk Keranjang & Checkout]
+    Keranjang --> Bayar[/Input Pembayaran/]
+    Bayar --> CekBayar{Uang Cukup?}
+    CekBayar -- Tidak --> Bayar
+    CekBayar -- Ya --> SimpanKasir(Transaksi Tersimpan)
+    SimpanKasir --> Selesai([Selesai])
+    
+    CekRole -- Admin --> MenuAdmin{Pilih Menu Admin}
+    
+    MenuAdmin -->|Kelola Inventaris| Stok[/Input/Edit Data Stok/]
+    Stok --> CekStok{Data Valid?}
+    CekStok -- Tidak --> Stok
+    CekStok -- Ya --> SimpanStok(Data Tersimpan)
+    SimpanStok --> Selesai
+    
+    MenuAdmin -->|Transfer Cabang| Transfer[/Input Mutasi Cabang/]
+    Transfer --> CekTransfer{Stok Gudang Cukup?}
+    CekTransfer -- Tidak --> Transfer
+    CekTransfer -- Ya --> SimpanTransfer(Distribusi Tersimpan)
+    SimpanTransfer --> Selesai
+    
+    MenuAdmin -->|Dashboard & Laporan| Laporan[/Lihat Laporan Harian/]
+    Laporan --> Selesai

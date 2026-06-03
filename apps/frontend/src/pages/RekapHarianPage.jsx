@@ -1,0 +1,346 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
+import { apiFetch } from '../lib/api';
+import { formatRupiah } from '../utils/formatters';
+
+const BRANCHES = [
+  { id: 'pusat', name: "Calico's Pet Care (Pusat)" },
+  { id: 'gempi', name: 'Gempi Pet Shop' },
+  { id: 'baba', name: 'Baba Pet Corner' },
+];
+
+function toLocalDateStr(dateStr) {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+export default function RekapHarianPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const role = location.state?.role || 'kasir';
+  const branchId = location.state?.branchName || 'pusat';
+  const branchName = BRANCHES.find(b => b.id === branchId)?.name || 'Toko';
+
+  const [date] = useState(toLocalDateStr(new Date()));
+  const [modalAwal, setModalAwal] = useState('');
+  const [uangFisik, setUangFisik] = useState('');
+  const [penjualanKarungan, setPenjualanKarungan] = useState('');
+  const [pengeluaran, setPengeluaran] = useState([]);
+  const [newPengeluaranName, setNewPengeluaranName] = useState('');
+  const [newPengeluaranAmount, setNewPengeluaranAmount] = useState('');
+
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    const today = date;
+    apiFetch(`/transactions?date=${today}&branchId=${branchId}`)
+      .then(data => setTransactions(Array.isArray(data) ? data : []))
+      .catch(err => console.error('Failed to load rekap transactions:', err));
+  }, []);
+
+  const stats = useMemo(() => {
+    let grandCash = 0;
+    let grandQR = 0;
+    let grandTransfer = 0;
+    let grandEDC = 0;
+
+    let groomingCash = 0;
+    let groomingNonCash = 0;
+
+    let ongkirCash = 0;
+    let ongkirNonCash = 0;
+
+    let penginapanCash = 0;
+    let penginapanNonCash = 0;
+
+    transactions.forEach(tx => {
+      const method = tx.paymentMethod || 'Tunai';
+      
+      tx.items.forEach(item => {
+        const lineTotal = item.qty * item.price;
+        const cat = item.category || 'Lainnya';
+
+        // Grand Total Tracking
+        if (method === 'Tunai') grandCash += lineTotal;
+        else if (method === 'QRIS') grandQR += lineTotal;
+        else if (method === 'Transfer Bank') grandTransfer += lineTotal;
+        else if (method === 'EDC / Debit') grandEDC += lineTotal;
+        
+        if (cat === 'Grooming') {
+          if (method === 'Tunai') groomingCash += lineTotal;
+          else groomingNonCash += lineTotal;
+        } else if (cat === 'Ongkos Kirim') {
+          if (method === 'Tunai') ongkirCash += lineTotal;
+          else ongkirNonCash += lineTotal;
+        } else if (cat === 'Penginapan Kucing') {
+          if (method === 'Tunai') penginapanCash += lineTotal;
+          else penginapanNonCash += lineTotal;
+        }
+      });
+    });
+
+    const grandTotal = grandCash + grandQR + grandTransfer + grandEDC;
+    const totalGrooming = groomingCash + groomingNonCash;
+    const totalOngkir = ongkirCash + ongkirNonCash;
+    const totalPenginapan = penginapanCash + penginapanNonCash;
+
+    return {
+      grandCash, grandQR, grandTransfer, grandEDC, grandTotal,
+      groomingCash, groomingNonCash, totalGrooming,
+      ongkirCash, ongkirNonCash, totalOngkir,
+      penginapanCash, penginapanNonCash, totalPenginapan
+    };
+  }, [transactions]);
+
+  const handleAddPengeluaran = () => {
+    if (!newPengeluaranName || !newPengeluaranAmount) return;
+    setPengeluaran([...pengeluaran, { name: newPengeluaranName, amount: parseInt(newPengeluaranAmount) || 0 }]);
+    setNewPengeluaranName('');
+    setNewPengeluaranAmount('');
+  };
+
+  const removePengeluaran = (idx) => {
+    setPengeluaran(pengeluaran.filter((_, i) => i !== idx));
+  };
+
+  const totalPengeluaran = pengeluaran.reduce((s, p) => s + p.amount, 0);
+  const valKarungan = parseInt(penjualanKarungan) || 0;
+  const valUangFisik = parseInt(uangFisik) || 0;
+  const valModalAwal = parseInt(modalAwal) || 0;
+
+  // Kas Sistem = Modal Awal + Semua penerimaan tunai (Grand Cash) - pengeluaran tunai
+  const kasSistem = valModalAwal + stats.grandCash - totalPengeluaran;
+  const selisih = valUangFisik - kasSistem;
+  const uangLebih = selisih > 0 ? selisih : 0;
+  const uangKurang = selisih < 0 ? Math.abs(selisih) : 0;
+
+  const generateReportText = () => {
+    const dObj = new Date();
+    const dStr = `${String(dObj.getDate()).padStart(2, '0')}.${String(dObj.getMonth()+1).padStart(2, '0')}. ${dObj.getFullYear()}`;
+    
+    let text = `${branchName} ${dStr}\n`;
+    text += `  - Total Pendapatan / Transaksi ${formatRupiah(stats.grandTotal)}\n`;
+    text += ` - Cash ${formatRupiah(stats.grandCash)}\n`;
+    text += ` - Transfer ${formatRupiah(stats.grandTransfer)}\n`;
+    text += ` - QR ${formatRupiah(stats.grandQR)}\n`;
+    text += ` - EDC ${formatRupiah(stats.grandEDC)}\n`;
+    text += `* uang lebih ${uangLebih > 0 ? formatRupiah(uangLebih) : '-'}\n`;
+    text += `* uang kurang ${uangKurang > 0 ? formatRupiah(uangKurang) : '-'}\n`;
+    text += `* penjualan karungan ${valKarungan > 0 ? formatRupiah(valKarungan) : '-'}\n`;
+    text += `•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
+    text += `* Total Grooming ${formatRupiah(stats.totalGrooming)}\n`;
+    text += `* cash ${formatRupiah(stats.groomingCash)}\n`;
+    text += `* QR/Transfer ${formatRupiah(stats.groomingNonCash)}\n`;
+    text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
+    text += `* Total Ongkos kirim / Antar Jemput ${formatRupiah(stats.totalOngkir)}\n`;
+    text += `* cash ${formatRupiah(stats.ongkirCash)}\n`;
+    text += `* QR/Transfer ${formatRupiah(stats.ongkirNonCash)}\n`;
+    text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
+    text += `* Total Penginapan kucing ${formatRupiah(stats.totalPenginapan)}\n`;
+    text += `* cash ${formatRupiah(stats.penginapanCash)}\n`;
+    text += `* QR/Transfer ${formatRupiah(stats.penginapanNonCash)}\n`;
+    text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n\n`;
+    
+    text += `Pengeluaran (kalo ada)\n`;
+    if (pengeluaran.length === 0) {
+      text += `* Tidak ada\n`;
+    } else {
+      pengeluaran.forEach(p => {
+        text += `* ${p.name} ${formatRupiah(p.amount)}\n`;
+      });
+    }
+
+    return text;
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generateReportText());
+    alert("Laporan berhasil disalin ke clipboard!");
+  };
+
+  return (
+    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-24 font-body">
+      <header className="bg-white border-b border-slate-100 px-5 py-4 sticky top-0 z-40 flex items-center gap-3">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-50 border border-slate-100 active:scale-95 transition-all">
+          <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
+        </button>
+        <div>
+          <h1 className="font-headline font-extrabold text-lg text-slate-800">Rekap Kasir Harian</h1>
+          <p className="text-xs text-slate-400">{branchName}</p>
+        </div>
+      </header>
+
+      <main className="px-4 py-5 space-y-5 max-w-xl mx-auto w-full">
+        
+        {/* STEP 1: Ringkasan Sistem */}
+        <section className="bg-slate-800 text-white p-5 rounded-2xl shadow-sm">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-1">1. Ringkasan Sistem</h2>
+              <p className="text-2xl font-headline font-extrabold">{formatRupiah(stats.grandTotal)}</p>
+              <p className="text-xs text-slate-400">Total Pendapatan Hari Ini</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center">
+              <span className="material-symbols-outlined !text-[20px] text-emerald-400">point_of_sale</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700">
+            <div>
+              <p className="text-xs text-slate-400 mb-0.5">Total Tunai (Cash)</p>
+              <p className="font-bold text-emerald-400">{formatRupiah(stats.grandCash)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-0.5">Total Non-Tunai</p>
+              <p className="font-bold text-sky-400">{formatRupiah(stats.grandQR + stats.grandTransfer + stats.grandEDC)}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* STEP 2: Laci Kasir */}
+        <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 mb-2 border-b border-slate-100 pb-3">
+            <span className="material-symbols-outlined text-orange-500 !text-[22px]">payments</span>
+            <h2 className="font-bold text-slate-800">2. Hitung Laci Kasir</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">
+                Modal Awal Laci
+                <span className="ml-1 normal-case font-normal text-slate-400">(Uang pecahan sebelum buka)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-slate-400 font-bold">Rp</span>
+                <input 
+                  type="number" placeholder="0" 
+                  value={modalAwal} onChange={e => setModalAwal(e.target.value)}
+                  className="w-full bg-slate-50 rounded-xl pl-11 pr-4 py-3 text-sm font-semibold outline-none border border-slate-200 focus:border-orange-400 transition-colors"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">
+                Uang Fisik Akhir
+                <span className="ml-1 normal-case font-normal text-slate-400">(Hitungan tunai saat tutup)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-slate-400 font-bold">Rp</span>
+                <input 
+                  type="number" placeholder="0" 
+                  value={uangFisik} onChange={e => setUangFisik(e.target.value)}
+                  className="w-full bg-slate-50 rounded-xl pl-11 pr-4 py-3 text-sm font-semibold outline-none border border-slate-200 focus:border-orange-400 transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* STEP 3: Pengeluaran & Lainnya */}
+        <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+            <span className="material-symbols-outlined text-red-500 !text-[22px]">receipt_long</span>
+            <h2 className="font-bold text-slate-800">3. Pengeluaran & Lainnya</h2>
+          </div>
+          
+          {/* Pengeluaran */}
+          <div className="mb-4">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">Daftar Pengeluaran</label>
+            <div className="flex gap-2 mb-3">
+              <input 
+                type="text" placeholder="Nama (Cth: Listrik)" 
+                value={newPengeluaranName} onChange={e => setNewPengeluaranName(e.target.value)}
+                className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm outline-none border border-slate-200 focus:border-red-300"
+              />
+              <input 
+                type="number" placeholder="Nominal" 
+                value={newPengeluaranAmount} onChange={e => setNewPengeluaranAmount(e.target.value)}
+                className="w-28 bg-slate-50 rounded-xl px-3 py-2 text-sm outline-none border border-slate-200 focus:border-red-300"
+              />
+              <button onClick={handleAddPengeluaran} className="bg-red-50 hover:bg-red-100 text-red-600 px-3 rounded-xl font-bold transition-colors">
+                Tambah
+              </button>
+            </div>
+
+            {pengeluaran.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {pengeluaran.map((p, idx) => (
+                  <div key={idx} className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg text-sm border border-slate-100">
+                    <span className="font-medium text-slate-700">{p.name}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-slate-800">{formatRupiah(p.amount)}</span>
+                      <button onClick={() => removePengeluaran(idx)} className="text-slate-400 hover:text-red-500">
+                        <span className="material-symbols-outlined !text-[16px]">close</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center text-sm pt-1">
+                  <span className="text-slate-500">Total Pengeluaran</span>
+                  <span className="font-bold text-red-600">-{formatRupiah(totalPengeluaran)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Penjualan Karungan */}
+          <div className="pt-3 border-t border-slate-100">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">Penjualan Karungan (Manual)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-2.5 text-slate-400 font-bold">Rp</span>
+              <input 
+                type="number" placeholder="0" 
+                value={penjualanKarungan} onChange={e => setPenjualanKarungan(e.target.value)}
+                className="w-full bg-slate-50 rounded-xl pl-11 pr-4 py-2.5 text-sm font-semibold outline-none border border-slate-200 focus:border-blue-400 transition-colors"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* STEP 4: Ringkasan Pencocokan Kas */}
+        <section className="bg-orange-50 p-5 rounded-2xl border border-orange-200 space-y-3">
+          <h2 className="font-bold text-slate-800 mb-3 border-b border-orange-200/50 pb-2">4. Hasil Akhir (Pencocokan)</h2>
+          
+          <div className="space-y-2 mb-4">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-600">Tunai Seharusnya (Sistem)</span>
+              <span className="font-semibold text-slate-800">{formatRupiah(kasSistem)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-600">Tunai Fisik (Laci)</span>
+              <span className="font-semibold text-slate-800">{formatRupiah(valUangFisik)}</span>
+            </div>
+            <div className="border-t border-orange-200/50 pt-2 flex justify-between items-center text-sm">
+              <span className="font-bold text-slate-700">Selisih Kas</span>
+              {selisih === 0 ? (
+                <span className="font-bold text-emerald-600 flex items-center gap-1">
+                  <span className="material-symbols-outlined !text-[16px]">check_circle</span> PAS
+                </span>
+              ) : selisih > 0 ? (
+                <span className="font-bold text-emerald-600">Lebih {formatRupiah(uangLebih)}</span>
+              ) : (
+                <span className="font-bold text-red-600">Kurang {formatRupiah(uangKurang)}</span>
+              )}
+            </div>
+          </div>
+
+          <button 
+            onClick={copyToClipboard}
+            className="w-full bg-orange-600 text-white font-bold py-3.5 rounded-xl hover:bg-orange-700 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm"
+          >
+            <span className="material-symbols-outlined">content_copy</span>
+            Salin Format WhatsApp
+          </button>
+        </section>
+
+      </main>
+
+      <BottomNav role={role} />
+    </div>
+  );
+}

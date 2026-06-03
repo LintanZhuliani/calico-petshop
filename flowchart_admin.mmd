@@ -1,0 +1,42 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffffff', 'primaryBorderColor': '#000000', 'lineColor': '#000000', 'textColor': '#000000'}}}%%
+flowchart TD
+    Mulai([Mulai]) --> Login[/"Input Username & Password"/]
+    Login --> CekLogin{"Login Valid?"}
+    CekLogin -- Tidak --> Login
+    CekLogin -- Ya --> HalamanAdmin["Halaman Utama Admin"]
+    
+    HalamanAdmin --> Nav{"Pilih Menu Navigasi"}
+    
+    %% Alur Home
+    Nav -->|Menu Home| Home[/"Lihat Dashboard & Notifikasi Kedaluwarsa"/]
+    Home --> Selesai([Selesai])
+    
+    %% Alur Produk
+    Nav -->|Menu Produk| AksiProduk{"Pilih Aksi Produk?"}
+    
+    AksiProduk -->|Tambah Baru| Tambah[/"Input Data Produk Baru"/]
+    AksiProduk -->|Edit / Hapus| Edit[/"Pilih & Ubah/Hapus Produk"/]
+    
+    Tambah --> CekData{"Data Valid?"}
+    Edit --> CekData
+    CekData -- Tidak --> AksiProduk
+    CekData -- Ya --> SimpanProduk("Data Produk Tersimpan")
+    SimpanProduk --> Selesai
+    
+    %% Alur Penjualan
+    Nav -->|Menu Penjualan| Penjualan[/"Lihat Rekap Penjualan Bulanan"/]
+    Penjualan --> UnduhJual[/"Unduh File Laporan Penjualan"/]
+    UnduhJual --> Selesai
+    
+    %% Alur Transfer
+    Nav -->|Menu Transfer| AksiTransfer{"Pilih Aksi Transfer?"}
+    
+    AksiTransfer -->|Kirim Barang| PilihTujuan[/"Pilih Cabang Tujuan & Produk"/]
+    PilihTujuan --> CekStok{"Stok Cukup?"}
+    CekStok -- Tidak --> PilihTujuan
+    CekStok -- Ya --> SimpanTransfer("Transfer Terkirim")
+    SimpanTransfer --> Selesai
+    
+    AksiTransfer -->|Riwayat| Riwayat[/"Lihat Riwayat Transfer"/]
+    Riwayat --> UnduhTransfer[/"Unduh File Riwayat Transfer"/]
+    UnduhTransfer --> Selesai

@@ -1,0 +1,35 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffffff', 'primaryBorderColor': '#000000', 'lineColor': '#000000', 'textColor': '#000000'}}}%%
+flowchart TD
+    Mulai([Mulai]) --> Login[/"Input Username & Password"/]
+    Login --> CekLogin{"Login Valid?"}
+    CekLogin -- Tidak --> Login
+    CekLogin -- Ya --> HalamanKasir["Halaman Utama Kasir"]
+    
+    HalamanKasir --> Nav{"Pilih Menu Navigasi"}
+    
+    %% Alur Home
+    Nav -->|Menu Home| Home[/"Lihat Rekap & Laporan Transaksi"/]
+    Home --> Selesai([Selesai])
+    
+    %% Alur Produk
+    Nav -->|Menu Produk| Produk[/"Cari & Pilih Produk Manual"/]
+    Produk --> Keranjang["Masuk Keranjang"]
+    
+    %% Alur Scan
+    Nav -->|Menu Scan| Scan[/"Scan Barcode Kamera"/]
+    Scan --> Arahkan["Diarahkan ke Data Produk"]
+    Arahkan --> Keranjang
+    
+    %% Lanjutan Keranjang (Pembayaran)
+    Keranjang --> Metode[/"Pilih Metode Pembayaran"/]
+    Metode --> Bayar[/"Input Nominal Pembayaran"/]
+    Bayar --> CekBayar{"Uang Cukup?"}
+    CekBayar -- Tidak --> Bayar
+    CekBayar -- Ya --> SimpanKasir("Transaksi Tersimpan")
+    SimpanKasir --> CetakWA[/"Copy Struk Format WhatsApp"/]
+    CetakWA --> Selesai
+    
+    %% Alur Transfer
+    Nav -->|Menu Transfer| Transfer[/"Lihat Riwayat Transfer"/]
+    Transfer --> Konfirmasi[/"Konfirmasi Terima Barang dari Pusat"/]
+    Konfirmasi --> Selesai

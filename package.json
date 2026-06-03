@@ -1,0 +1,7 @@
+{
+  "name": "petshop-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}

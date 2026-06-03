@@ -1,0 +1,125 @@
+﻿id_produk,barcode,nama_produk,jenis,merk,varian,berat,satuan,harga_beli,harga_jual,status,Jumlah,expired_date
+1,P1-MR-LMN-25,Pasir Kucing,Bentonite,Markotops,Lemon,25,L,120000,140000,available,2,NULL
+2,P1-MR-APL-25,Pasir Kucing,Bentonite,Markotops,Apel,25,L,120000,140000,available,2,NULL
+3,P1-MR-LAV-25,Pasir Kucing,Bentonite,Markotops,Lavender,25,L,120000,140000,available,1,NULL
+4,P1-MR-KP-25,Pasir Kucing,Bentonite,Markotops,Kopi,25,L,120000,140000,sold out,0,NULL
+5,P1-ANC-LMN-25,Pasir Kucing,Bentonite,Animal&Co,Lemon,25,L,100000,115000,available,1,NULL
+6,P1-ANC-APL-25,Pasir Kucing,Bentonite,Animal&Co,apel,25,L,100000,115000,sold out,0,NULL
+7,P1-ANC-LAV-25,Pasir Kucing,Bentonite,Animal&Co,Lavender,25,L,100000,115000,available,2,NULL
+8,P1-ANC-KP-25,Pasir Kucing,Bentonite,Animal&Co,Kopi,25,L,100000,115000,available,1,NULL
+9,P1-ANC-GT-25,Pasir Kucing,Bentonite,Animal&Co,Greentea,25,L,100000,115000,available,2,NULL
+10,P1-PS-LMN-25,Pasir Kucing,Bentonite,Pawsitive,Lemon,25,L,125000,135000,available,2,NULL
+11,P1-PS-LAV-25,Pasir Kucing,Bentonite,Pawsitive,Lavender,25,L,125000,135000,available,1,NULL
+12,P1-PS-APL-25,Pasir Kucing,Bentonite,Pawsitive,Apel,25,L,125000,135000,available,1,NULL
+13,P1-PS-KP-25,Pasir Kucing,Bentonite,Pawsitive,Kopi,25,L,125000,135000,sold out,0,NULL
+14,P1-MR-LMN-10,Pasir Kucing,Bentonite,Markotops,Lemon,10,L,60000,70000,available,1,NULL
+15,P1-MR-APL-10,Pasir Kucing,Bentonite,Markotops,Apel,10,L,60000,70000,sold out,0,NULL
+16,P1-MR-LAV-10,Pasir Kucing,Bentonite,Markotops,Lavender,10,L,60000,70000,available,1,NULL
+17,P1-MR-KP-10,Pasir Kucing,Bentonite,Markotops,Kopi,10,L,60000,70000,sold out,0,NULL
+18,P1-MR-BP-10,Pasir Kucing,Bentonite,Markotop,Baby powder,10,L,60000,70000,available,3,NULL
+19,P1-ANC-LMN-10,Pasir Kucing,Bentonite,Animal&Co,Lemon,10,L,60000,70000,available,3,NULL
+20,P1-ANC-APL-10,Pasir Kucing,Bentonite,Animal&Co,apel,10,L,60000,70000,sold out,0,NULL
+21,P1-ANC-LAV-10,Pasir Kucing,Bentonite,Animal&Co,Lavender,10,L,60000,70000,available,2,NULL
+22,P1-ANC-KP-10,Pasir Kucing,Bentonite,Animal&Co,Kopi,10,L,60000,70000,available,3,NULL
+23,P1-ANC-GT-10,Pasir Kucing,Bentonite,Animal&Co,Greentea,10,L,60000,70000,available,3,NULL
+24,P1-PS-LMN-10,Pasir Kucing,Bentonite,Pawsitive,Lemon,10,L,58000,68000,available,1,NULL
+25,P1-PS-LAV-10,Pasir Kucing,Bentonite,Pawsitive,Lavender,10,L,58000,68000,sold out,0,NULL
+26,P1-PS-APL-10,Pasir Kucing,Bentonite,Pawsitive,Apel,10,L,58000,68000,available,1,NULL
+27,P1-PS-KP-10,Pasir Kucing,Bentonite,Pawsitive,Kopi,10,L,58000,68000,sold out,0,NULL
+28,P1-PR-LMN-10,Pasir Kucing,Bentonite,Pursona,Lemon,10,L,48000,58000,available,7,NULL
+29,P1-PR-LAV-10,Pasir Kucing,Bentonite,Pursona,Lavender,10,L,48000,58000,available,5,NULL
+30,P1-PR-APL-10,Pasir Kucing,Bentonite,Pursona,Apel,10,L,48000,58000,sold out,0,NULL
+31,P1-PR-KP-10,Pasir Kucing,Bentonite,Pursona,Kopi,10,L,48000,58000,available,4,NULL
+32,P1-GMY-LMN-10,Pasir Kucing,Bentonite,Gemoy,Lemon,10,L,50000,55000,available,3,NULL
+33,P1-GMY-LAV-10,Pasir Kucing,Bentonite,Gemoy,Lavender,10,L,50000,55000,available,1,NULL
+34,P1-GMY-VNL-10,Pasir Kucing,Bentonite,Gemoy,vanila,10,L,50000,55000,available,2,NULL
+35,P1-GMY-KP-10,Pasir Kucing,Bentonite,Gemoy,Kopi,10,L,50000,55000,sold out,0,NULL
+36,P1-PPI-LMN-10,Pasir Kucing,Bentonite,Popoki,Lemon,10,L,58000,68000,available,2,NULL
+37,P1-PPI-LAV-10,Pasir Kucing,Bentonite,Popoki,Lavender,10,L,58000,68000,available,3,NULL
+38,P1-PPI-BG-10,Pasir Kucing,Bentonite,Popoki,Bubblegum,10,L,58000,68000,available,1,NULL
+39,P1-ANB-ORG-10,Pasir Kucing,Bentonite,Anabul,Orange,10,L,53000,63000,available,1,NULL
+40,P1-ANB-VNL-10,Pasir Kucing,Bentonite,Anabul,vanila,10,L,53000,63000,sold out,0,NULL
+41,P1-ANB-LAV-10,Pasir Kucing,Bentonite,Anabul,Lavender,10,L,53000,63000,available,1,NULL
+42,P1-ANB-KP-10,Pasir Kucing,Bentonite,Anabul,Kopi,10,L,53000,63000,available,1,NULL
+43,P1-ANB-ST-10,Pasir Kucing,Bentonite,Anabul,Strawberry,10,L,53000,63000,sold out,0,NULL
+44,"P1-MR-LMN-5,5",Pasir Kucing,Bentonite,Markotops,Lemon,5.5,L,34000,40000,available,6,NULL
+45,"P1-MR-APL-5,5",Pasir Kucing,Bentonite,Markotops,Apel,5.5,L,34000,40000,available,5,NULL
+46,"P1-MR-LAV-5,5",Pasir Kucing,Bentonite,Markotops,Lavender,5.5,L,34000,40000,available,6,NULL
+47,"P1-MR-KP-5,5",Pasir Kucing,Bentonite,Markotops,Kopi,5.5,L,34000,40000,available,0,NULL
+48,"P1-PS-LMN-5,5",Pasir Kucing,Bentonite,Pawsitive,Lemon,5.5,L,30000,38000,sold out,0,NULL
+49,P1-PS-LAV-10,Pasir Kucing,Bentonite,Pawsitive,Lavender,5.5,L,30000,38000,sold out,0,NULL
+50,P1-PS-APL-10,Pasir Kucing,Bentonite,Pawsitive,Apel,5.5,L,30000,38000,sold out,0,NULL
+51,P1-PS-KP-10,Pasir Kucing,Bentonite,Pawsitive,Kopi,5.5,L,30000,38000,available,3,NULL
+52,"P1-PR-LMN-5,5",Pasir Kucing,Bentonite,Pursona,Lemon,5.5,L,28000,35000,available,13,NULL
+53,"P1-PR-APL-5,5",Pasir Kucing,Bentonite,Pursona,Apel,5.5,L,28000,35000,sold out,0,NULL
+54,"P1-PR-LAV-5,5",Pasir Kucing,Bentonite,Pursona,Lavender,5.5,L,28000,35000,available,3,NULL
+55,"P1-PR-KP-5,5",Pasir Kucing,Bentonite,Pursona,Kopi,5.5,L,28000,35000,available,18,NULL
+56,"P1-PR-PC-5,5",Pasir Kucing,Bentonite,Pursona,Peach,5.5,L,28000,35000,available,4,NULL
+57,P1-ANC-LMN-5,Pasir Kucing,Bentonite,Animal&Co,Lemon,5,L,25000,33000,sold out,0,NULL
+58,P1-ANC-APL-5,Pasir Kucing,Bentonite,Animal&Co,apel,5,L,25000,33000,sold out,0,NULL
+59,P1-ANC-LAV-5,Pasir Kucing,Bentonite,Animal&Co,Lavender,5,L,25000,33000,available,1,NULL
+60,P1-ANC-KP-5,Pasir Kucing,Bentonite,Animal&Co,Kopi,5,L,25000,33000,sold out,0,NULL
+61,P1-ANC-GT-5,Pasir Kucing,Bentonite,Animal&Co,Greentea,5,L,25000,33000,available,5,NULL
+62,P1-ML-LMN-5,Pasir Kucing,Bentonite,MaxLife,Lemon,5,L,23000,32000,available,3,NULL
+63,P1-ML-APL-5,Pasir Kucing,Bentonite,MaxLife,Apel,5,L,23000,32000,available,2,NULL
+64,P1-ML-LAV-5,Pasir Kucing,Bentonite,MaxLife,Lavender,5,L,23000,32000,available,4,NULL
+65,P1-ML-KP-5,Pasir Kucing,Bentonite,MaxLife,Kopi,5,L,23000,32000,sold out,0,NULL
+66,P1-ANB-ORG-5,Pasir Kucing,Bentonite,Anabul,Orange,5,L,23000,33000,available,2,NULL
+67,P1-ANB-VNL-5,Pasir Kucing,Bentonite,Anabul,vanila,5,L,23000,33000,available,1,NULL
+68,P1-ANB-LAV-5,Pasir Kucing,Bentonite,Anabul,Lavender,5,L,23000,33000,available,1,NULL
+69,P1-ANB-KP-5,Pasir Kucing,Bentonite,Anabul,Kopi,5,L,23000,33000,available,1,NULL
+70,P1-ANB-ST-5,Pasir Kucing,Bentonite,Anabul,Strawberry,5,L,23000,33000,available,2,NULL
+71,P1-ML-LMN-10,Pasir Kucing,Bentonite,MaxLife,Lemon,10,L,50000,60000,available,1,NULL
+72,P1-ML-APL-10,Pasir Kucing,Bentonite,MaxLife,Apel,10,L,50000,60000,sold out,0,NULL
+73,P1-ML-LAV-10,Pasir Kucing,Bentonite,MaxLife,Lavender,10,L,50000,60000,sold out,0,NULL
+74,P1-ML-KP-10,Pasir Kucing,Bentonite,MaxLife,Kopi,10,L,50000,60000,available,3,NULL
+75,P1-ML-BP-10,Pasir Kucing,Bentonite,MaxLife,Baby powder,10,L,50000,60000,sold out,0,NULL
+76,P2-MR-LAV-7,Pasir Kucing,Tofu,Markotops,Lavender,7,L,65000,75000,sold out,0,NULL
+77,P2-MR-CDY-7,Pasir Kucing,Tofu,Markotops,Candy,7,L,65000,75000,available,1,NULL
+78,P2-MR-DNT-7,Pasir Kucing,Tofu,Markotops,Donat,7,L,65000,75000,available,1,NULL
+79,P2-MR-KP-7,Pasir Kucing,Tofu,Markotops,Kopi,7,L,65000,75000,available,1,NULL
+80,P2-MR-GT-7,Pasir Kucing,Tofu,Markotops,Greentea,7,L,65000,75000,available,1,NULL
+81,P2-MR-CRC-7,Pasir Kucing,Tofu,Markotops,Charcol,7,L,65000,75000,sold out,0,NULL
+82,P2-MR-ST-7,Pasir Kucing,Tofu,Markotops,Strawberry,7,L,65000,75000,sold out,0,NULL
+83,P2-MR-PC-7,Pasir Kucing,Tofu,Markotops,Peach,7,L,65000,75000,sold out,0,NULL
+84,P2-LP-BG-7,Pasir Kucing,Tofu,Lumina,Bubblegum,7,L,49000,58000,sold out,0,NULL
+85,P2-LP-KP-7,Pasir Kucing,Tofu,Lumina,Kopi,7,L,49000,58000,available,1,NULL
+86,P2-LP-CC-7,Pasir Kucing,Tofu,Lumina,Cotton candy,7,L,49000,58000,available,1,NULL
+87,P2-LP-GT-7,Pasir Kucing,Tofu,Lumina,Greentea,7,L,49000,58000,sold out,0,NULL
+88,P2-LP-LAV-7,Pasir Kucing,Tofu,Lumina,Lavender,7,L,49000,58000,sold out,0,NULL
+89,P2-HP-BB-6,Pasir Kucing,Tofu,HaiPet,Blueberry,6,L,48000,55000,sold out,0,NULL
+90,P2-HP-BG-6,Pasir Kucing,Tofu,HaiPet,Bubblegum,6,L,48000,55000,available,2,NULL
+91,P2-HP-CS-6,Pasir Kucing,Tofu,HaiPet,Cheese,6,L,48000,55000,available,1,NULL
+92,P2-HP-RB-6,Pasir Kucing,Tofu,HaiPet,Rainbow Cake,6,L,48000,55000,sold out,0,NULL
+93,P2-HP-WM-6,Pasir Kucing,Tofu,HaiPet,Watermelom,6,L,48000,55000,sold out,0,NULL
+94,P2-HP-MGO-6,Pasir Kucing,Tofu,HaiPet,Mango,6,L,48000,55000,available,1,NULL
+95,P2-HP-CP-8,Pasir Kucing,Tofu,HaiPet,Candy puff,8,L,55000,67000,sold out,0,NULL
+96,P2-HP-KP-8,Pasir Kucing,Tofu,HaiPet,Kopi,8,L,55000,67000,sold out,0,NULL
+97,P2-HP-MSW-8,Pasir Kucing,Tofu,HaiPet,Marshmellow,8,L,55000,67000,sold out,0,NULL
+98,P2-HP-ML-8,Pasir Kucing,Tofu,HaiPet,Matcha Late,8,L,55000,67000,available,1,NULL
+99,P2-HP-BLM-8,Pasir Kucing,Tofu,HaiPet,Baby Blossom,8,L,55000,67000,available,1,NULL
+100,P2-HP-BM-8,Pasir Kucing,Tofu,HaiPet,Banana milk,8,L,55000,67000,sold out,0,NULL
+101,P2-CR-KP-7,Pasir Kucing,Tofu,Crocat,Kopi,7,L,48000,55000,sold out,0,NULL
+102,P2-CR-LAV-7,Pasir Kucing,Tofu,Crocat,Lavender,7,L,48000,55000,available,1,NULL
+103,P2-CR-BG-7,Pasir Kucing,Tofu,Crocat,Bubblegum,7,L,48000,55000,available,2,NULL
+104,P2-TR-APL-6,Pasir Kucing,Tofu,Taro,Apel,6,L,48000,56000,available,1,NULL
+105,P2-TR-IC-6,Pasir Kucing,Tofu,Taro,Ice Cream,6,L,48000,56000,available,1,NULL
+106,P2-CNK-EPS-7,Pasir Kucing,Tofu,Cubnkit,Expresso,7,L,48000,58000,available,1,NULL
+107,P2-CNK-CML-7,Pasir Kucing,Tofu,Cubnkit,Caramel,7,L,48000,58000,available,1,NULL
+108,K1-PTH-YL-XL,Cargo,Plastik,PetHouse,Yellow,NULL,NULL,240000,260000,available,1,NULL
+109,K1-PTH-BLU-XL,Cargo,Plastik,PetHouse,Blue,NULL,NULL,240000,260000,available,1,NULL
+110,K1-PTH-ORG-XL,Cargo,Plastik,PetHouse,Orange,NULL,NULL,240000,260000,available,1,NULL
+111, K1-PTH-PK-L,Cargo,Plastik,PetHouse,Pink,NULL,NULL,170000,185000,sold out,0,NULL
+112,K1-PTH-GRY-L,Cargo,Plastik,PetHouse,Grey,NULL,NULL,170000,185000,sold out,0,NULL
+113,K1-PTH-PCH-L,Cargo,Plastik,PetHouse,Peach,NULL,NULL,170000,185000,available,1,NULL
+114,K2-PTH-GLXY-L,Cargo,Kain,PetHouse,Galaxy,NULL,NULL,170000,185000,available,1,NULL
+115,K2-PTH-ASTNT-L,Cargo,Kain,PetHouse,Astronout,NULL,NULL,170000,185000,available,1,NULL
+116,LB1-PTH-PJG-S,Litter Box,Plastik,PetHouse,panjang,NULL,NULL,15000,20000,available,1,NULL
+117,LB1-PTH-PJG-M,Litter Box,Plastik,PetHouse,panjang,NULL,NULL,20000,25000,available,3,NULL
+118,LB1-PTH-PJG-L,Litter Box,Plastik,PetHouse,panjang,NULL,NULL,25000,35000,available,4,NULL
+119,LB1-PTH-PJG-XL,Litter Box,Plastik,PetHouse,panjang,NULL,NULL,30000,40000,available,3,NULL
+120,LB1-PTH-PJG-XXL,Litter Box,Plastik,PetHouse,panjang,NULL,NULL,35000,45000,available,2,NULL
+121,LB2-PTH-LF-XL,Litter Box,Plastik,PetHouse,LowFooting,NULL,NULL,50000,60000,available,1,NULL
+122,LB2-PTH-LF-XXL,Litter Box,Plastik,PetHouse,LowFooting,NULL,NULL,55000,65000,available,1,NULL
+123,LB3-PTH-WD-XL,Litter Box,Plastik,PetHouse,With Door,NULL,NULL,65000,75000,available,1,NULL
+124,,,,,,,,,,,,
