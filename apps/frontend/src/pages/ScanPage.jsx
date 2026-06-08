@@ -57,6 +57,7 @@ export default function ScanPage() {
     } else {
       setScanResult(null);
       setNotFound(true);
+      setManualCode(code); // Simpan hasil scan untuk ditampilkan
     }
   };
 
@@ -76,7 +77,7 @@ export default function ScanPage() {
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 220, height: 220 },
+            qrbox: { width: 280, height: 150 }, // Rectangular for 1D Barcodes
           },
           (decodedText) => {
             stopScanner();
@@ -189,7 +190,7 @@ export default function ScanPage() {
       {/* Header */}
       <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 text-center">
         <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
-        <p className="text-sm text-slate-400 mt-0.5">Scan barcode produk untuk cek & proses stok</p>
+        <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>
       </header>
 
       <main className="px-5 py-5 space-y-5 max-w-xl mx-auto w-full">
@@ -215,7 +216,7 @@ export default function ScanPage() {
               <span className={`material-symbols-outlined ${primaryText} !text-[40px]`} style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
             </div>
             <p className="font-bold text-slate-700">Tap untuk mulai scan</p>
-            <p className="text-sm text-slate-400 mt-1">Arahkan kamera ke barcode produk</p>
+            <p className="text-sm text-slate-400 mt-1">Arahkan kamera ke gambar Barcode pada kemasan</p>
           </div>
         )}
 
