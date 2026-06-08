@@ -9,10 +9,10 @@ export default function BottomNav() {
   const NAV_ITEMS = [
     { path: '/dashboard', icon: 'home', label: 'Home' },
     { path: '/products', icon: 'inventory_2', label: 'Produk' },
-    isAdmin
-      ? { path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' }
-      : { path: '/scan', icon: 'qr_code_scanner', label: 'Scan' },
-    { path: '/transfer', icon: 'swap_horiz', label: 'Transfer' },
+    ...(isAdmin ? [
+      { path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' },
+      { path: '/transfer', icon: 'swap_horiz', label: 'Transfer' }
+    ] : []),
     { path: '/profile', icon: 'person', label: 'Profil' },
   ];
   const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
