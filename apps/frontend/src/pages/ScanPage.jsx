@@ -7,7 +7,7 @@ import { getExpiryStatus, getExpiryColorClass, deductStockFEFO } from '../utils/
 import { getTransactions, saveTransactions } from '../data/mockData';
 
 // Lazy load html5-qrcode
-let Html5QrcodeScanner = null;
+let Html5Qrcode = null;
 
 export default function ScanPage() {
   const location = useLocation();
@@ -38,7 +38,7 @@ export default function ScanPage() {
     setProducts(getProducts());
     // Dynamically import html5-qrcode
     import('html5-qrcode').then(mod => {
-      Html5QrcodeScanner = mod.Html5QrcodeScanner || mod.default?.Html5QrcodeScanner;
+      Html5Qrcode = mod.Html5Qrcode || mod.default?.Html5Qrcode;
       setLibLoaded(true);
     }).catch(() => setLibLoaded(false));
     return () => stopScanner();
@@ -61,7 +61,7 @@ export default function ScanPage() {
   };
 
   const startScanner = () => {
-    if (!libLoaded || !window.Html5Qrcode) {
+    if (!libLoaded || !Html5Qrcode) {
       showToast('Library scanner belum siap.');
       return;
     }
@@ -70,7 +70,7 @@ export default function ScanPage() {
     setNotFound(false);
     setTimeout(() => {
       try {
-        const html5QrCode = new window.Html5Qrcode(scannerDivId);
+        const html5QrCode = new Html5Qrcode(scannerDivId);
         scannerRef.current = html5QrCode;
         html5QrCode.start(
           { facingMode: "environment" },
