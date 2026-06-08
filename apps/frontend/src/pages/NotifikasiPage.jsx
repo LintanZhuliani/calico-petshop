@@ -12,11 +12,14 @@ export default function NotifikasiPage() {
   const primaryText = isAdmin ? 'text-orange-600' : 'text-red-600';
   const primaryBg = isAdmin ? 'bg-orange-600' : 'bg-red-600';
 
-  const [lowStock, setLowStock] = useState([]);
-  const [expiring, setExpiring] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [lowStock, setLowStock] = useState(location.state?.lowStock || []);
+  const [expiring, setExpiring] = useState(location.state?.expiring || []);
+  const [loading, setLoading] = useState(!(location.state?.lowStock && location.state?.expiring));
 
   useEffect(() => {
+    if (location.state?.lowStock && location.state?.expiring) {
+      return; // Already have data from Dashboard
+    }
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -34,7 +37,7 @@ export default function NotifikasiPage() {
       }
     };
     fetchData();
-  }, [branchId]);
+  }, [branchId, location.state]);
 
   // Separate Expiring into Expired and Expiring Soon
   const expiredItems = expiring.filter(item => item.daysLeft <= 0);

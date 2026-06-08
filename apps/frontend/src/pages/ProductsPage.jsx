@@ -596,7 +596,12 @@ export default function ProductsPage() {
   const primaryLight = isAdmin ? 'bg-orange-50' : 'bg-red-50';
   const primaryBorder = isAdmin ? 'focus:border-[#D35400]' : 'focus:border-[#C0392B]';
 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('calico_products_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
@@ -622,9 +627,10 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(products.length === 0);
       const data = await apiFetch(`/products?branchId=${branchId}`);
       setProducts(data);
+      localStorage.setItem('calico_products_cache', JSON.stringify(data));
     } catch (err) {
       showToast('Gagal memuat produk: ' + err.message);
     } finally {
@@ -892,8 +898,7 @@ export default function ProductsPage() {
             <p className="font-bold text-slate-500">Tidak ada produk ditemukan</p>
             <p className="text-sm">Coba ubah filter atau tambah produk baru</p>
           </div>
-        ) : (
-          filtered.map(p => {
+        ) : filtered.map(p => {
           const total = p.totalStock || 0;
           const isLow = total <= p.minStock && total > 0;
           const isEmpty = total === 0;

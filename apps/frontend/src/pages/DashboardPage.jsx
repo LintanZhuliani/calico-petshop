@@ -95,7 +95,7 @@ export default function DashboardPage() {
           {/* Badge mode telah dihapus atas permintaan user */}
         </div>
         <button 
-          onClick={() => navigate('/notifikasi', { state: location.state })}
+          onClick={() => navigate('/notifikasi', { state: { ...location.state, lowStock, expiring } })}
           className={`relative p-2 rounded-full bg-slate-50 hover:bg-slate-100 transition-all`}
         >
           <span className={`material-symbols-outlined !text-[20px] text-slate-600`}>notifications</span>
