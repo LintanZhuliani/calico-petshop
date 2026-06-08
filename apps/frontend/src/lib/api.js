@@ -1,4 +1,6 @@
-export const API_URL = "http://localhost:3001/api";
+export const API_URL = import.meta.env.PROD 
+  ? "https://calico-petshop-api.vercel.app/api" 
+  : "http://localhost:3001/api";
 
 /**
  * Fetch wrapper that automatically includes credentials (cookies)

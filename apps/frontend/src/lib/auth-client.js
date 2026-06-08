@@ -1,5 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  baseURL: "http://localhost:3001", // Backend URL
+  baseURL: import.meta.env.PROD 
+    ? "https://calico-petshop-api.vercel.app" 
+    : "http://localhost:3001",
 });
