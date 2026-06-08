@@ -70,14 +70,16 @@ app.get("/api/health", (req, res) => {
 app.use(errorHandler);
 
 // ── Start Server ──
-httpServer.listen(PORT, () => {
-  console.log(`
-  ╔══════════════════════════════════════════╗
-  ║   🐾 Calico's Pet Care API Server       ║
-  ║   Running on http://localhost:${PORT}       ║
-  ║   CORS: ${process.env.FRONTEND_URL || "http://localhost:5173"}     ║
-  ╚══════════════════════════════════════════╝
-  `);
-});
+if (!process.env.VERCEL) {
+  httpServer.listen(PORT, () => {
+    console.log(`
+    ╔══════════════════════════════════════════╗
+    ║   🐾 Calico's Pet Care API Server       ║
+    ║   Running on http://localhost:${PORT}       ║
+    ║   CORS: ${process.env.FRONTEND_URL || "http://localhost:5173"}     ║
+    ╚══════════════════════════════════════════╝
+    `);
+  });
+}
 
 export default app;
