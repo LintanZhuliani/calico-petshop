@@ -108,7 +108,8 @@ export default function TransferPage() {
           note,
           items: transferItems.map(i => ({
             productId: i.productId,
-            qtyRequested: i.qty,
+            productName: i.productName,
+            qty: i.qty,
           }))
         }
       });
@@ -243,8 +244,8 @@ export default function TransferPage() {
         </div>
       )}
 
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-0">
-        <h1 className={`font-headline font-extrabold text-xl ${primaryText} mb-3`}></h1>
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-0 text-center">
+        <h1 className={`font-headline font-extrabold text-xl ${primaryText} mb-3`}>Transfer Barang</h1>
         {/* Tabs */}
         <div className="flex border-b border-slate-100 -mx-5 px-5 gap-1">
           {TABS.map(tab => (

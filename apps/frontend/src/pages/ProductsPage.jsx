@@ -600,6 +600,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modals
   const [addProductOpen, setAddProductOpen] = useState(false);
@@ -621,10 +622,13 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
+      setIsLoading(true);
       const data = await apiFetch(`/products?branchId=${branchId}`);
       setProducts(data);
     } catch (err) {
       showToast('Gagal memuat produk: ' + err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -877,14 +881,19 @@ export default function ProductsPage() {
 
       {/* ── Product List ── */}
       <main className="px-4 py-4 space-y-2.5 max-w-xl mx-auto w-full">
-        {filtered.length === 0 && (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className={`w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin`}></div>
+            <p className="text-sm font-bold text-slate-500 mt-4">Memuat produk...</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-slate-400">
             <span className="material-symbols-outlined !text-[48px] mb-3">inventory_2</span>
             <p className="font-bold text-slate-500">Tidak ada produk ditemukan</p>
             <p className="text-sm">Coba ubah filter atau tambah produk baru</p>
           </div>
-        )}
-        {filtered.map(p => {
+        ) : (
+          filtered.map(p => {
           const total = p.totalStock || 0;
           const isLow = total <= p.minStock && total > 0;
           const isEmpty = total === 0;

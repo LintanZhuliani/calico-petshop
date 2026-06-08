@@ -26,6 +26,8 @@ export default function ProfilePage() {
   const [newPass, setNewPass] = useState("");
   const [passError, setPassError] = useState("");
   const [passSuccess, setPassSuccess] = useState("");
+  const [showOldPass, setShowOldPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
   const [notifState, setNotifState] = useState(() => {
     const saved = localStorage.getItem('calico_notif_prefs');
     return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
@@ -224,8 +226,8 @@ export default function ProfilePage() {
         {/* Dynamic Modals */}
         {activeModal && activeModal !== 'logout' && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
-            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-8">
-              <div className="flex justify-between items-center mb-5">
+            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
+              <div className="flex justify-between items-center mb-5 shrink-0">
                 <h3 className="font-headline font-bold text-slate-900 text-lg">
                   {MENU_ITEMS.find(m => m.id === activeModal)?.label || 'Modal'}
                 </h3>
@@ -235,18 +237,28 @@ export default function ProfilePage() {
               </div>
 
               {activeModal === 'password' && (
-                <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <form onSubmit={handlePasswordSubmit} className="space-y-4 overflow-y-auto pr-1">
                   {passError && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-xl border border-red-100">{passError}</p>}
                   {passSuccess && <p className="text-green-600 text-sm bg-green-50 p-3 rounded-xl border border-green-100">{passSuccess}</p>}
                   <div>
                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">Sandi Lama</label>
-                    <input type="password" required value={oldPass} onChange={e => {setOldPass(e.target.value); setPassError("")}} className={`w-full mt-1 bg-slate-50 border-2 border-transparent focus:border-slate-300 rounded-xl p-3.5 outline-none text-slate-800 font-medium tracking-widest`} />
+                    <div className="relative mt-1">
+                      <input type={showOldPass ? "text" : "password"} required value={oldPass} onChange={e => {setOldPass(e.target.value); setPassError("")}} className={`w-full bg-slate-50 border-2 border-transparent focus:border-slate-300 rounded-xl p-3.5 pr-12 outline-none text-slate-800 font-medium tracking-widest`} />
+                      <button type="button" onClick={() => setShowOldPass(!showOldPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1">
+                        <span className="material-symbols-outlined !text-[20px]">{showOldPass ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">Sandi Baru</label>
-                    <input type="password" required value={newPass} onChange={e => setNewPass(e.target.value)} className={`w-full mt-1 bg-slate-50 border-2 border-transparent focus:border-slate-300 rounded-xl p-3.5 outline-none text-slate-800 font-medium tracking-widest`} />
+                    <div className="relative mt-1">
+                      <input type={showNewPass ? "text" : "password"} required value={newPass} onChange={e => setNewPass(e.target.value)} className={`w-full bg-slate-50 border-2 border-transparent focus:border-slate-300 rounded-xl p-3.5 pr-12 outline-none text-slate-800 font-medium tracking-widest`} />
+                      <button type="button" onClick={() => setShowNewPass(!showNewPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1">
+                        <span className="material-symbols-outlined !text-[20px]">{showNewPass ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
                   </div>
-                  <button type="submit" className={`w-full py-4 ${primaryBg} text-white font-bold rounded-xl mt-2 active:scale-95 transition-transform`}>Simpan Sandi Baru</button>
+                  <button type="submit" className={`w-full py-4 ${primaryBg} text-white font-bold rounded-xl mt-2 active:scale-95 transition-transform shrink-0`}>Simpan Sandi Baru</button>
                 </form>
               )}
 
@@ -339,34 +351,34 @@ export default function ProfilePage() {
               )}
 
               {activeModal === 'notif' && (
-                <div className="space-y-3">
+                <div className="space-y-3 overflow-y-auto pr-1">
                   <p className="text-xs text-slate-400 mb-1">Pengaturan ini akan tersimpan otomatis di perangkatmu.</p>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
                     <div>
                       <p className="font-bold text-slate-800">Peringatan Stok Tipis</p>
                       <p className="text-xs text-slate-500 mt-0.5">Notifikasi saat stok di bawah batas minimum</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
                       <input type="checkbox" checked={notifState.stok} onChange={() => setNotifState(s => ({...s, stok: !s.stok}))} className="sr-only peer" />
                       <div className="w-11 h-6 bg-slate-200 peer-checked:bg-orange-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
                     <div>
                       <p className="font-bold text-slate-800">Barang Hampir Kedaluwarsa</p>
                       <p className="text-xs text-slate-500 mt-0.5">Notifikasi 30 hari sebelum produk rusak</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
                       <input type="checkbox" checked={notifState.expired} onChange={() => setNotifState(s => ({...s, expired: !s.expired}))} className="sr-only peer" />
                       <div className="w-11 h-6 bg-slate-200 peer-checked:bg-orange-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
                     <div>
                       <p className="font-bold text-slate-800">Rekap Shift Harian</p>
                       <p className="text-xs text-slate-500 mt-0.5">Pengingat untuk merekap transaksi shift</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
                       <input type="checkbox" checked={notifState.shift} onChange={() => setNotifState(s => ({...s, shift: !s.shift}))} className="sr-only peer" />
                       <div className="w-11 h-6 bg-slate-200 peer-checked:bg-orange-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>

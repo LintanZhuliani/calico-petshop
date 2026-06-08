@@ -73,7 +73,7 @@ export default function ScanPage() {
         scannerRef.current = new Html5QrcodeScanner(scannerDivId, {
           fps: 10,
           qrbox: { width: 220, height: 220 },
-          facingMode: 'environment',
+          videoConstraints: { facingMode: "environment" },
           rememberLastUsedCamera: true,
         }, false);
         scannerRef.current.render(
@@ -175,8 +175,8 @@ export default function ScanPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4">
-        <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Smart Scan</h1>
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 text-center">
+        <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
         <p className="text-sm text-slate-400 mt-0.5">Scan barcode produk untuk cek & proses stok</p>
       </header>
 
@@ -220,22 +220,7 @@ export default function ScanPage() {
           </div>
         )}
 
-        {/* Manual Input */}
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 !text-[20px]">barcode_reader</span>
-            <input
-              value={manualCode} onChange={e => setManualCode(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleManualSearch()}
-              placeholder="Input barcode manual..."
-              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 focus:border-orange-300 rounded-2xl text-sm text-slate-700 outline-none transition-all"
-            />
-          </div>
-          <button onClick={handleManualSearch}
-            className={`${primaryBg} text-white px-4 py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all`}>
-            Cari
-          </button>
-        </div>
+
 
         {/* Not found */}
         {notFound && (
