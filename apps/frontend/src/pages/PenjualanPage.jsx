@@ -25,7 +25,7 @@ export default function PenjualanPage() {
   const primaryBg = isAdmin ? 'bg-orange-600' : 'bg-red-600';
   const primaryLight = isAdmin ? 'bg-orange-50' : 'bg-red-50';
 
-  const [reportType, setReportType] = useState('bulanan'); // 'harian', 'bulanan', 'tahunan'
+  const [reportType, setReportType] = useState(isAdmin ? 'bulanan' : 'harian'); // 'harian', 'bulanan', 'tahunan'
   const [selectedDate, setSelectedDate] = useState(new Date());
   
   const [filterBranch, setFilterBranch] = useState(isAdmin ? 'semua' : branchId);
@@ -205,17 +205,19 @@ export default function PenjualanPage() {
       <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40">
         <h1 className={`font-headline font-extrabold text-xl mb-3 ${primaryText}`}></h1>
         
-        <div className="flex gap-2">
-          {['harian', 'bulanan', 'tahunan'].map(type => (
-            <button
-              key={type}
-              onClick={() => setReportType(type)}
-              className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
+        {isAdmin && (
+          <div className="flex gap-2">
+            {['harian', 'bulanan', 'tahunan'].map(type => (
+              <button
+                key={type}
+                onClick={() => setReportType(type)}
+                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       <main className="px-4 py-4 space-y-4 max-w-xl mx-auto w-full">
@@ -251,13 +253,15 @@ export default function PenjualanPage() {
         </div>
 
         {/* Tombol Unduh */}
-        <button
-          onClick={handleDownloadCSV}
-          className={`w-full py-3.5 ${primaryBg} text-white font-bold rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm shadow-md`}
-        >
-          <span className="material-symbols-outlined !text-[20px]">download</span>
-          Unduh Laporan CSV
-        </button>
+        {isAdmin && (
+          <button
+            onClick={handleDownloadCSV}
+            className={`w-full py-3.5 ${primaryBg} text-white font-bold rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm shadow-md`}
+          >
+            <span className="material-symbols-outlined !text-[20px]">download</span>
+            Unduh Laporan CSV
+          </button>
+        )}
 
         {/* Grafik Penjualan */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">

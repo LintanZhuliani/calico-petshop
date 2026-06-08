@@ -61,8 +61,8 @@ export default function ScanPage() {
   };
 
   const startScanner = () => {
-    if (!libLoaded || !Html5QrcodeScanner) {
-      showToast('Library scanner belum siap. Coba input manual.');
+    if (!libLoaded || !window.Html5Qrcode) {
+      showToast('Library scanner belum siap.');
       return;
     }
     setScanning(true);
@@ -70,21 +70,27 @@ export default function ScanPage() {
     setNotFound(false);
     setTimeout(() => {
       try {
-        scannerRef.current = new Html5QrcodeScanner(scannerDivId, {
-          fps: 10,
-          qrbox: { width: 220, height: 220 },
-          rememberLastUsedCamera: true,
-        }, false);
-        scannerRef.current.render(
+        const html5QrCode = new window.Html5Qrcode(scannerDivId);
+        scannerRef.current = html5QrCode;
+        html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 220, height: 220 },
+          },
           (decodedText) => {
             stopScanner();
             findProduct(decodedText);
           },
-          (error) => { /* ignore scan errors */ }
-        );
-        setScannerReady(true);
+          (errorMessage) => { /* ignore scan errors */ }
+        ).then(() => {
+          setScannerReady(true);
+        }).catch(err => {
+          showToast('Kamera tidak bisa diakses.');
+          setScanning(false);
+        });
       } catch (e) {
-        showToast('Kamera tidak bisa diakses. Gunakan input manual.');
+        showToast('Kamera tidak bisa diakses.');
         setScanning(false);
       }
     }, 300);
@@ -92,8 +98,15 @@ export default function ScanPage() {
 
   const stopScanner = () => {
     if (scannerRef.current) {
-      try { scannerRef.current.clear(); } catch (e) { }
-      scannerRef.current = null;
+      try { 
+        scannerRef.current.stop().then(() => {
+          scannerRef.current.clear();
+          scannerRef.current = null;
+        }).catch(() => {
+          scannerRef.current.clear();
+          scannerRef.current = null;
+        });
+      } catch (e) { }
     }
     setScanning(false);
     setScannerReady(false);
