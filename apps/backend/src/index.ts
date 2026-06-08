@@ -26,7 +26,9 @@ const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // ── WebSocket ──
-initSocket(httpServer, process.env.FRONTEND_URL || "http://localhost:5173");
+if (!process.env.VERCEL) {
+  initSocket(httpServer, process.env.FRONTEND_URL || "http://localhost:5173");
+}
 
 // ── CORS ──
 app.use(
