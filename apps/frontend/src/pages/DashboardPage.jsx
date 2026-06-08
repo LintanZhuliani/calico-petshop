@@ -20,14 +20,20 @@ export default function DashboardPage() {
   const branchName = BRANCHES.find(b => b.id === branchId)?.name || "Calico's Pet Care";
   const shopName = branchName;
 
+  const cacheKey = `calico_dashboard_stats_${branchId}`;
+  const cachedStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+
   const [products, setProducts] = useState([]);
   const [transfers, setTransfers] = useState([]);
   const [lowStock, setLowStock] = useState([]);
   const [expiring, setExpiring] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
-  const [todayTxCount, setTodayTxCount] = useState(0);
-  const [todayRevenue, setTodayRevenue] = useState(0);
-  const [todayItemsSold, setTodayItemsSold] = useState(0);
+  
+  const [todayTxCount, setTodayTxCount] = useState(cachedStats.todayTxCount || 0);
+  const [todayRevenue, setTodayRevenue] = useState(cachedStats.todayRevenue || 0);
+  const [todayItemsSold, setTodayItemsSold] = useState(cachedStats.todayItemsSold || 0);
+  const [lowStockCount, setLowStockCount] = useState(cachedStats.lowStockCount || 0);
+  const [inTransitCount, setInTransitCount] = useState(cachedStats.inTransitCount || 0);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -36,8 +42,13 @@ export default function DashboardPage() {
     // Fetch today's transaction summary
     apiFetch(`/transactions/summary?date=${today}&branchId=${branch}`)
       .then(data => {
-        setTodayTxCount(data.totalTransactions || 0);
-        setTodayRevenue(data.totalRevenue || 0);
+        const txCount = data.totalTransactions || 0;
+        const revenue = data.totalRevenue || 0;
+        setTodayTxCount(txCount);
+        setTodayRevenue(revenue);
+        
+        const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+        localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayTxCount: txCount, todayRevenue: revenue }));
       })
       .catch(err => console.error('Dashboard summary error:', err));
 
@@ -49,6 +60,9 @@ export default function DashboardPage() {
             sum + (tx.items || []).reduce((s, item) => s + item.qty, 0), 0
           );
           setTodayItemsSold(totalItems);
+          
+          const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+          localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems }));
         }
       })
       .catch(err => console.error('Items sold error:', err));
@@ -58,7 +72,12 @@ export default function DashboardPage() {
       .then(data => {
         setProducts(data);
         // Low stock: products where totalStock === 0 (user requested to remove 'stok menipis')
-        setLowStock(data.filter(p => (p.totalStock || 0) <= 0));
+        const ls = data.filter(p => (p.totalStock || 0) <= 0);
+        setLowStock(ls);
+        setLowStockCount(ls.length);
+        
+        const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+        localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, lowStockCount: ls.length }));
       })
       .catch(err => console.error('Products error:', err));
 
@@ -69,7 +88,15 @@ export default function DashboardPage() {
 
     // Fetch transfers in transit
     apiFetch('/transfers?status=transit')
-      .then(data => setTransfers(Array.isArray(data) ? data : []))
+      .then(data => {
+        const trs = Array.isArray(data) ? data : [];
+        setTransfers(trs);
+        const inTransit = trs.filter(t => t.status === 'transit').length;
+        setInTransitCount(inTransit);
+        
+        const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+        localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, inTransitCount: inTransit }));
+      })
       .catch(err => console.error('Transfers error:', err));
   }, []);
 
@@ -81,7 +108,6 @@ export default function DashboardPage() {
   const primaryBorder = isAdmin ? 'border-orange-100' : 'border-red-100';
 
   const totalProducts = products.length;
-  const inTransitCount = transfers.filter(t => t.status === 'transit').length;
 
   const greetingHour = new Date().getHours();
   const greeting = greetingHour < 11 ? 'Selamat Pagi' : greetingHour < 15 ? 'Selamat Siang' : greetingHour < 18 ? 'Selamat Sore' : 'Selamat Malam';
