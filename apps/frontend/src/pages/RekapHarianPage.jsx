@@ -65,24 +65,53 @@ export default function RekapHarianPage() {
     transactions.forEach(tx => {
       const method = tx.paymentMethod || 'Tunai';
       
+      let txCash = 0;
+      let txQR = 0;
+      let txTransfer = 0;
+      let txEDC = 0;
+
+      if (method.startsWith('Campuran')) {
+        const nonTunaiMatch = method.match(/Rp\s*([\d\.]+)\s*\+/);
+        const cashMatch = method.match(/\+\s*Tunai\s*Rp\s*([\d\.]+)/);
+        
+        let ntAmount = nonTunaiMatch ? parseInt(nonTunaiMatch[1].replace(/\./g, '')) : 0;
+        let cAmount = cashMatch ? parseInt(cashMatch[1].replace(/\./g, '')) : 0;
+        const actualCash = cAmount - (tx.change || 0);
+
+        if (method.includes('QRIS')) txQR = ntAmount;
+        else if (method.includes('Transfer')) txTransfer = ntAmount;
+        else if (method.includes('EDC')) txEDC = ntAmount;
+        
+        txCash = actualCash;
+      } else if (method === 'Tunai') {
+        txCash = tx.total;
+      } else if (method === 'QRIS') {
+        txQR = tx.total;
+      } else if (method.includes('Transfer')) {
+        txTransfer = tx.total;
+      } else if (method.includes('EDC')) {
+        txEDC = tx.total;
+      }
+
+      grandCash += txCash;
+      grandQR += txQR;
+      grandTransfer += txTransfer;
+      grandEDC += txEDC;
+
       tx.items.forEach(item => {
         const lineTotal = item.qty * item.price;
         const cat = item.category || 'Lainnya';
-
-        // Grand Total Tracking
-        if (method === 'Tunai') grandCash += lineTotal;
-        else if (method === 'QRIS') grandQR += lineTotal;
-        else if (method === 'Transfer Bank') grandTransfer += lineTotal;
-        else if (method === 'EDC / Debit') grandEDC += lineTotal;
         
+        const isCash = method === 'Tunai' || (method.startsWith('Campuran') && txCash >= lineTotal);
+
         if (cat === 'Grooming') {
-          if (method === 'Tunai') groomingCash += lineTotal;
+          if (isCash) groomingCash += lineTotal;
           else groomingNonCash += lineTotal;
         } else if (cat === 'Ongkos Kirim') {
-          if (method === 'Tunai') ongkirCash += lineTotal;
+          if (isCash) ongkirCash += lineTotal;
           else ongkirNonCash += lineTotal;
         } else if (cat === 'Penginapan Kucing') {
-          if (method === 'Tunai') penginapanCash += lineTotal;
+          if (isCash) penginapanCash += lineTotal;
           else penginapanNonCash += lineTotal;
         }
       });

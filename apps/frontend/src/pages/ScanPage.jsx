@@ -54,7 +54,8 @@ export default function ScanPage() {
   };
 
   const findProduct = (code) => {
-    const p = products.find(p => p.barcode === code || p.id === code);
+    const term = code.toLowerCase().trim();
+    const p = products.find(p => p.barcode === term || p.id === term || p.name.toLowerCase().includes(term));
     if (p) {
       setScanResult(p);
       setNotFound(false);
@@ -228,6 +229,26 @@ export default function ScanPage() {
             </div>
             <p className="font-bold text-slate-700">Tap untuk mulai scan</p>
             <p className="text-sm text-slate-400 mt-1 px-4 text-center">Arahkan kamera ke gambar Barcode pada kemasan</p>
+          </div>
+        )}
+
+        {/* Manual Input Search */}
+        {!scanning && !scanResult && (
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              value={manualCode} 
+              onChange={e => setManualCode(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleManualSearch()}
+              placeholder="Atau ketik nama/barcode produk..." 
+              className="flex-1 px-4 py-3 bg-white border border-slate-200 focus:border-slate-400 rounded-2xl outline-none font-medium text-slate-700 placeholder:text-slate-400"
+            />
+            <button 
+              onClick={handleManualSearch}
+              className={`px-5 rounded-2xl ${primaryBg} text-white font-bold active:scale-95 transition-all`}
+            >
+              Cari
+            </button>
           </div>
         )}
 
