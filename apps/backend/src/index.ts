@@ -22,6 +22,7 @@ import { reportRoutes } from "./routes/report.routes.js";
 import userRoutes from "./routes/user.routes.js";
 
 const app = express();
+app.set("trust proxy", 1);
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 

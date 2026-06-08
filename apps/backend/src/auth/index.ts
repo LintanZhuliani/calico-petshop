@@ -16,6 +16,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:5173", "https://calico-petshop-frontend.vercel.app"],
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+  },
   // socialProviders: Google OAuth — diaktifkan nanti setelah punya credentials
   // socialProviders: {
   //   google: {
