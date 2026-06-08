@@ -226,7 +226,7 @@ export default function ProfilePage() {
         {/* Dynamic Modals */}
         {activeModal && activeModal !== 'logout' && (
           <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
-            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pb-12 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
+            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pb-24 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
               <div className="flex justify-between items-center mb-5 shrink-0">
                 <h3 className="font-headline font-bold text-slate-900 text-lg">
                   {MENU_ITEMS.find(m => m.id === activeModal)?.label || 'Modal'}
@@ -237,7 +237,7 @@ export default function ProfilePage() {
               </div>
 
               {activeModal === 'password' && (
-                <form onSubmit={handlePasswordSubmit} className="space-y-4 overflow-y-auto pr-1">
+                <form onSubmit={handlePasswordSubmit} className="space-y-4 pr-1">
                   {passError && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-xl border border-red-100">{passError}</p>}
                   {passSuccess && <p className="text-green-600 text-sm bg-green-50 p-3 rounded-xl border border-green-100">{passSuccess}</p>}
                   <div>
@@ -263,7 +263,7 @@ export default function ProfilePage() {
               )}
 
               {activeModal === 'users' && (
-                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-3">
                   {(() => {
                     return loadingUsers ? (
                       <div className="flex justify-center py-6">
@@ -337,7 +337,7 @@ export default function ProfilePage() {
               )}
 
               {activeModal === 'branches' && (
-                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-3">
                   {BRANCHES.map(b => (
                     <div key={b.id} className="bg-slate-50 p-4 rounded-2xl flex items-center gap-4 border border-slate-100">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${b.id === branchId ? primaryBg : 'bg-slate-200'}`}>
@@ -351,7 +351,7 @@ export default function ProfilePage() {
               )}
 
               {activeModal === 'notif' && (
-                <div className="space-y-3 overflow-y-auto pr-1">
+                <div className="space-y-3 pr-1">
                   <p className="text-xs text-slate-400 mb-1">Pengaturan ini akan tersimpan otomatis di perangkatmu.</p>
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
                     <div>
@@ -387,7 +387,7 @@ export default function ProfilePage() {
               )}
 
               {activeModal === 'help' && (
-                <div className="space-y-4 text-sm text-slate-600 leading-relaxed max-h-[65vh] overflow-y-auto">
+                <div className="space-y-4 text-sm text-slate-600 leading-relaxed pb-6">
                   <p>Selamat datang di pusat bantuan <strong>Calico's Pet Care</strong>. Berikut panduan lengkap sesuai peran Anda:</p>
                   
                   {isAdmin ? (
