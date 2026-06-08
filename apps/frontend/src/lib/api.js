@@ -1,5 +1,5 @@
 export const API_URL = import.meta.env.PROD 
-  ? "https://calico-petshop-api.vercel.app/api" 
+  ? "https://calico-petshop-backend.vercel.app/api" 
   : "http://localhost:3001/api";
 
 /**
