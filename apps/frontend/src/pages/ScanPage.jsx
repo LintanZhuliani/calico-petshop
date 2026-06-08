@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { getProducts, saveProducts, getTotalStock } from '../data/mockData';
-import { formatRupiah, formatDate, generateId } from '../utils/formatters';
-import { getExpiryStatus, getExpiryColorClass, deductStockFEFO } from '../utils/stockAlerts';
-import { getTransactions, saveTransactions } from '../data/mockData';
+import { apiFetch } from '../lib/api';
+import { formatRupiah, generateId } from '../utils/formatters';
+import { getExpiryStatus, getExpiryColorClass } from '../utils/stockAlerts';
 
 // Lazy load html5-qrcode
 let Html5Qrcode = null;
@@ -34,8 +33,12 @@ export default function ScanPage() {
   const scannerRef = useRef(null);
   const scannerDivId = 'calico-qr-scanner';
 
+  const branchId = location.state?.branchName || 'pusat';
+
   useEffect(() => {
-    setProducts(getProducts());
+    apiFetch(`/products?branchId=${branchId}`)
+      .then(data => setProducts(data))
+      .catch(err => console.error(err));
     // Dynamically import html5-qrcode
     import('html5-qrcode').then(mod => {
       Html5Qrcode = mod.Html5Qrcode || mod.default?.Html5Qrcode;
@@ -119,60 +122,59 @@ export default function ScanPage() {
   };
 
   // Kasir: Proses jual
-  const handleSell = () => {
+  const handleSell = async () => {
     if (!scanResult || qty <= 0) return;
-    const total = getTotalStock(scanResult);
+    const total = scanResult.totalStock || 0;
     if (qty > total) { showToast('Stok tidak cukup!'); return; }
 
-    const updated = products.map(p => {
-      if (p.id !== scanResult.id) return p;
-      const { updatedBatches, success } = deductStockFEFO(p.batches, qty);
-      return { ...p, batches: updatedBatches };
-    });
-    setProducts(updated);
-    saveProducts(updated);
-
-    const txs = getTransactions();
-    saveTransactions([{
-      id: generateId('tx'),
-      date: new Date().toISOString(),
-      branch: location.state?.branchName || 'pusat',
-      cashier: location.state?.userName || 'Kasir',
-      items: [{ productId: scanResult.id, productName: scanResult.name, qty, price: scanResult.price }],
-      total: scanResult.price * qty,
-      paid: scanResult.price * qty,
-      change: 0,
-    }, ...txs]);
-
-    showToast(`${qty} unit ${scanResult.name} terjual (FEFO)`);
-    setScanResult(null);
-    setQty(1);
+    try {
+      await apiFetch('/transactions', {
+        method: 'POST',
+        body: {
+          items: [{ productId: scanResult.id, productName: scanResult.name, qty, price: scanResult.price }],
+          paid: scanResult.price * qty,
+          change: 0,
+          paymentMethod: 'Tunai',
+          branchId: branchId
+        }
+      });
+      
+      showToast(`${qty} unit ${scanResult.name} terjual (FEFO)`);
+      setScanResult(null);
+      setQty(1);
+      
+      // Refresh products to update stock
+      apiFetch(`/products?branchId=${branchId}`).then(setProducts);
+    } catch (err) {
+      showToast('Gagal memproses transaksi: ' + err.message);
+    }
   };
 
   // Admin: Tambah stok
-  const handleRestock = () => {
+  const handleRestock = async () => {
     if (!scanResult || qty <= 0) return;
-    const updated = products.map(p => {
-      if (p.id !== scanResult.id) return p;
-      return {
-        ...p,
-        batches: [...p.batches, {
-          batchId: generateId('b'),
+    try {
+      await apiFetch(`/products/${scanResult.id}/stock`, {
+        method: 'POST',
+        body: {
+          branchId: branchId,
           qty: Number(qty),
-          expiredDate: expiredDate || null,
-          receivedDate: new Date().toISOString().split('T')[0],
-        }]
-      };
-    });
-    setProducts(updated);
-    saveProducts(updated);
-    showToast(`+${qty} unit ${scanResult.name} berhasil ditambahkan!`);
-    setScanResult(null);
-    setQty(1);
-    setExpiredDate('');
+          expiredDate: expiredDate || null
+        }
+      });
+      showToast(`+${qty} unit ${scanResult.name} berhasil ditambahkan!`);
+      setScanResult(null);
+      setQty(1);
+      setExpiredDate('');
+      
+      // Refresh products
+      apiFetch(`/products?branchId=${branchId}`).then(setProducts);
+    } catch (err) {
+      showToast('Gagal menambah stok: ' + err.message);
+    }
   };
 
-  const totalStock = scanResult ? getTotalStock(scanResult) : 0;
+  const totalStock = scanResult ? (scanResult.totalStock || 0) : 0;
   const expiryStatus = scanResult?.batches?.length > 0
     ? getExpiryStatus([...scanResult.batches].sort((a, b) => a.expiredDate && b.expiredDate ? new Date(a.expiredDate) - new Date(b.expiredDate) : 0)[0]?.expiredDate)
     : 'none';
