@@ -6,7 +6,7 @@
 
 import { pgTable, text, integer, date, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { branchStock } from "./branch-stock";
+import { branchStock } from "./branch-stock.js";
 
 export const batch = pgTable("batch", {
   id: text("id").primaryKey(),
@@ -25,3 +25,4 @@ export const batchRelations = relations(batch, ({ one }) => ({
     references: [branchStock.id],
   }),
 }));
+

@@ -4,8 +4,8 @@
 
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { user } from "./auth";
-import { branchStock } from "./branch-stock";
+import { user } from "./auth.js";
+import { branchStock } from "./branch-stock.js";
 
 export const branch = pgTable("branch", {
   id: text("id").primaryKey(), // e.g. 'pusat', 'gempi', 'baba'
@@ -17,3 +17,4 @@ export const branchRelations = relations(branch, ({ many }) => ({
   users: many(user),
   branchStocks: many(branchStock),
 }));
+

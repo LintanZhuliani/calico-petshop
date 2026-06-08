@@ -6,9 +6,9 @@
 
 import { pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { product } from "./product";
-import { branch } from "./branch";
-import { batch } from "./batch";
+import { product } from "./product.js";
+import { branch } from "./branch.js";
+import { batch } from "./batch.js";
 
 export const branchStock = pgTable(
   "branch_stock",
@@ -36,3 +36,4 @@ export const branchStockRelations = relations(branchStock, ({ one, many }) => ({
   }),
   batches: many(batch),
 }));
+

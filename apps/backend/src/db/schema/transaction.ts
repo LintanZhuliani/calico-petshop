@@ -4,9 +4,9 @@
 
 import { pgTable, text, integer, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { branch } from "./branch";
-import { user } from "./auth";
-import { product } from "./product";
+import { branch } from "./branch.js";
+import { user } from "./auth.js";
+import { product } from "./product.js";
 
 export const transaction = pgTable("transaction", {
   id: text("id").primaryKey(),
@@ -63,3 +63,4 @@ export const transactionItemRelations = relations(
     }),
   })
 );
+
