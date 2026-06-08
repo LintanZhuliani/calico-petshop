@@ -630,7 +630,13 @@ export default function ProductsPage() {
       setIsLoading(products.length === 0);
       const data = await apiFetch(`/products?branchId=${branchId}`);
       setProducts(data);
-      localStorage.setItem('calico_products_cache', JSON.stringify(data));
+      try {
+        // Strip base64 images to prevent QuotaExceededError and keep stringify fast
+        const lightData = data.map(p => ({ ...p, image: p.image?.length > 100 ? null : p.image }));
+        localStorage.setItem('calico_products_cache', JSON.stringify(lightData));
+      } catch (e) {
+        console.warn("Could not cache products:", e);
+      }
     } catch (err) {
       showToast('Gagal memuat produk: ' + err.message);
     } finally {

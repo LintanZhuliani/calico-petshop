@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
-import { BRANCHES, getProducts, getTotalStock, getTransactions } from '../data/mockData';
+import { BRANCHES } from '../data/mockData';
 import { formatRupiah, formatDateTime } from '../utils/formatters';
-import { getLowStockProducts, getExpiringBatches } from '../utils/stockAlerts';
 import { authClient } from '../lib/auth-client';
 
 export default function ProfilePage() {
@@ -106,25 +105,29 @@ export default function ProfilePage() {
     }
   };
 
-  const products = getProducts();
-  const transactions = getTransactions();
-  const lowStock = getLowStockProducts(products);
-  const expiring = getExpiringBatches(products, 30);
-  const totalProducts = products.length;
-  const totalStock = products.reduce((s, p) => s + getTotalStock(p), 0);
-  const todayTx = transactions.filter(tx => {
-    const d = new Date(tx.date);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  });
-  const todayRevenue = todayTx.reduce((s, tx) => s + tx.total, 0);
+  // We removed mock data. To get accurate counts, it requires a separate API call.
+  // For now, we'll keep the menu simple and direct to the Penjualan page.
+  const [todayTxCount, setTodayTxCount] = useState(0);
+
+  useEffect(() => {
+    // Fetch today's transactions count silently
+    const fetchTx = async () => {
+      try {
+        const { apiFetch } = await import('../lib/api.js');
+        const txs = await apiFetch(`/transactions?branchId=${branchId}`);
+        const today = new Date().toDateString();
+        setTodayTxCount(txs.filter(t => new Date(t.date).toDateString() === today).length);
+      } catch (e) {}
+    };
+    fetchTx();
+  }, [branchId]);
 
   const MENU_ITEMS = [
     ...(isAdmin ? [
       { id: 'users', icon: 'manage_accounts', label: 'Kelola Karyawan', desc: 'Tambah, edit, atau nonaktifkan akun', color: primaryText },
       { id: 'branches', icon: 'store', label: 'Kelola Cabang', desc: 'Data & konfigurasi semua cabang', color: primaryText },
     ] : []),
-    { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTx.length} transaksi hari ini`, color: primaryText },
+    { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
     { id: 'notif', icon: 'notifications', label: 'Preferensi Notifikasi', desc: 'Atur alert stok & expired', color: primaryText },
     { id: 'help', icon: 'help', label: 'Bantuan & Panduan', desc: 'Cara pakai aplikasi', color: primaryText },
@@ -207,7 +210,7 @@ export default function ProfilePage() {
               return (
                 <Link
                   key={i}
-                  to="/laporan"
+                  to="/penjualan"
                   state={location.state}
                   className="w-full flex items-center gap-3.5 px-5 py-4 text-left active:bg-slate-50 transition-colors"
                 >
