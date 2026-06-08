@@ -10,26 +10,26 @@ export {
   account,
   accountRelations,
   verification,
-} from "./auth";
+} from "./auth.js";
 
-export { branch, branchRelations } from "./branch";
+export { branch, branchRelations } from "./branch.js";
 
-export { product, productRelations } from "./product";
+export { product, productRelations } from "./product.js";
 
-export { branchStock, branchStockRelations } from "./branch-stock";
+export { branchStock, branchStockRelations } from "./branch-stock.js";
 
-export { batch, batchRelations } from "./batch";
+export { batch, batchRelations } from "./batch.js";
 
 export {
   transaction,
   transactionRelations,
   transactionItem,
   transactionItemRelations,
-} from "./transaction";
+} from "./transaction.js";
 
 export {
   transfer,
   transferRelations,
   transferItem,
   transferItemRelations,
-} from "./transfer";
+} from "./transfer.js";
