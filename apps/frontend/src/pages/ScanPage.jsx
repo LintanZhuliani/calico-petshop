@@ -5,8 +5,8 @@ import { apiFetch } from '../lib/api';
 import { formatRupiah, generateId } from '../utils/formatters';
 import { getExpiryStatus, getExpiryColorClass } from '../utils/stockAlerts';
 
-// Lazy load html5-qrcode
 let Html5Qrcode = null;
+let Html5QrcodeSupportedFormats = null;
 
 export default function ScanPage() {
   const location = useLocation();
@@ -42,6 +42,7 @@ export default function ScanPage() {
     // Dynamically import html5-qrcode
     import('html5-qrcode').then(mod => {
       Html5Qrcode = mod.Html5Qrcode || mod.default?.Html5Qrcode;
+      Html5QrcodeSupportedFormats = mod.Html5QrcodeSupportedFormats || mod.default?.Html5QrcodeSupportedFormats;
       setLibLoaded(true);
     }).catch(() => setLibLoaded(false));
     return () => stopScanner();
@@ -81,6 +82,14 @@ export default function ScanPage() {
           {
             fps: 10,
             qrbox: { width: 280, height: 150 }, // Rectangular for 1D Barcodes
+            formatsToSupport: Html5QrcodeSupportedFormats ? [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39
+            ] : undefined,
           },
           (decodedText) => {
             stopScanner();
@@ -218,7 +227,7 @@ export default function ScanPage() {
               <span className={`material-symbols-outlined ${primaryText} !text-[40px]`} style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
             </div>
             <p className="font-bold text-slate-700">Tap untuk mulai scan</p>
-            <p className="text-sm text-slate-400 mt-1">Arahkan kamera ke gambar Barcode pada kemasan</p>
+            <p className="text-sm text-slate-400 mt-1 px-4 text-center">Arahkan kamera ke gambar Barcode pada kemasan</p>
           </div>
         )}
 
@@ -352,7 +361,6 @@ export default function ScanPage() {
             <div className="space-y-1.5">
               {[
                 { icon: 'qr_code_scanner', text: 'Tap area kamera di atas untuk scan otomatis' },
-                { icon: 'barcode_reader', text: 'Gunakan input manual untuk ketik barcode' },
                 { icon: 'lightbulb', text: 'Pastikan cahaya cukup untuk hasil scan optimal' },
               ].map((t, i) => (
                 <div key={i} className="flex items-center gap-2 text-slate-600">
