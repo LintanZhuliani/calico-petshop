@@ -36,11 +36,16 @@ export default function RekapHarianPage() {
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
-    const today = date;
-    apiFetch(`/transactions?date=${today}&branchId=${branchId}`)
-      .then(data => setTransactions(Array.isArray(data) ? data : []))
+    // Fetch all transactions for this branch and filter locally to ensure consistency with Dashboard
+    apiFetch(`/transactions?branchId=${branchId}`)
+      .then(data => {
+        const txs = Array.isArray(data) ? data : [];
+        const todayStrLocal = new Date().toDateString();
+        const todaysTxs = txs.filter(tx => new Date(tx.date).toDateString() === todayStrLocal);
+        setTransactions(todaysTxs);
+      })
       .catch(err => console.error('Failed to load rekap transactions:', err));
-  }, []);
+  }, [branchId]);
 
   const stats = useMemo(() => {
     let grandCash = 0;
@@ -251,18 +256,20 @@ export default function RekapHarianPage() {
           {/* Pengeluaran */}
           <div className="mb-4">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">Daftar Pengeluaran</label>
-            <div className="flex gap-2 mb-3">
-              <input 
-                type="text" placeholder="Nama (Cth: Listrik)" 
-                value={newPengeluaranName} onChange={e => setNewPengeluaranName(e.target.value)}
-                className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm outline-none border border-slate-200 focus:border-red-300"
-              />
-              <input 
-                type="number" placeholder="Nominal" 
-                value={newPengeluaranAmount} onChange={e => setNewPengeluaranAmount(e.target.value)}
-                className="w-28 bg-slate-50 rounded-xl px-3 py-2 text-sm outline-none border border-slate-200 focus:border-red-300"
-              />
-              <button onClick={handleAddPengeluaran} className="bg-red-50 hover:bg-red-100 text-red-600 px-3 rounded-xl font-bold transition-colors">
+            <div className="flex flex-col sm:flex-row gap-2 mb-3">
+              <div className="flex gap-2 flex-1">
+                <input 
+                  type="text" placeholder="Nama (Cth: Listrik)" 
+                  value={newPengeluaranName} onChange={e => setNewPengeluaranName(e.target.value)}
+                  className="flex-1 bg-slate-50 rounded-xl px-3 py-2.5 text-sm outline-none border border-slate-200 focus:border-red-300 min-w-0"
+                />
+                <input 
+                  type="number" placeholder="Nominal" 
+                  value={newPengeluaranAmount} onChange={e => setNewPengeluaranAmount(e.target.value)}
+                  className="w-1/3 bg-slate-50 rounded-xl px-3 py-2.5 text-sm outline-none border border-slate-200 focus:border-red-300 min-w-0"
+                />
+              </div>
+              <button onClick={handleAddPengeluaran} className="w-full sm:w-auto bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-xl font-bold transition-colors shrink-0">
                 Tambah
               </button>
             </div>
