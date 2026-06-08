@@ -59,10 +59,6 @@ router.post("/invite", requireAuth, requireAdmin, async (req, res, next) => {
       }
     });
 
-    if (result.error) {
-      res.status(400).json({ error: result.error.message || "Failed to create user" });
-      return;
-    }
 
     res.status(201).json({ 
       message: "User invited successfully", 
