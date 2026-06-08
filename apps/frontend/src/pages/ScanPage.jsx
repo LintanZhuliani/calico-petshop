@@ -73,7 +73,6 @@ export default function ScanPage() {
         scannerRef.current = new Html5QrcodeScanner(scannerDivId, {
           fps: 10,
           qrbox: { width: 220, height: 220 },
-          videoConstraints: { facingMode: "environment" },
           rememberLastUsedCamera: true,
         }, false);
         scannerRef.current.render(
@@ -209,8 +208,8 @@ export default function ScanPage() {
 
         {/* Scanner Live */}
         {scanning && (
-          <div className="bg-black rounded-3xl overflow-hidden relative">
-            <div id={scannerDivId} className="w-full" />
+          <div className="bg-white rounded-3xl overflow-hidden relative border border-slate-200 p-2 pt-10">
+            <div id={scannerDivId} className="w-full min-h-[300px]" />
             <button
               onClick={stopScanner}
               className="absolute top-3 right-3 bg-black/60 text-white p-2 rounded-xl"

@@ -134,7 +134,7 @@ export default function ProfilePage() {
     <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
       {/* Logout Dialog */}
       {showLogoutDialog && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-6">
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center px-6">
           <div className="bg-white rounded-3xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl">
             <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto">
               <span className="material-symbols-outlined text-red-500 !text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>logout</span>
@@ -225,8 +225,8 @@ export default function ProfilePage() {
 
         {/* Dynamic Modals */}
         {activeModal && activeModal !== 'logout' && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
-            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
+            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pb-12 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
               <div className="flex justify-between items-center mb-5 shrink-0">
                 <h3 className="font-headline font-bold text-slate-900 text-lg">
                   {MENU_ITEMS.find(m => m.id === activeModal)?.label || 'Modal'}
