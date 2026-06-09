@@ -108,6 +108,55 @@ export default function ProfilePage() {
   // We removed mock data. To get accurate counts, it requires a separate API call.
   // For now, we'll keep the menu simple and direct to the Penjualan page.
   const [todayTxCount, setTodayTxCount] = useState(0);
+  const [migrating, setMigrating] = useState(false);
+
+  const handleMigrate = async () => {
+    setMigrating(true);
+    try {
+      const { apiFetch } = await import('../lib/api.js');
+      const local = localStorage.getItem('calico_products');
+      if(!local) {
+        alert("Tidak ada data produk di HP/Browser ini!");
+        return;
+      }
+      const products = JSON.parse(local);
+      let count = 0;
+      for(const p of products) {
+        if(p.id?.startsWith('p00')) continue; // skip default dummy
+        
+        // Create product
+        const newP = await apiFetch('/products', {
+          method: 'POST',
+          body: {
+            name: p.name,
+            category: p.category || "Tanpa Kategori",
+            buyPrice: p.buyPrice || 0,
+            price: p.price || 0,
+            barcode: p.barcode || "",
+            image: p.image || null,
+            imageEmoji: p.imageEmoji || null,
+            minStock: p.minStock || 5
+          }
+        });
+        
+        // Add stock
+        if (p.totalStock > 0 && newP && newP.id) {
+           await apiFetch(`/products/${newP.id}/stock`, {
+             method: 'POST',
+             body: { branchId, qty: p.totalStock, expiredDate: null }
+           });
+        }
+        count++;
+      }
+      alert(`Berhasil migrasi ${count} produk ke Server!`);
+      localStorage.removeItem('calico_products'); // clear it
+      setActiveModal(null);
+    } catch(err) {
+      alert("Error: " + err.message);
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   useEffect(() => {
     // Fetch today's transactions count silently
@@ -126,6 +175,7 @@ export default function ProfilePage() {
     ...(isAdmin ? [
       { id: 'users', icon: 'manage_accounts', label: 'Kelola Karyawan', desc: 'Tambah, edit, atau nonaktifkan akun', color: primaryText },
       { id: 'branches', icon: 'store', label: 'Kelola Cabang', desc: 'Data & konfigurasi semua cabang', color: primaryText },
+      { id: 'migrate', icon: 'cloud_upload', label: 'Migrasi 300 Produk Lokal', desc: 'Pindah data dari HP ke Server', color: 'text-purple-600' },
     ] : []),
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
@@ -248,21 +298,43 @@ export default function ProfilePage() {
                     <div className="relative mt-1">
                       <input type={showOldPass ? "text" : "password"} required value={oldPass} onChange={e => {setOldPass(e.target.value); setPassError("")}} className={`w-full bg-slate-50 border-2 border-transparent focus:border-slate-300 rounded-xl p-3.5 pr-12 outline-none text-slate-800 font-medium tracking-widest`} />
                       <button type="button" onClick={() => setShowOldPass(!showOldPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1">
-                        <span className="material-symbols-outlined !text-[20px]">{showOldPass ? 'visibility_off' : 'visibility'}</span>
+                        <span className="material-symbols-outlined !text-[20px]">{showOldPass ? "visibility_off" : "visibility"}</span>
                       </button>
                     </div>
                   </div>
                   <div>
                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">Sandi Baru</label>
                     <div className="relative mt-1">
-                      <input type={showNewPass ? "text" : "password"} required value={newPass} onChange={e => setNewPass(e.target.value)} className={`w-full bg-slate-50 border-2 border-transparent focus:border-slate-300 rounded-xl p-3.5 pr-12 outline-none text-slate-800 font-medium tracking-widest`} />
+                      <input type={showNewPass ? "text" : "password"} required minLength={8} value={newPass} onChange={e => {setNewPass(e.target.value); setPassError("")}} className={`w-full bg-slate-50 border-2 border-transparent focus:border-[#D35400] rounded-xl p-3.5 pr-12 outline-none text-slate-800 font-medium tracking-widest`} />
                       <button type="button" onClick={() => setShowNewPass(!showNewPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1">
-                        <span className="material-symbols-outlined !text-[20px]">{showNewPass ? 'visibility_off' : 'visibility'}</span>
+                        <span className="material-symbols-outlined !text-[20px]">{showNewPass ? "visibility_off" : "visibility"}</span>
                       </button>
                     </div>
                   </div>
-                  <button type="submit" className={`w-full py-4 ${primaryBg} text-white font-bold rounded-xl mt-2 active:scale-95 transition-transform shrink-0`}>Simpan Sandi Baru</button>
+                  <button type="submit" className={`w-full py-4 mt-2 ${primaryBg} text-white font-bold rounded-2xl shadow-md active:scale-95 transition-all text-sm tracking-wide flex items-center justify-center gap-2`}>
+                    <span className="material-symbols-outlined !text-[18px]">key</span>
+                    Simpan Sandi Baru
+                  </button>
                 </form>
+              )}
+
+              {activeModal === 'migrate' && (
+                <div className="space-y-4 text-center">
+                  <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto">
+                    <span className="material-symbols-outlined text-purple-600 !text-[32px]">cloud_upload</span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-lg">Migrasi Produk</h3>
+                  <p className="text-sm text-slate-500">
+                    Sistem akan memindahkan semua produk yang pernah kamu ketik manual di HP/Browser ini (dari database lokal lama) ke Server Neon yang baru.
+                  </p>
+                  <button 
+                    onClick={handleMigrate}
+                    disabled={migrating}
+                    className="w-full py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 text-white font-bold rounded-2xl active:scale-95 transition-all mt-4"
+                  >
+                    {migrating ? 'Sedang Memindahkan Data...' : 'Mulai Migrasi Sekarang'}
+                  </button>
+                </div>
               )}
 
               {activeModal === 'users' && (

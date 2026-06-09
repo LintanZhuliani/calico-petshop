@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "bcryptjs": "^3.0.3",
     "better-auth": "^1.2.7",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.5",
