@@ -199,11 +199,37 @@ export default function PenjualanPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40">
-        <h1 className={`font-headline font-extrabold text-xl mb-3 ${primaryText}`}></h1>
+      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          {/* Burger Menu Button for Desktop */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+            className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+          >
+            <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
+          </button>
+          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan</h1>
+        </div>
         
         {isAdmin && (
           <div className="flex gap-2">
@@ -220,7 +246,7 @@ export default function PenjualanPage() {
         )}
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
+      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full">
 
         {/* Navigasi Tanggal/Bulan/Tahun */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between">

@@ -237,15 +237,42 @@ export default function TransferPage() {
     : [{ key: 'incoming', label: `Masuk (${incomingTransfers.length})`, icon: 'move_to_inbox' }, { key: 'list', label: 'Riwayat', icon: 'history' }];
 
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
+  return (
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       {toast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl">
           {toast}
         </div>
       )}
 
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-0 text-center">
-        <h1 className={`font-headline font-extrabold text-xl ${primaryText} mb-3`}>Transfer Barang</h1>
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-0 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          {/* Burger Menu Button for Desktop */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+            className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+          >
+            <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
+          </button>
+          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Transfer Barang</h1>
+        </div>
         {/* Tabs */}
         <div className="flex border-b border-slate-100 -mx-5 px-5 gap-1">
           {TABS.map(tab => (
@@ -258,7 +285,7 @@ export default function TransferPage() {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
+      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full">
 
         {/* ── ADMIN: Form Buat Mutasi ── */}
         {activeTab === 'new' && isAdmin && (

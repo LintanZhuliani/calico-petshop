@@ -100,6 +100,21 @@ export default function DashboardPage() {
       .catch(err => console.error('Transfers error:', err));
   }, []);
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   const primary = isAdmin ? '#EA580C' : '#DC2626'; // Tailwind orange-600 / red-600
   const primaryText = isAdmin ? 'text-orange-600' : 'text-red-600';
   const primaryBg = isAdmin ? 'bg-orange-600' : 'bg-red-600';
@@ -114,11 +129,19 @@ export default function DashboardPage() {
   const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       {/* ── Header ── */}
       <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex justify-between items-center">
-        <div>
-          {/* Badge mode telah dihapus atas permintaan user */}
+        <div className="flex items-center gap-3">
+          {/* Burger Menu Button for Desktop */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+            className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+          >
+            <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
+          </button>
         </div>
         <button 
           onClick={() => navigate('/notifikasi', { state: { ...location.state, lowStock, expiring } })}
@@ -131,7 +154,7 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      <main className="px-5 py-5 space-y-6 max-w-xl md:max-w-6xl mx-auto w-full md:pl-64">
+      <main className="px-5 py-5 space-y-6 max-w-xl md:max-w-6xl mx-auto w-full">
         {/* ── Greeting ── */}
         <section className="text-center md:text-left md:mt-4">
           <h1 className={`text-2xl md:text-3xl font-extrabold font-headline ${primaryText} leading-tight`}>

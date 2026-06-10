@@ -183,8 +183,25 @@ export default function ProfilePage() {
     { id: 'help', icon: 'help', label: 'Bantuan & Panduan', desc: 'Cara pakai aplikasi', color: primaryText },
   ];
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       {/* Logout Dialog */}
       {showLogoutDialog && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center px-6">
@@ -210,8 +227,15 @@ export default function ProfilePage() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 px-5 pb-0 pt-4 sticky top-0 z-40">
-        <h1 className={`font-headline font-extrabold text-xl mb-3 ${primaryText}`}></h1>
+      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex items-center gap-3">
+        {/* Burger Menu Button for Desktop */}
+        <button
+          onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+          className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+        >
+          <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
+        </button>
+        <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Profil</h1>
       </header>
 
       <main className="px-5 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">

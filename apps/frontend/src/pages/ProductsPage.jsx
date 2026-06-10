@@ -926,8 +926,8 @@ export default function ProductsPage() {
             </div>
           </header>
 
-          {/* ── Product Grid ── */}
-          <main className="px-4 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full max-w-none mx-auto">
+          {/* ── Product Grid (1 column per line layout as requested) ── */}
+          <main className="px-4 py-4 grid grid-cols-1 gap-3 w-full max-w-xl md:max-w-5xl mx-auto">
             {isLoading ? (
               <div className="col-span-full flex flex-col items-center justify-center py-20">
                 <div className={`w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin`}></div>
