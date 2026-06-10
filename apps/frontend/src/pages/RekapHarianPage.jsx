@@ -196,9 +196,32 @@ export default function RekapHarianPage() {
     alert("Laporan berhasil disalin ke clipboard!");
   };
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-24 font-body">
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       <header className="bg-white border-b border-slate-100 px-5 py-4 sticky top-0 z-40 flex items-center gap-3">
+        <button
+          onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+          className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+        >
+          <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
+        </button>
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-50 border border-slate-100 active:scale-95 transition-all">
           <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
         </button>
@@ -208,7 +231,7 @@ export default function RekapHarianPage() {
         </div>
       </header>
 
-      <main className="px-4 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
+      <main className="px-4 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full">
         
         {/* STEP 1: Ringkasan Sistem */}
         <section className="bg-slate-800 text-white p-5 rounded-2xl shadow-sm">

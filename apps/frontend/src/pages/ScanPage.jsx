@@ -184,6 +184,21 @@ export default function ScanPage() {
     }
   };
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   const totalStock = scanResult ? (scanResult.totalStock || 0) : 0;
   const expiryStatus = scanResult?.batches?.length > 0
     ? getExpiryStatus([...scanResult.batches].sort((a, b) => a.expiredDate && b.expiredDate ? new Date(a.expiredDate) - new Date(b.expiredDate) : 0)[0]?.expiredDate)
@@ -191,7 +206,9 @@ export default function ScanPage() {
   const expiryColors = getExpiryColorClass(expiryStatus);
 
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       {/* Toast */}
       {toast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl">
@@ -200,12 +217,23 @@ export default function ScanPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 text-center">
-        <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
-        <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between text-left">
+        <div className="flex items-center gap-3">
+          {/* Burger Menu Button for Desktop */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+            className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+          >
+            <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
+          </button>
+          <div>
+            <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>
+          </div>
+        </div>
       </header>
 
-      <main className="px-5 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
+      <main className="px-5 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full">
         {/* Mode Toggle (khusus admin dapat restock mode) */}
         {isAdmin && (
           <div className="bg-slate-100 p-1 rounded-2xl flex">
