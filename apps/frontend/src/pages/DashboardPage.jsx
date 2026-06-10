@@ -35,6 +35,10 @@ export default function DashboardPage() {
   const [lowStockCount, setLowStockCount] = useState(cachedStats.lowStockCount || 0);
   const [inTransitCount, setInTransitCount] = useState(cachedStats.inTransitCount || 0);
 
+  const [chartHeights, setChartHeights] = useState([0,0,0,0,0,0,0]);
+  const [chartLabels, setChartLabels] = useState(['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']);
+  const [chartValues, setChartValues] = useState([0,0,0,0,0,0,0]);
+
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const branch = branchId;
@@ -81,8 +85,8 @@ export default function DashboardPage() {
       })
       .catch(err => console.error('Products error:', err));
 
-    // Fetch expiring batches
-    apiFetch(`/products/alerts/expiring?branchId=${branch}&days=90`)
+    // Fetch expiring batches (within 60 days)
+    apiFetch(`/products/alerts/expiring?branchId=${branch}&days=60`)
       .then(data => setExpiring(data || []))
       .catch(err => console.error('Expiring error:', err));
 
@@ -98,7 +102,37 @@ export default function DashboardPage() {
         localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, inTransitCount: inTransit }));
       })
       .catch(err => console.error('Transfers error:', err));
-  }, []);
+
+    // Fetch last 7 days of transactions for the chart
+    apiFetch(`/transactions?branchId=${branch}`)
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        
+        const last7Days = Array.from({length: 7}).map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (6 - i));
+          return {
+            dateStr: d.toISOString().split('T')[0],
+            label: d.toLocaleDateString('id-ID', { weekday: 'short' }),
+            total: 0
+          };
+        });
+
+        data.forEach(tx => {
+          const txDate = new Date(tx.date).toISOString().split('T')[0];
+          const dayIndex = last7Days.findIndex(d => d.dateStr === txDate);
+          if (dayIndex !== -1) {
+            last7Days[dayIndex].total += isAdmin ? tx.total : 1;
+          }
+        });
+
+        const maxVal = Math.max(...last7Days.map(d => d.total), 1);
+        setChartHeights(last7Days.map(d => (d.total / maxVal) * 100));
+        setChartLabels(last7Days.map(d => d.label));
+        setChartValues(last7Days.map(d => d.total));
+      })
+      .catch(err => console.error('Chart error:', err));
+  }, [branchId, isAdmin, cacheKey]);
 
   // Track sidebar toggle state dynamically
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -238,14 +272,18 @@ export default function DashboardPage() {
             </span>
           </div>
           
-          {/* Chart Graphic Dummy */}
-          <div className="flex items-end justify-between h-32 md:h-48 mt-6 gap-2 border-b border-slate-100 pb-2">
-            {[40, 70, 45, 90, 60, 85, 55].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 relative h-full">
+          {/* Chart Graphic Dynamic */}
+          <div className="flex items-end justify-between h-32 md:h-48 mt-6 gap-2 border-b border-slate-100 pb-2 relative">
+            {chartHeights.map((h, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 relative h-full group">
+                {/* Tooltip value */}
+                <div className="absolute -top-8 bg-slate-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                  {isAdmin ? formatRupiah(chartValues[i]) : `${chartValues[i]} Tx`}
+                </div>
                 <div className={`w-full rounded-t-lg transition-all duration-500 hover:opacity-80 cursor-pointer ${i === 6 ? primaryBg : (isAdmin ? 'bg-orange-100' : 'bg-red-100')}`} style={{ height: `${h}%` }}>
                 </div>
                 <span className="text-[10px] md:text-xs font-bold text-slate-400">
-                  {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'][i]}
+                  {chartLabels[i]}
                 </span>
               </div>
             ))}
