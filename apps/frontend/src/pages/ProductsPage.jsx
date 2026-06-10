@@ -827,11 +827,29 @@ export default function ProductsPage() {
     }
   };
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
   const uniqueCats = ['Semua', ...new Set(products.map(p => p.category))];
+
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col font-body pb-20 md:pb-0 md:pl-64">
+    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col font-body pb-20 md:pb-0 transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
       {/* ── Toast ── */}
       {toastMsg && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease]">
@@ -839,35 +857,47 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Main layout wrapper: splitscreen on desktop for Cashier */}
-      <div className="flex flex-col flex-1 w-full md:flex-row min-h-screen">
+      {/* Main layout wrapper: splitscreen on desktop has been removed to allow full width as requested */}
+      <div className="flex flex-col flex-1 w-full min-h-screen">
         
-        {/* Left side: Search, Filters, Product Grid */}
-        <div className="flex-1 flex flex-col md:pr-[380px] lg:pr-[420px] shrink-0 w-full md:w-auto">
+        {/* Full-width container: Search, Filters, Product Grid */}
+        <div className="flex-1 flex flex-col shrink-0 w-full">
           {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3">
-            <div className="flex justify-between items-center mb-3">
-              <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
-                {isAdmin ? 'Produk (Admin)' : 'Kasir POS'}
-              </h1>
-              {isAdmin && (
-                <button onClick={() => setAddProductOpen(true)}
-                  className={`flex items-center gap-1.5 ${primaryBg} text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all`}>
-                  <span className="material-symbols-outlined !text-[18px]">add</span>
-                  Tambah
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3 flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                {/* Burger Menu Button for Desktop */}
+                <button
+                  onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
+                  className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
                 </button>
-              )}
-              {/* Show mobile cart button only on mobile screens */}
-              {!isAdmin && cartCount > 0 && (
-                <button onClick={() => setCartOpen(true)}
-                  className="relative flex items-center gap-1.5 bg-[#C0392B] text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all md:hidden">
-                  <span className="material-symbols-outlined !text-[18px]">shopping_cart</span>
-                  Keranjang
-                  <span className="absolute -top-2 -right-2 bg-white text-[#C0392B] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#C0392B]">
-                    {cartCount}
-                  </span>
-                </button>
-              )}
+                <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
+                  {isAdmin ? 'Produk (Admin)' : 'Kasir POS'}
+                </h1>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button onClick={() => setAddProductOpen(true)}
+                    className={`flex items-center gap-1.5 ${primaryBg} text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all`}>
+                    <span className="material-symbols-outlined !text-[18px]">add</span>
+                    Tambah
+                  </button>
+                )}
+                {/* Cart Button visible on both mobile and desktop (since POS Cart aside is removed) */}
+                {!isAdmin && cartCount > 0 && (
+                  <button onClick={() => setCartOpen(true)}
+                    className="relative flex items-center gap-1.5 bg-[#C0392B] text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all">
+                    <span className="material-symbols-outlined !text-[18px]">shopping_cart</span>
+                    Keranjang
+                    <span className="absolute -top-2 -right-2 bg-white text-[#C0392B] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#C0392B]">
+                      {cartCount}
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
             {/* Search */}
             <div className="relative">
@@ -897,7 +927,7 @@ export default function ProductsPage() {
           </header>
 
           {/* ── Product Grid ── */}
-          <main className="px-4 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-xl sm:max-w-4xl lg:max-w-none mx-auto">
+          <main className="px-4 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full max-w-none mx-auto">
             {isLoading ? (
               <div className="col-span-full flex flex-col items-center justify-center py-20">
                 <div className={`w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin`}></div>
@@ -974,84 +1004,13 @@ export default function ProductsPage() {
             })}
           </main>
         </div>
-
-        {/* Right side POS Cart (Permanently visible on Desktop screens, hidden on Mobile) */}
-        {!isAdmin && (
-          <aside className="hidden md:flex md:w-[380px] lg:w-[420px] md:fixed md:right-0 md:top-0 md:h-screen bg-white border-l border-slate-100 flex-col z-30">
-            {/* Header */}
-            <div className="p-6 border-b border-slate-100 shrink-0 flex items-center justify-between">
-              <h2 className="font-headline font-bold text-xl text-slate-900 flex items-center gap-2">
-                <span className="material-symbols-outlined text-slate-700 text-2xl">shopping_cart</span>
-                Keranjang POS
-              </h2>
-              <span className="bg-red-50 text-[#C0392B] text-xs font-bold px-2.5 py-1 rounded-full">
-                {cartCount} item
-              </span>
-            </div>
-
-            {/* List */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
-                  <span className="material-symbols-outlined text-4xl mb-2">shopping_basket</span>
-                  <p className="font-medium text-sm">Keranjang kosong</p>
-                  <p className="text-xs text-center px-6 mt-1">Ketuk produk pada daftar di sebelah kiri untuk memasukkan ke keranjang</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {cart.map(item => (
-                    <div key={item.id} className="flex items-center justify-between bg-slate-50 rounded-xl p-3 border border-slate-100">
-                      <div>
-                        <p className="font-semibold text-sm text-slate-800">{item.name}</p>
-                        <p className="text-xs text-slate-500">{formatRupiah(item.price)} / unit</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setCart(prev => prev.map(i => i.id === item.id ? { ...i, qty: Math.max(1, i.qty - 1) } : i))}
-                          className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center font-bold text-slate-700 active:scale-95"
-                        >-</button>
-                        <span className="w-6 text-center font-bold text-slate-900">{item.qty}</span>
-                        <button
-                          onClick={() => setCart(prev => prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i))}
-                          className="w-8 h-8 rounded-lg bg-[#C0392B] flex items-center justify-center font-bold text-white active:scale-95"
-                        >+</button>
-                        <button
-                          onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))}
-                          className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center active:scale-95"
-                        >
-                          <span className="material-symbols-outlined text-red-500 !text-[16px]">delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            {cart.length > 0 && (
-              <div className="p-6 border-t border-slate-100 space-y-4 bg-slate-50 shrink-0">
-                <div className="flex justify-between font-bold text-slate-900 text-sm">
-                  <span>Total Transaksi</span>
-                  <span className="text-[#C0392B] text-xl font-extrabold">{formatRupiah(cartTotal)}</span>
-                </div>
-                <button
-                  onClick={() => setCheckoutOpen(true)}
-                  className="w-full py-4 bg-[#C0392B] text-white font-bold rounded-2xl hover:bg-[#A93226] active:scale-[0.98] transition-all text-base shadow-lg shadow-red-200"
-                >
-                  Bayar Sekarang →
-                </button>
-              </div>
-            )}
-          </aside>
-        )}
       </div>
 
-      {/* ── Kasir: Cart Bottom Sheet (Mobile view only) ── */}
+      {/* ── Kasir: Cart Bottom Sheet (Visible on both mobile & desktop) ── */}
       {!isAdmin && cartOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end md:hidden" onClick={e => { if (e.target === e.currentTarget) setCartOpen(false); }}>
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end justify-center" onClick={e => { if (e.target === e.currentTarget) setCartOpen(false); }}>
           {/* Sheet ── flex column agar footer tidak ikut scroll */}
-          <div className="bg-white w-full rounded-t-3xl flex flex-col" style={{ maxHeight: '80dvh' }}>
+          <div className="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style={{ maxHeight: '80dvh' }}>
 
             {/* ── Header ── */}
             <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
@@ -1115,11 +1074,11 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* ── Kasir: Floating Cart Button (Mobile view only) ── */}
+      {/* ── Kasir: Floating Cart Button (Visible on both mobile & desktop) ── */}
       {!isAdmin && cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-20 right-5 z-40 bg-[#C0392B] text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2 font-bold active:scale-95 transition-all md:hidden">
+          className="fixed bottom-20 right-5 z-40 bg-[#C0392B] text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2 font-bold active:scale-95 transition-all">
           <span className="material-symbols-outlined !text-[20px]">shopping_cart</span>
           {cartCount} item · {formatRupiah(cartTotal)}
         </button>
@@ -1135,3 +1094,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+
