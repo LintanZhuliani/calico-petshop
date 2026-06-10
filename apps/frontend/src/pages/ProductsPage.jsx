@@ -950,26 +950,26 @@ export default function ProductsPage() {
                   onClick={() => !isAdmin && handleAddToCart(p)}
                 >
                   <div className="flex items-center gap-3 p-4">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
+                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
                       {p.image ? (
                         <img src={p.image} className="w-full h-full object-cover" alt={p.name} />
                       ) : p.imageEmoji ? (
-                        <span className={`material-symbols-outlined !text-[28px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                        <span className={`material-symbols-outlined !text-[28px] md:!text-[32px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                           {p.imageEmoji}
                         </span>
                       ) : (
-                        <span className="material-symbols-outlined !text-[28px] text-slate-400">inventory_2</span>
+                        <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">inventory_2</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-semibold text-slate-900 text-sm leading-tight truncate">{p.name}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-semibold text-slate-900 text-sm md:text-base leading-tight truncate">{p.name}</p>
                         <StockBadge total={total} min={p.minStock} />
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5">{p.category}</p>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className={`font-bold text-sm ${primaryText}`}>{formatRupiah(p.price)}</span>
-                        <span className="text-xs text-slate-500 font-medium">{total} unit</span>
+                      <div className="flex items-baseline justify-between mt-1.5 gap-2">
+                        <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
+                        <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit</span>
                       </div>
                     </div>
                   </div>
