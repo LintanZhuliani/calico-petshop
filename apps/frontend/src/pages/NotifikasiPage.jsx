@@ -137,7 +137,7 @@ export default function NotifikasiPage() {
                 </div>
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
-                  {expiredItems.map(({ product, batch }, i) => (
+                  {expiredItems.map(({ product, batch, sessionIndex }, i) => (
                     <div key={`expd-${i}`} className="p-4 flex gap-4 hover:bg-slate-50 transition-colors">
                       <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm">
                         <span className="material-symbols-outlined !text-[24px]">dangerous</span>
@@ -149,7 +149,7 @@ export default function NotifikasiPage() {
                             Kadaluarsa: <strong className="text-slate-900">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
                           </span>
                           <span className="text-slate-400">
-                            Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong>
+                            Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong> <span className="italic">(Sesi {sessionIndex})</span>
                           </span>
                         </div>
                       </div>
@@ -185,12 +185,6 @@ export default function NotifikasiPage() {
                             Stok saat ini: <strong className="text-red-600">0 unit</strong>
                           </span>
                         </div>
-                        <button 
-                          onClick={() => navigate('/products', { state: location.state })}
-                          className={`mt-2 text-[11px] font-bold ${primaryText} hover:underline`}
-                        >
-                          Restock di Manajemen Produk →
-                        </button>
                       </div>
                     </div>
                   ))}
@@ -212,7 +206,7 @@ export default function NotifikasiPage() {
                 </div>
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
-                  {expiringSoonItems.map(({ product, batch, daysLeft }, i) => (
+                  {expiringSoonItems.map(({ product, batch, daysLeft, sessionIndex }, i) => (
                     <div key={`exp-${i}`} className="p-4 flex gap-4 hover:bg-slate-50 transition-colors">
                       <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-orange-500 !text-[24px]">event_busy</span>
@@ -227,7 +221,7 @@ export default function NotifikasiPage() {
                             Sisa {daysLeft} hari lagi
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span></p>
+                        <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> <span className="italic">(Sesi {sessionIndex})</span></p>
                       </div>
                     </div>
                   ))}

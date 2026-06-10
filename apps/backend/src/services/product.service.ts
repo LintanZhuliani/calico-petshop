@@ -417,6 +417,9 @@ export const productService = {
         .from(batch)
         .where(eq(batch.branchStockId, bs.id));
 
+      // Sort batches to compute sessionIndex consistently
+      batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
       // Get product info
       const prodResult = await db
         .select()
@@ -424,8 +427,8 @@ export const productService = {
         .where(eq(product.id, bs.productId));
       const prod = prodResult[0];
 
-      for (const b of batches) {
-        if (!b.expiredDate) continue;
+      batches.forEach((b, index) => {
+        if (!b.expiredDate) return;
         const days = daysUntilExpiry(b.expiredDate);
         if (days <= withinDays) {
           alerts.push({
@@ -433,9 +436,10 @@ export const productService = {
             batch: b,
             branchId: bs.branchId,
             daysLeft: days,
+            sessionIndex: index + 1,
           });
         }
-      }
+      });
     }
 
     return alerts.sort((a, b) => a.daysLeft - b.daysLeft);
