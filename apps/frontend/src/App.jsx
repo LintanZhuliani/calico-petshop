@@ -10,7 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import PenjualanPage from "./pages/PenjualanPage";
 
 import RekapHarianPage from "./pages/RekapHarianPage";
-
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotifikasiPage from "./pages/NotifikasiPage";
 
 export default function App() {
@@ -26,6 +26,7 @@ export default function App() {
         <Route path="/transfer" element={<TransferPage />} />
         <Route path="/penjualan" element={<PenjualanPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/notifikasi" element={<NotifikasiPage />} />
         <Route path="/rekap" element={<RekapHarianPage />} />
       </Routes>

@@ -11,7 +11,33 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [forgotError, setForgotError] = useState("");
   const navigate = useNavigate();
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError("");
+    setForgotMessage("");
+    try {
+      const { error } = await authClient.forgetPassword({
+        email: forgotEmail.toLowerCase(),
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        setForgotError(error.message || "Gagal mengirim link reset password");
+      } else {
+        setForgotMessage("Link reset password berhasil dikirim! Silakan periksa kotak masuk atau folder spam di email Anda.");
+      }
+    } catch (err) {
+      setForgotError("Terjadi kesalahan sistem.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -245,6 +271,12 @@ export default function LoginPage() {
       {showForgotDialog && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center px-6 transition-all duration-300">
           <div className="bg-white rounded-[32px] p-8 w-full max-w-sm text-center space-y-5 shadow-2xl relative">
+            <button 
+              onClick={() => setShowForgotDialog(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full"
+            >
+              <span className="material-symbols-outlined !text-[20px]">close</span>
+            </button>
             <div className="w-16 h-16 bg-orange-50 rounded-[20px] flex items-center justify-center mx-auto">
               <span className="material-symbols-outlined text-orange-500 !text-[32px]" data-icon="lock_reset">
                 lock_reset
@@ -253,15 +285,45 @@ export default function LoginPage() {
             <div>
               <h3 className="font-headline font-extrabold text-slate-900 text-xl">Lupa Password?</h3>
               <p className="text-sm text-slate-500 mt-2 font-medium leading-relaxed">
-                Untuk menjaga keamanan sistem, silakan hubungi <strong>Pemilik Toko</strong> atau <strong>Tim IT Support (Developer)</strong> untuk bantuan pemulihan password Anda.
+                Masukkan email Anda yang terdaftar. Kami akan mengirimkan link untuk mereset sandi Anda.
               </p>
             </div>
-            <button 
-              onClick={() => setShowForgotDialog(false)} 
-              className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-[16px] active:scale-95 transition-all"
-            >
-              Mengerti, Tutup
-            </button>
+            {forgotMessage && (
+              <div className="bg-green-50 text-green-700 p-3 text-sm rounded-xl border border-green-200">
+                {forgotMessage}
+              </div>
+            )}
+            {forgotError && (
+              <div className="bg-red-50 text-red-600 p-3 text-sm rounded-xl border border-red-200">
+                {forgotError}
+              </div>
+            )}
+            {!forgotMessage && (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <input 
+                  type="email" 
+                  required 
+                  placeholder="Masukkan Email Anda"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-xl p-3.5 outline-none text-slate-800 font-medium"
+                />
+                <button 
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full py-3.5 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-400 text-white font-bold rounded-[16px] active:scale-95 transition-all flex justify-center items-center gap-2"
+                >
+                  {forgotLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined !text-[18px]">send</span>
+                      Kirim Link Reset
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

@@ -21,11 +21,13 @@
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",
     "express": "^5.1.0",
+    "nodemailer": "^8.0.11",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.2",
+    "@types/nodemailer": "^8.0.0",
     "drizzle-kit": "^0.30.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
