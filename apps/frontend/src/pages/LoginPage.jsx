@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -212,12 +213,13 @@ export default function LoginPage() {
 
             {/* Lupa Password */}
             <div className="flex justify-end pt-1 pb-1">
-              <a
-                className="text-[13px] font-bold text-[#992900] hover:text-[#c73500] transition-colors"
-                href="#"
+              <button
+                type="button"
+                onClick={() => setShowForgotDialog(true)}
+                className="text-[13px] font-bold text-[#992900] hover:text-[#c73500] transition-colors bg-transparent border-none p-0 cursor-pointer"
               >
                 Lupa Password?
-              </a>
+              </button>
             </div>
 
             {/* Submit Button */}
@@ -233,13 +235,36 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Footer Help */}
-        <div className="text-center mt-2">
-          <p className="text-slate-500 text-[13px] font-medium">
-            Sistem tertutup. Hubungi Admin untuk pendaftaran akun.
-          </p>
-        </div>
+        {/* Footer info */}
+        <p className="text-slate-400 text-xs font-medium text-center z-10 relative">
+          Sistem POS Khusus Karyawan<br/>© 2026 Calico's Pet Care
+        </p>
       </main>
+
+      {/* Lupa Password Dialog */}
+      {showForgotDialog && (
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center px-6 transition-all duration-300">
+          <div className="bg-white rounded-[32px] p-8 w-full max-w-sm text-center space-y-5 shadow-2xl relative">
+            <div className="w-16 h-16 bg-orange-50 rounded-[20px] flex items-center justify-center mx-auto">
+              <span className="material-symbols-outlined text-orange-500 !text-[32px]" data-icon="lock_reset">
+                lock_reset
+              </span>
+            </div>
+            <div>
+              <h3 className="font-headline font-extrabold text-slate-900 text-xl">Lupa Password?</h3>
+              <p className="text-sm text-slate-500 mt-2 font-medium leading-relaxed">
+                Untuk menjaga keamanan sistem kasir, silakan hubungi <strong>Admin/Pemilik Toko</strong> secara langsung agar mereka dapat mereset password akun Anda.
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowForgotDialog(false)} 
+              className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-[16px] active:scale-95 transition-all"
+            >
+              Mengerti, Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
