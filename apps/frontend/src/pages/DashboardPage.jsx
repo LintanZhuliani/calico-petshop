@@ -131,10 +131,10 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      <main className="px-5 py-5 space-y-6 max-w-xl mx-auto w-full">
+      <main className="px-5 py-5 space-y-6 max-w-xl md:max-w-6xl mx-auto w-full md:pl-64">
         {/* ── Greeting ── */}
-        <section className="text-center">
-          <h1 className={`text-2xl font-extrabold font-headline ${primaryText} leading-tight`}>
+        <section className="text-center md:text-left md:mt-4">
+          <h1 className={`text-2xl md:text-3xl font-extrabold font-headline ${primaryText} leading-tight`}>
             {shopName}
           </h1>
         </section>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
           {!isAdmin && (
             <button 
               onClick={() => navigate('/rekap', { state: location.state })}
-              className={`border ${primaryBorder} rounded-2xl px-5 py-4 flex items-center justify-between bg-white shadow-sm active:scale-[0.98] transition-all cursor-pointer`}
+              className={`border ${primaryBorder} rounded-2xl px-5 py-4 flex items-center justify-between bg-white shadow-sm active:scale-[0.98] transition-all cursor-pointer md:max-w-xs`}
             >
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full ${primaryLight} flex items-center justify-center`}>
@@ -161,9 +161,9 @@ export default function DashboardPage() {
 
 
         {/* ── Stat Cards ── */}
-        <section className="grid grid-cols-2 gap-3">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Card 1 */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[108px]">
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02]">
             <span className={`material-symbols-outlined ${primaryText} !text-[28px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
               {isAdmin ? 'payments' : 'receipt_long'}
             </span>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 2 */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[108px]">
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02]">
             <span className={`material-symbols-outlined ${primaryText} !text-[28px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
               sell
             </span>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 3 — Stok Kritis */}
-          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] ${lowStock.length > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-100'}`}>
+          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${lowStock.length > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-100'}`}>
             <span className={`material-symbols-outlined !text-[28px] ${lowStock.length > 0 ? 'text-red-500' : 'text-slate-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
               warning
             </span>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 4 — Transfer Transit */}
-          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] ${inTransitCount > 0 ? 'bg-blue-50 border-blue-100' : 'bg-white border-slate-100'}`}>
+          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${inTransitCount > 0 ? 'bg-blue-50 border-blue-100' : 'bg-white border-slate-100'}`}>
             <span className={`material-symbols-outlined !text-[28px] ${inTransitCount > 0 ? 'text-blue-500' : 'text-slate-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
               local_shipping
             </span>
@@ -211,11 +211,11 @@ export default function DashboardPage() {
         </section>
 
         {/* ── Mini Chart ── */}
-        <section className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+        <section className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm md:p-8">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
               <span className={`material-symbols-outlined ${primaryText} !text-[22px]`}>monitoring</span>
-              <h3 className="font-headline font-bold text-slate-800">{isAdmin ? 'Tren Pendapatan' : 'Volume Penjualan'}</h3>
+              <h3 className="font-headline font-bold text-slate-800 text-base md:text-lg">{isAdmin ? 'Tren Pendapatan' : 'Volume Penjualan'}</h3>
             </div>
             <span className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-md ${primaryLight} ${primaryLightText}`}>
               Minggu Ini
@@ -223,12 +223,12 @@ export default function DashboardPage() {
           </div>
           
           {/* Chart Graphic Dummy */}
-          <div className="flex items-end justify-between h-32 mt-6 gap-2 border-b border-slate-100 pb-2">
+          <div className="flex items-end justify-between h-32 md:h-48 mt-6 gap-2 border-b border-slate-100 pb-2">
             {[40, 70, 45, 90, 60, 85, 55].map((h, i) => (
               <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 relative h-full">
                 <div className={`w-full rounded-t-lg transition-all duration-500 hover:opacity-80 cursor-pointer ${i === 6 ? primaryBg : (isAdmin ? 'bg-orange-100' : 'bg-red-100')}`} style={{ height: `${h}%` }}>
                 </div>
-                <span className="text-[10px] font-bold text-slate-400">
+                <span className="text-[10px] md:text-xs font-bold text-slate-400">
                   {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'][i]}
                 </span>
               </div>

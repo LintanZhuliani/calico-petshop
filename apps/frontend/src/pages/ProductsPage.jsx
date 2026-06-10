@@ -830,9 +830,8 @@ export default function ProductsPage() {
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
   const uniqueCats = ['Semua', ...new Set(products.map(p => p.category))];
-
   return (
-    <div className="bg-[#F8F9FA] min-h-screen flex flex-col pb-20 font-body">
+    <div className="bg-[#F8F9FA] min-h-screen flex flex-col font-body pb-20 md:pb-0 md:pl-64">
       {/* ── Toast ── */}
       {toastMsg && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl animate-[fadeIn_0.2s_ease]">
@@ -840,142 +839,221 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3">
-        <div className="flex justify-between items-center mb-3">
-          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
-            
-          </h1>
-          {isAdmin && (
-            <button onClick={() => setAddProductOpen(true)}
-              className={`flex items-center gap-1.5 ${primaryBg} text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all`}>
-              <span className="material-symbols-outlined !text-[18px]">add</span>
-              Tambah
-            </button>
-          )}
-          {!isAdmin && cartCount > 0 && (
-            <button onClick={() => setCartOpen(true)}
-              className="relative flex items-center gap-1.5 bg-[#C0392B] text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all">
-              <span className="material-symbols-outlined !text-[18px]">shopping_cart</span>
-              Keranjang
-              <span className="absolute -top-2 -right-2 bg-white text-[#C0392B] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#C0392B]">
-                {cartCount}
-              </span>
-            </button>
-          )}
-        </div>
-        {/* Search */}
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 !text-[20px]">search</span>
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Cari nama produk atau barcode..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-2 border-transparent focus:border-orange-300 rounded-xl text-sm text-slate-700 outline-none transition-all"
-          />
-        </div>
-        {/* Filter Chips */}
-        <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
-          {['Semua', 'Kritis', 'Habis'].map(s => (
-            <button key={s} onClick={() => setFilterStatus(s)}
-              className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-              {s}
-            </button>
-          ))}
-          <div className="w-px bg-slate-200 my-1" />
-          {uniqueCats.map(c => (
-            <button key={c} onClick={() => setFilterCat(c)}
-              className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-              {c}
-            </button>
-          ))}
-        </div>
-      </header>
+      {/* Main layout wrapper: splitscreen on desktop for Cashier */}
+      <div className="flex flex-col flex-1 w-full md:flex-row min-h-screen">
+        
+        {/* Left side: Search, Filters, Product Grid */}
+        <div className="flex-1 flex flex-col md:pr-[380px] lg:pr-[420px] shrink-0 w-full md:w-auto">
+          {/* ── Header ── */}
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3">
+            <div className="flex justify-between items-center mb-3">
+              <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
+                {isAdmin ? 'Produk (Admin)' : 'Kasir POS'}
+              </h1>
+              {isAdmin && (
+                <button onClick={() => setAddProductOpen(true)}
+                  className={`flex items-center gap-1.5 ${primaryBg} text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all`}>
+                  <span className="material-symbols-outlined !text-[18px]">add</span>
+                  Tambah
+                </button>
+              )}
+              {/* Show mobile cart button only on mobile screens */}
+              {!isAdmin && cartCount > 0 && (
+                <button onClick={() => setCartOpen(true)}
+                  className="relative flex items-center gap-1.5 bg-[#C0392B] text-white text-sm font-bold px-3 py-2 rounded-xl active:scale-95 transition-all md:hidden">
+                  <span className="material-symbols-outlined !text-[18px]">shopping_cart</span>
+                  Keranjang
+                  <span className="absolute -top-2 -right-2 bg-white text-[#C0392B] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#C0392B]">
+                    {cartCount}
+                  </span>
+                </button>
+              )}
+            </div>
+            {/* Search */}
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 !text-[20px]">search</span>
+              <input
+                value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Cari nama produk atau barcode..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-2 border-transparent focus:border-orange-300 rounded-xl text-sm text-slate-700 outline-none transition-all"
+              />
+            </div>
+            {/* Filter Chips */}
+            <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
+              {['Semua', 'Kritis', 'Habis'].map(s => (
+                <button key={s} onClick={() => setFilterStatus(s)}
+                  className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
+                  {s}
+                </button>
+              ))}
+              <div className="w-px bg-slate-200 my-1" />
+              {uniqueCats.map(c => (
+                <button key={c} onClick={() => setFilterCat(c)}
+                  className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </header>
 
-      {/* ── Product List ── */}
-      <main className="px-4 py-4 space-y-2.5 max-w-xl mx-auto w-full">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className={`w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin`}></div>
-            <p className="text-sm font-bold text-slate-500 mt-4">Memuat produk...</p>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center py-16 text-slate-400">
-            <span className="material-symbols-outlined !text-[48px] mb-3">inventory_2</span>
-            <p className="font-bold text-slate-500">Tidak ada produk ditemukan</p>
-            <p className="text-sm">Coba ubah filter atau tambah produk baru</p>
-          </div>
-        ) : filtered.map(p => {
-          const total = p.totalStock || 0;
-          const isLow = total <= p.minStock && total > 0;
-          const isEmpty = total === 0;
-          return (
-            <div
-              key={p.id}
-              className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-100'}`}
-              onClick={() => !isAdmin && handleAddToCart(p)}
-            >
-              <div className="flex items-center gap-3 p-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
-                  {p.image ? (
-                    <img src={p.image} className="w-full h-full object-cover" alt={p.name} />
-                  ) : p.imageEmoji ? (
-                    <span className={`material-symbols-outlined !text-[28px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {p.imageEmoji}
-                    </span>
-                  ) : (
-                    <span className="material-symbols-outlined !text-[28px] text-slate-400">inventory_2</span>
+          {/* ── Product Grid ── */}
+          <main className="px-4 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-xl sm:max-w-4xl lg:max-w-none mx-auto">
+            {isLoading ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-20">
+                <div className={`w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin`}></div>
+                <p className="text-sm font-bold text-slate-500 mt-4">Memuat produk...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center py-16 text-slate-400">
+                <span className="material-symbols-outlined !text-[48px] mb-3">inventory_2</span>
+                <p className="font-bold text-slate-500">Tidak ada produk ditemukan</p>
+                <p className="text-sm">Coba ubah filter atau tambah produk baru</p>
+              </div>
+            ) : filtered.map(p => {
+              const total = p.totalStock || 0;
+              const isLow = total <= p.minStock && total > 0;
+              const isEmpty = total === 0;
+              return (
+                <div
+                  key={p.id}
+                  className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-100'}`}
+                  onClick={() => !isAdmin && handleAddToCart(p)}
+                >
+                  <div className="flex items-center gap-3 p-4">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
+                      {p.image ? (
+                        <img src={p.image} className="w-full h-full object-cover" alt={p.name} />
+                      ) : p.imageEmoji ? (
+                        <span className={`material-symbols-outlined !text-[28px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                          {p.imageEmoji}
+                        </span>
+                      ) : (
+                        <span className="material-symbols-outlined !text-[28px] text-slate-400">inventory_2</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-slate-900 text-sm leading-tight truncate">{p.name}</p>
+                        <StockBadge total={total} min={p.minStock} />
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">{p.category}</p>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <span className={`font-bold text-sm ${primaryText}`}>{formatRupiah(p.price)}</span>
+                        <span className="text-xs text-slate-500 font-medium">{total} unit</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Admin Actions */}
+                  {isAdmin && (
+                    <div className="border-t border-slate-100 flex">
+                      <button onClick={(e) => { e.stopPropagation(); setEditTarget(p); }}
+                        className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-bl-2xl">
+                        <span className="material-symbols-outlined !text-[16px]">edit</span> Edit
+                      </button>
+                      <div className="w-px bg-slate-100" />
+                      <button onClick={(e) => { e.stopPropagation(); setAddStockTarget(p); }}
+                        className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-orange-500 hover:text-orange-700 hover:bg-orange-50 transition-colors">
+                        <span className="material-symbols-outlined !text-[16px]">add_circle</span> Stok
+                      </button>
+                      <div className="w-px bg-slate-100" />
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
+                        className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors rounded-br-2xl">
+                        <span className="material-symbols-outlined !text-[16px]">delete</span> Hapus
+                      </button>
+                    </div>
+                  )}
+                  {/* Kasir: tap indicator */}
+                  {!isAdmin && (
+                    <div className="border-t border-slate-50 py-2 px-4 flex items-center justify-between mt-auto">
+                      <p className="text-[10px] text-slate-400">Tap untuk tambah ke keranjang</p>
+                      <span className="material-symbols-outlined text-slate-300 !text-[16px]">add_shopping_cart</span>
+                    </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-slate-900 text-sm leading-tight truncate">{p.name}</p>
-                    <StockBadge total={total} min={p.minStock} />
-                  </div>
-                  <p className="text-xs text-slate-400 mt-0.5">{p.category}</p>
-                  <div className="flex items-center justify-between mt-1.5">
-                    <span className={`font-bold text-sm ${primaryText}`}>{formatRupiah(p.price)}</span>
-                    <span className="text-xs text-slate-500 font-medium">{total} unit</span>
-                  </div>
+              );
+            })}
+          </main>
+        </div>
+
+        {/* Right side POS Cart (Permanently visible on Desktop screens, hidden on Mobile) */}
+        {!isAdmin && (
+          <aside className="hidden md:flex md:w-[380px] lg:w-[420px] md:fixed md:right-0 md:top-0 md:h-screen bg-white border-l border-slate-100 flex-col z-30">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 shrink-0 flex items-center justify-between">
+              <h2 className="font-headline font-bold text-xl text-slate-900 flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-700 text-2xl">shopping_cart</span>
+                Keranjang POS
+              </h2>
+              <span className="bg-red-50 text-[#C0392B] text-xs font-bold px-2.5 py-1 rounded-full">
+                {cartCount} item
+              </span>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {cart.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
+                  <span className="material-symbols-outlined text-4xl mb-2">shopping_basket</span>
+                  <p className="font-medium text-sm">Keranjang kosong</p>
+                  <p className="text-xs text-center px-6 mt-1">Ketuk produk pada daftar di sebelah kiri untuk memasukkan ke keranjang</p>
                 </div>
-              </div>
-              {/* Admin Actions */}
-              {isAdmin && (
-                <div className="border-t border-slate-100 flex">
-                  <button onClick={() => setEditTarget(p)}
-                    className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-bl-2xl">
-                    <span className="material-symbols-outlined !text-[16px]">edit</span> Edit
-                  </button>
-                  <div className="w-px bg-slate-100" />
-                  <button onClick={() => setAddStockTarget(p)}
-                    className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-orange-500 hover:text-orange-700 hover:bg-orange-50 transition-colors">
-                    <span className="material-symbols-outlined !text-[16px]">add_circle</span> Stok
-                  </button>
-                  <div className="w-px bg-slate-100" />
-                  <button onClick={() => handleDelete(p.id)}
-                    className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors rounded-br-2xl">
-                    <span className="material-symbols-outlined !text-[16px]">delete</span> Hapus
-                  </button>
-                </div>
-              )}
-              {/* Kasir: tap indicator */}
-              {!isAdmin && (
-                <div className="border-t border-slate-50 py-2 px-4 flex items-center justify-between">
-                  <p className="text-[10px] text-slate-400">Tap untuk tambah ke keranjang</p>
-                  <span className="material-symbols-outlined text-slate-300 !text-[16px]">add_shopping_cart</span>
+              ) : (
+                <div className="space-y-2">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center justify-between bg-slate-50 rounded-xl p-3 border border-slate-100">
+                      <div>
+                        <p className="font-semibold text-sm text-slate-800">{item.name}</p>
+                        <p className="text-xs text-slate-500">{formatRupiah(item.price)} / unit</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCart(prev => prev.map(i => i.id === item.id ? { ...i, qty: Math.max(1, i.qty - 1) } : i))}
+                          className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center font-bold text-slate-700 active:scale-95"
+                        >-</button>
+                        <span className="w-6 text-center font-bold text-slate-900">{item.qty}</span>
+                        <button
+                          onClick={() => setCart(prev => prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i))}
+                          className="w-8 h-8 rounded-lg bg-[#C0392B] flex items-center justify-center font-bold text-white active:scale-95"
+                        >+</button>
+                        <button
+                          onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))}
+                          className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center active:scale-95"
+                        >
+                          <span className="material-symbols-outlined text-red-500 !text-[16px]">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          );
-        })}
-      </main>
 
-      {/* ── Kasir: Cart Bottom Sheet ── */}
+            {/* Footer */}
+            {cart.length > 0 && (
+              <div className="p-6 border-t border-slate-100 space-y-4 bg-slate-50 shrink-0">
+                <div className="flex justify-between font-bold text-slate-900 text-sm">
+                  <span>Total Transaksi</span>
+                  <span className="text-[#C0392B] text-xl font-extrabold">{formatRupiah(cartTotal)}</span>
+                </div>
+                <button
+                  onClick={() => setCheckoutOpen(true)}
+                  className="w-full py-4 bg-[#C0392B] text-white font-bold rounded-2xl hover:bg-[#A93226] active:scale-[0.98] transition-all text-base shadow-lg shadow-red-200"
+                >
+                  Bayar Sekarang →
+                </button>
+              </div>
+            )}
+          </aside>
+        )}
+      </div>
+
+      {/* ── Kasir: Cart Bottom Sheet (Mobile view only) ── */}
       {!isAdmin && cartOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) setCartOpen(false); }}>
-          {/* Sheet — flex column agar footer tidak ikut scroll */}
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end md:hidden" onClick={e => { if (e.target === e.currentTarget) setCartOpen(false); }}>
+          {/* Sheet ── flex column agar footer tidak ikut scroll */}
           <div className="bg-white w-full rounded-t-3xl flex flex-col" style={{ maxHeight: '80dvh' }}>
 
-            {/* ── Header (tidak scroll) ── */}
+            {/* ── Header ── */}
             <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
               <h2 className="font-headline font-bold text-xl text-slate-900">🛒 Keranjang</h2>
               <button onClick={() => setCartOpen(false)} className="p-2 rounded-xl bg-slate-100 active:scale-95">
@@ -983,7 +1061,7 @@ export default function ProductsPage() {
               </button>
             </div>
 
-            {/* ── Scrollable item list ── */}
+            {/* ── Scrollable list ── */}
             <div className="flex-1 overflow-y-auto px-6 pb-2">
               {cart.length === 0 && (
                 <p className="text-center text-slate-400 py-8">Keranjang kosong</p>
@@ -1017,7 +1095,7 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* ── Footer — SELALU terlihat, tidak ikut scroll ── */}
+            {/* ── Footer ── */}
             {cart.length > 0 && (
               <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-100 space-y-3">
                 <div className="flex justify-between font-bold text-slate-900">
@@ -1037,11 +1115,11 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* ── Kasir: Floating Cart Button ── */}
+      {/* ── Kasir: Floating Cart Button (Mobile view only) ── */}
       {!isAdmin && cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-20 right-5 z-40 bg-[#C0392B] text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2 font-bold active:scale-95 transition-all">
+          className="fixed bottom-20 right-5 z-40 bg-[#C0392B] text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2 font-bold active:scale-95 transition-all md:hidden">
           <span className="material-symbols-outlined !text-[20px]">shopping_cart</span>
           {cartCount} item · {formatRupiah(cartTotal)}
         </button>

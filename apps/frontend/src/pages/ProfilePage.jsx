@@ -214,7 +214,7 @@ export default function ProfilePage() {
         <h1 className={`font-headline font-extrabold text-xl mb-3 ${primaryText}`}></h1>
       </header>
 
-      <main className="px-5 py-5 space-y-5 max-w-xl mx-auto w-full">
+      <main className="px-5 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
         {/* Profile Card */}
         <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
           {/* Hero */}

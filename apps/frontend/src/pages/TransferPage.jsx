@@ -258,7 +258,7 @@ export default function TransferPage() {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-xl mx-auto w-full">
+      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
 
         {/* ── ADMIN: Form Buat Mutasi ── */}
         {activeTab === 'new' && isAdmin && (

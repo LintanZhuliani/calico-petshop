@@ -205,7 +205,7 @@ export default function ScanPage() {
         <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>
       </header>
 
-      <main className="px-5 py-5 space-y-5 max-w-xl mx-auto w-full">
+      <main className="px-5 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
         {/* Mode Toggle (khusus admin dapat restock mode) */}
         {isAdmin && (
           <div className="bg-slate-100 p-1 rounded-2xl flex">

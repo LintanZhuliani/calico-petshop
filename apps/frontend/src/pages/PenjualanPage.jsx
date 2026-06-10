@@ -220,7 +220,7 @@ export default function PenjualanPage() {
         )}
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-xl mx-auto w-full">
+      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full md:pl-64">
 
         {/* Navigasi Tanggal/Bulan/Tahun */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between">
