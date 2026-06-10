@@ -52,10 +52,19 @@ export const productService = {
 
       const enriched = products.map((p) => {
         const stock = stockData.find((s) => s.productId === p.id);
-        const totalQty = stock
-          ? stock.batches.reduce((sum, b) => sum + b.qty, 0)
-          : 0;
-        return { ...p, totalStock: totalQty, batches: stock?.batches || [] };
+        let totalQty = 0;
+        let expiredQty = 0;
+        if (stock) {
+          stock.batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          stock.batches.forEach(b => {
+             if (b.expiredDate && daysUntilExpiry(b.expiredDate) <= 0) {
+                 expiredQty += b.qty;
+             } else {
+                 totalQty += b.qty;
+             }
+          });
+        }
+        return { ...p, totalStock: totalQty, expiredStock: expiredQty, batches: stock?.batches || [] };
       });
 
       // Apply stock status filters
@@ -83,11 +92,22 @@ export const productService = {
     if (branchId) {
       const stockData = await this.getBranchStockForProducts([id], branchId);
       const stock = stockData[0];
+      let totalQty = 0;
+      let expiredQty = 0;
+      if (stock) {
+        stock.batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        stock.batches.forEach(b => {
+           if (b.expiredDate && daysUntilExpiry(b.expiredDate) <= 0) {
+               expiredQty += b.qty;
+           } else {
+               totalQty += b.qty;
+           }
+        });
+      }
       return {
         ...p,
-        totalStock: stock
-          ? stock.batches.reduce((sum, b) => sum + b.qty, 0)
-          : 0,
+        totalStock: totalQty,
+        expiredStock: expiredQty,
         batches: stock?.batches || [],
       };
     }
@@ -104,11 +124,22 @@ export const productService = {
           .select()
           .from(batch)
           .where(eq(batch.branchStockId, bs.id));
-        return {
-          ...bs,
-          batches,
-          totalStock: batches.reduce((sum, b) => sum + b.qty, 0),
-        };
+          let totalQty = 0;
+          let expiredQty = 0;
+          batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          batches.forEach(b => {
+             if (b.expiredDate && daysUntilExpiry(b.expiredDate) <= 0) {
+                 expiredQty += b.qty;
+             } else {
+                 totalQty += b.qty;
+             }
+          });
+          return {
+            ...bs,
+            batches,
+            totalStock: totalQty,
+            expiredStock: expiredQty,
+          };
       })
     );
 
@@ -340,6 +371,9 @@ export const productService = {
     let remaining = qtyToDeduct;
     for (const b of batches) {
       if (remaining <= 0) break;
+      // Skip expired batches in FEFO, cannot sell expired items!
+      if (b.expiredDate && daysUntilExpiry(b.expiredDate) <= 0) continue;
+
       const deduct = Math.min(b.qty, remaining);
       remaining -= deduct;
       const newQty = b.qty - deduct;

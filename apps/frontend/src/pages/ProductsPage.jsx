@@ -149,7 +149,7 @@ function AddStockModal({ product, onClose, onSave }) {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="font-headline font-bold text-xl text-slate-900">Tambah Stok</h2>
-            <p className="text-sm text-slate-500">{product.name}</p>
+            <p className="text-sm text-slate-500">{product.name} — Sesi Pengisian Ke-{(product.batches?.length || 0) + 1}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl bg-slate-100"><span className="material-symbols-outlined text-slate-500">close</span></button>
         </div>
@@ -309,7 +309,7 @@ function EditProductModal({ product, onClose, onSave }) {
         <div className="grid grid-cols-2 gap-3">
           <InputField label="Stok Minimum (Alert)" type="number" value={form.minStock} onChange={v => handle('minStock', v)} placeholder="10" />
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Stok Cabang Ini</label>
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Timpa Total Stok Cabang</label>
             <input
               type="number"
               value={form.stock}
@@ -318,6 +318,36 @@ function EditProductModal({ product, onClose, onSave }) {
             />
           </div>
         </div>
+
+        {/* List of Batches / Sessions */}
+        {product.batches && product.batches.length > 0 && (
+          <div className="space-y-2 mt-4">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Riwayat Sesi Stok (FEFO)</label>
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+              {product.batches.map((b, i) => {
+                const isExpired = b.expiredDate && new Date(b.expiredDate).getTime() < Date.now();
+                return (
+                  <div key={b.id} className={`flex items-center justify-between p-3 rounded-xl border ${isExpired ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm">Sesi {i + 1}</span>
+                      <span className="text-[10px] opacity-80">Tgl Masuk: {new Date(b.createdAt).toLocaleDateString('id-ID')}</span>
+                    </div>
+                    <div className="flex flex-col items-end text-right">
+                      <span className="font-bold">{b.qty} unit</span>
+                      {b.expiredDate ? (
+                        <span className={`text-[10px] font-semibold ${isExpired ? 'line-through opacity-80' : 'text-orange-500'}`}>
+                          Exp: {new Date(b.expiredDate).toLocaleDateString('id-ID')}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400">Tanpa Exp</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <button onClick={handleSave} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all">
           Simpan Perubahan
@@ -960,9 +990,15 @@ export default function ProductsPage() {
                         <StockBadge total={total} min={p.minStock} />
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5">{p.category}</p>
+                      {p.expiredStock > 0 && (
+                        <div className="mt-1 inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold">
+                          <span className="material-symbols-outlined !text-[12px]">warning</span>
+                          {p.expiredStock} kadaluarsa (Tidak bisa dijual)
+                        </div>
+                      )}
                       <div className="flex items-baseline justify-between mt-1.5 gap-2">
                         <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
-                        <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit</span>
+                        <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit layak jual</span>
                       </div>
                     </div>
                   </div>
