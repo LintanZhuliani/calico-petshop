@@ -70,4 +70,34 @@ router.post("/invite", requireAuth, requireAdmin, async (req, res, next) => {
   }
 });
 
+// DELETE /api/users/:id - Delete an employee (Admin only)
+router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    
+    // Prevent admin from deleting themselves
+    if (req.user?.id === userId) {
+      res.status(400).json({ error: "Cannot delete your own admin account" });
+      return;
+    }
+
+    // Delete sessions and accounts first due to foreign key constraints, then delete user
+    const { session, account } = await import("../db/schema/index.js");
+    const { eq } = await import("drizzle-orm");
+
+    await db.delete(session).where(eq(session.userId, userId));
+    await db.delete(account).where(eq(account.userId, userId));
+    const deletedUser = await db.delete(user).where(eq(user.id, userId)).returning();
+
+    if (deletedUser.length === 0) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.json({ message: "User deleted successfully", user: deletedUser[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

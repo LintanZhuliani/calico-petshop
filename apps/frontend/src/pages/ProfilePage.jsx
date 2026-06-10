@@ -73,6 +73,17 @@ export default function ProfilePage() {
 
   const branchName = BRANCHES.find(b => b.id === branchId)?.name || branchId;
 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus karyawan ini secara permanen?")) return;
+    try {
+      const { apiFetch } = await import('../lib/api.js');
+      await apiFetch(`/users/${userId}`, { method: 'DELETE' });
+      setDbEmployees(prev => prev.filter(emp => emp.id !== userId));
+    } catch (err) {
+      alert("Gagal menghapus karyawan: " + err.message);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('userAccount');
     navigate('/login', { replace: true });
@@ -376,11 +387,22 @@ export default function ProfilePage() {
                             <p className="font-bold text-slate-800 truncate">{emp.name}</p>
                             <p className="text-[11px] text-slate-400 truncate">{emp.email}</p>
                           </div>
-                          <div className="text-right shrink-0">
-                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wide ${emp.role === 'admin' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
-                              {emp.role === 'admin' ? 'Admin' : 'Kasir'}
-                            </span>
-                            {emp.email === currentEmail && <p className="text-[9px] text-slate-400 mt-1">Anda</p>}
+                          <div className="text-right shrink-0 flex items-center gap-2">
+                            <div className="flex flex-col items-end">
+                              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wide ${emp.role === 'admin' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
+                                {emp.role === 'admin' ? 'Admin' : 'Kasir'}
+                              </span>
+                              {emp.email === currentEmail && <p className="text-[9px] text-slate-400 mt-1">Anda</p>}
+                            </div>
+                            {emp.email !== currentEmail && (
+                              <button 
+                                onClick={() => handleDeleteUser(emp.id)}
+                                className="w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 transition-colors ml-1"
+                                title="Hapus Karyawan"
+                              >
+                                <span className="material-symbols-outlined !text-[18px]">delete</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))
