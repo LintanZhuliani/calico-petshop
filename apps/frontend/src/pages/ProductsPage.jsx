@@ -1008,9 +1008,9 @@ export default function ProductsPage() {
 
       {/* ── Kasir: Cart Bottom Sheet (Visible on both mobile & desktop) ── */}
       {!isAdmin && cartOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-end justify-center" onClick={e => { if (e.target === e.currentTarget) setCartOpen(false); }}>
+        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setCartOpen(false); }}>
           {/* Sheet ── flex column agar footer tidak ikut scroll */}
-          <div className="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style={{ maxHeight: '80dvh' }}>
+          <div className="bg-white w-full max-w-md rounded-3xl flex flex-col" style={{ maxHeight: '80dvh' }}>
 
             {/* ── Header ── */}
             <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
