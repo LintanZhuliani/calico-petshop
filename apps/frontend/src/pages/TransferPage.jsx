@@ -236,7 +236,6 @@ export default function TransferPage() {
     ? [{ key: 'new', label: 'Transfer barang', icon: 'add_circle' }, { key: 'list', label: 'Semua', icon: 'list' }]
     : [{ key: 'incoming', label: `Masuk (${incomingTransfers.length})`, icon: 'move_to_inbox' }, { key: 'list', label: 'Riwayat', icon: 'history' }];
 
-  return (
   // Track sidebar toggle state dynamically
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('calico_sidebar_open');
