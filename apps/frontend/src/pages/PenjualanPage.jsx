@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { formatRupiah } from '../utils/formatters';
+import ExcelJS from 'exceljs';
 
 const BRANCHES = [
   { id: 'pusat', name: "Calico's Pet Care (Pusat)" },
@@ -150,51 +151,122 @@ export default function PenjualanPage() {
     return Object.values(map);
   }, [filteredData]);
 
-  const handleDownloadCSV = () => {
+  const handleDownloadExcel = async () => {
     if (filteredData.length === 0) {
       alert('Tidak ada data transaksi untuk diunduh.');
       return;
     }
 
     const cabangLabel = filterBranch === 'semua' ? 'Semua_Cabang' : (BRANCHES.find(b => b.id === filterBranch)?.name || filterBranch);
-    const header = ['No', 'Tanggal', 'Waktu', 'Kasir', 'Cabang', 'Produk', 'Jumlah', 'Harga Satuan', 'Subtotal', 'Total Struk', 'Metode Bayar'];
     
-    const rows = [];
+    // Inisialisasi Workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Laporan Penjualan');
+
+    // Kolom
+    worksheet.columns = [
+      { header: 'No', key: 'no', width: 5 },
+      { header: 'Tanggal', key: 'tanggal', width: 12 },
+      { header: 'Waktu', key: 'waktu', width: 10 },
+      { header: 'Kasir', key: 'kasir', width: 15 },
+      { header: 'Cabang', key: 'cabang', width: 15 },
+      { header: 'Produk', key: 'produk', width: 25 },
+      { header: 'Jumlah', key: 'jumlah', width: 10 },
+      { header: 'Harga Satuan', key: 'harga', width: 15 },
+      { header: 'Subtotal', key: 'subtotal', width: 15 },
+      { header: 'Total Struk', key: 'total_struk', width: 15 },
+      { header: 'Metode Bayar', key: 'metode_bayar', width: 15 },
+    ];
+
+    // Format Header (Baris 1)
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1E4D2B' } // Dark Green
+      };
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    // Isi Baris Data
+    let rowNum = 1;
     filteredData.forEach((tx, txIdx) => {
       const txDate = new Date(tx.date);
       const tgl = txDate.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const waktu = txDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const waktu = txDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.'); // format jam pakai titik (misal: 09.30)
       const branchLabel = BRANCHES.find(b => b.id === tx.branchId)?.name || tx.branchId;
 
       tx.items?.forEach((item, itemIdx) => {
-        rows.push([
-          itemIdx === 0 ? txIdx + 1 : '',
-          itemIdx === 0 ? tgl : '',
-          itemIdx === 0 ? waktu : '',
-          itemIdx === 0 ? tx.cashierName || tx.cashier : '',
-          itemIdx === 0 ? branchLabel : '',
-          item.productName,
-          item.qty,
-          item.price,
-          item.qty * item.price,
-          itemIdx === 0 ? tx.total : '',
-          itemIdx === 0 ? (tx.paymentMethod || 'Tunai') : ''
-        ]);
+        const row = worksheet.addRow({
+          no: itemIdx === 0 ? rowNum : '',
+          tanggal: itemIdx === 0 ? tgl : '',
+          waktu: itemIdx === 0 ? waktu : '',
+          kasir: itemIdx === 0 ? (tx.cashierName || tx.cashier) : '',
+          cabang: itemIdx === 0 ? branchLabel : '',
+          produk: item.productName,
+          jumlah: item.qty,
+          harga: item.price,
+          subtotal: item.qty * item.price,
+          total_struk: itemIdx === 0 ? tx.total : '',
+          metode_bayar: itemIdx === 0 ? (tx.paymentMethod || 'Tunai') : ''
+        });
+
+        // Format Uang pada kolom Harga (H), Subtotal (I), dan Total Struk (J)
+        row.getCell('harga').numFmt = '"Rp "#,##0';
+        row.getCell('subtotal').numFmt = '"Rp "#,##0';
+        if (itemIdx === 0) row.getCell('total_struk').numFmt = '"Rp "#,##0';
+
+        // Border tiap cell data
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+            color: { argb: 'FFDDDDDD' }
+          };
+        });
       });
+      rowNum++;
     });
 
-    rows.push([]);
-    rows.push(['', '', '', '', '', '', '', '', 'TOTAL PENDAPATAN', totalPendapatan, '']);
-    rows.push(['', '', '', '', '', '', '', '', 'TOTAL TRANSAKSI', totalTransaksi, '']);
-    rows.push(['', '', '', '', '', '', '', '', 'TOTAL ITEM TERJUAL', totalItem, '']);
+    // Jeda 1 baris
+    worksheet.addRow([]);
 
-    const csvContent = [header, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Baris Total
+    const totalPendapatanRow = worksheet.addRow({ subtotal: 'TOTAL PENDAPATAN', total_struk: totalPendapatan });
+    totalPendapatanRow.getCell('subtotal').font = { bold: true };
+    totalPendapatanRow.getCell('total_struk').font = { bold: true };
+    totalPendapatanRow.getCell('total_struk').numFmt = '"Rp "#,##0';
+
+    const totalTransaksiRow = worksheet.addRow({ subtotal: 'TOTAL TRANSAKSI', total_struk: totalTransaksi });
+    totalTransaksiRow.getCell('subtotal').font = { bold: true };
+    totalTransaksiRow.getCell('total_struk').font = { bold: true };
+
+    const totalItemRow = worksheet.addRow({ subtotal: 'TOTAL ITEM', total_struk: totalItem });
+    totalItemRow.getCell('subtotal').font = { bold: true };
+    totalItemRow.getCell('total_struk').font = { bold: true };
+
+    // Format border untuk area total
+    [totalPendapatanRow, totalTransaksiRow, totalItemRow].forEach(row => {
+      row.getCell('subtotal').border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+      row.getCell('total_struk').border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+    });
+
+    // Buat Blob dan Download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Laporan_Penjualan_${reportType}_${dateLabel.replace(/ /g, '_')}_${cabangLabel.replace(/[^a-zA-Z0-9]/g, '_')}.csv`;
+    link.download = `Laporan_Penjualan_${reportType}_${dateLabel.replace(/ /g, '_')}_${cabangLabel.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -273,12 +345,12 @@ export default function PenjualanPage() {
 
         {/* Tombol Unduh */}
         {isAdmin && (
-          <button
-            onClick={handleDownloadCSV}
+          <button 
+            onClick={handleDownloadExcel}
             className={`w-full py-3.5 ${primaryBg} text-white font-bold rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm shadow-md`}
           >
             <span className="material-symbols-outlined !text-[20px]">download</span>
-            Unduh Laporan CSV
+            Unduh Excel
           </button>
         )}
 
