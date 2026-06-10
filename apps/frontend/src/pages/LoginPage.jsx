@@ -253,7 +253,7 @@ export default function LoginPage() {
             <div>
               <h3 className="font-headline font-extrabold text-slate-900 text-xl">Lupa Password?</h3>
               <p className="text-sm text-slate-500 mt-2 font-medium leading-relaxed">
-                Untuk menjaga keamanan sistem kasir, silakan hubungi <strong>Admin/Pemilik Toko</strong> secara langsung agar mereka dapat mereset password akun Anda.
+                Untuk menjaga keamanan sistem, silakan hubungi <strong>Pemilik Toko</strong> atau <strong>Tim IT Support (Developer)</strong> untuk bantuan pemulihan password Anda.
               </p>
             </div>
             <button 
