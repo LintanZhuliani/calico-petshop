@@ -51,7 +51,13 @@ export default function BottomNav() {
 
   return (
     <>
-
+      {/* Floating Toggle Button for collapsed desktop view */}
+      <button
+        onClick={toggleSidebar}
+        className="hidden md:flex fixed top-4 left-4 z-[55] bg-white border border-slate-200 shadow-md p-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-all active:scale-95"
+      >
+        <span className="material-symbols-outlined !text-[22px]">menu</span>
+      </button>
 
       <nav className={`fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] z-50 transition-all duration-300 md:bottom-auto md:top-0 md:h-screen md:border-r md:border-t-0 md:flex md:flex-col md:py-6 md:px-4 ${
         isOpen ? 'md:w-64 md:translate-x-0' : 'md:w-0 md:-translate-x-64'

@@ -219,13 +219,7 @@ export default function ScanPage() {
       {/* Header */}
       <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between text-left">
         <div className="flex items-center gap-3">
-          {/* Burger Menu Button for Desktop */}
-          <button
-            onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-            className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
-          >
-            <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
-          </button>
+
           <div>
             <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
             <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>

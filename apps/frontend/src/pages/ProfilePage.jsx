@@ -228,13 +228,7 @@ export default function ProfilePage() {
 
       {/* Header */}
       <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex items-center gap-3">
-        {/* Burger Menu Button for Desktop */}
-        <button
-          onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-          className="hidden md:flex bg-slate-50 border border-slate-200 hover:bg-slate-100 p-2 rounded-xl transition-all"
-        >
-          <span className="material-symbols-outlined !text-[20px] text-slate-700">menu</span>
-        </button>
+
         <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Profil</h1>
       </header>
 
