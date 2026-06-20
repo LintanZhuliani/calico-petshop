@@ -6,6 +6,15 @@ import { socket } from '../lib/socket';
 import { formatRupiah, formatDate, generateId, daysUntilExpiry } from '../utils/formatters';
 import { getExpiryStatus, getExpiryColorClass } from '../utils/stockAlerts';
 
+// Cloudinary image optimization utility (resizes to 150x150, auto formats & compresses)
+function getOptimizedImageUrl(url, width = 150, height = 150) {
+  if (!url) return '';
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+    return url.replace('/image/upload/', `/image/upload/w_${width},h_${height},c_fill,g_auto,q_auto,f_auto/`);
+  }
+  return url;
+}
+
 const CATEGORIES = [
   "Makanan Kering", "Makanan Basah", "Camilan & Treat", "Susu & Minuman",
   "Vitamin & Suplemen", "Obat-obatan", "Pasir Kucing", "Shampo & Grooming",
@@ -82,7 +91,7 @@ function AddProductModal({ onClose, onSave }) {
           <div className="flex items-center gap-4">
             <div className={`w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center border-2 border-dashed ${form.image ? 'border-orange-400 p-0 overflow-hidden bg-slate-50' : 'border-slate-200 bg-slate-50'}`}>
               {form.image ? (
-                <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                <img src={getOptimizedImageUrl(form.image)} alt="Preview" className="w-full h-full object-cover" />
               ) : (
                 <span className="material-symbols-outlined text-slate-400">add_a_photo</span>
               )}
@@ -243,7 +252,7 @@ function EditProductModal({ product, onClose, onSave }) {
               form.image ? 'border-orange-400 bg-slate-50' : 'border-slate-200 bg-slate-50'
             }`}>
               {form.image ? (
-                <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                <img src={getOptimizedImageUrl(form.image)} alt="Preview" className="w-full h-full object-cover" />
               ) : product.imageEmoji ? (
                 <span className="material-symbols-outlined text-slate-400 !text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>{product.imageEmoji}</span>
               ) : (
@@ -662,7 +671,7 @@ export default function ProductsPage() {
       setProducts(data);
       try {
         // Strip base64 images to prevent QuotaExceededError and keep stringify fast
-        const lightData = data.map(p => ({ ...p, image: p.image?.length > 100 ? null : p.image }));
+        const lightData = data.map(p => ({ ...p, image: p.image?.startsWith('data:') ? null : p.image }));
         localStorage.setItem('calico_products_cache', JSON.stringify(lightData));
       } catch (e) {
         console.warn("Could not cache products:", e);
@@ -975,7 +984,7 @@ export default function ProductsPage() {
                   <div className="flex items-center gap-3 p-4">
                     <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
                       {p.image ? (
-                        <img src={p.image} className="w-full h-full object-cover" alt={p.name} />
+                        <img src={getOptimizedImageUrl(p.image)} className="w-full h-full object-cover" alt={p.name} />
                       ) : p.imageEmoji ? (
                         <span className={`material-symbols-outlined !text-[28px] md:!text-[32px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                           {p.imageEmoji}

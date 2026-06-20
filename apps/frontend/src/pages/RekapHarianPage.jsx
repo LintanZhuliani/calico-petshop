@@ -155,10 +155,23 @@ export default function RekapHarianPage() {
   const generateReportText = () => {
     const dObj = new Date();
     const dStr = `${String(dObj.getDate()).padStart(2, '0')}.${String(dObj.getMonth()+1).padStart(2, '0')}. ${dObj.getFullYear()}`;
+    const netCash = stats.grandCash - totalPengeluaran;
     
     let text = `${branchName} ${dStr}\n`;
     text += `  - Total Pendapatan / Transaksi ${formatRupiah(stats.grandTotal)}\n`;
-    text += ` - Cash ${formatRupiah(stats.grandCash)}\n`;
+    text += ` - Cash (Kotor) ${formatRupiah(stats.grandCash)}\n`;
+    
+    if (pengeluaran.length > 0) {
+      text += ` - Pengeluaran Kasir:\n`;
+      pengeluaran.forEach(p => {
+        text += `    * ${p.name} ${formatRupiah(p.amount)}\n`;
+      });
+      text += ` - Total Pengeluaran ${formatRupiah(totalPengeluaran)}\n`;
+      text += ` - Cash Disetor (Bersih) ${formatRupiah(netCash)}\n`;
+    } else {
+      text += ` - Cash Disetor ${formatRupiah(stats.grandCash)}\n`;
+    }
+
     text += ` - Transfer ${formatRupiah(stats.grandTransfer)}\n`;
     text += ` - QR ${formatRupiah(stats.grandQR)}\n`;
     text += ` - EDC ${formatRupiah(stats.grandEDC)}\n`;
@@ -178,15 +191,6 @@ export default function RekapHarianPage() {
     text += `* cash ${formatRupiah(stats.penginapanCash)}\n`;
     text += `* QR/Transfer ${formatRupiah(stats.penginapanNonCash)}\n`;
     text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n\n`;
-    
-    text += `Pengeluaran (kalo ada)\n`;
-    if (pengeluaran.length === 0) {
-      text += `* Tidak ada\n`;
-    } else {
-      pengeluaran.forEach(p => {
-        text += `* ${p.name} ${formatRupiah(p.amount)}\n`;
-      });
-    }
 
     return text;
   };
@@ -243,8 +247,8 @@ export default function RekapHarianPage() {
           
           <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700">
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Total Tunai (Cash)</p>
-              <p className="font-bold text-emerald-400">{formatRupiah(stats.grandCash)}</p>
+              <p className="text-xs text-slate-400 mb-0.5">Cash Bersih (Disetor)</p>
+              <p className="font-bold text-emerald-400">{formatRupiah(stats.grandCash - totalPengeluaran)}</p>
             </div>
             <div>
               <p className="text-xs text-slate-400 mb-0.5">Total Non-Tunai</p>
