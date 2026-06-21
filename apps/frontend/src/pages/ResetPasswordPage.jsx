@@ -8,6 +8,8 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,25 +88,43 @@ export default function ResetPasswordPage() {
               </div>
             )}
             <form onSubmit={handleReset} className="space-y-4">
-              <div>
+              <div className="relative">
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   required 
                   placeholder="Password Baru"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-xl p-4 outline-none text-slate-800 font-medium"
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-xl p-4 pr-12 outline-none text-slate-800 font-medium"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined">
+                    {showPassword ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
               </div>
-              <div>
+              <div className="relative">
                 <input 
-                  type="password" 
+                  type={showConfirmPassword ? "text" : "password"} 
                   required 
                   placeholder="Ulangi Password Baru"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-xl p-4 outline-none text-slate-800 font-medium"
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-xl p-4 pr-12 outline-none text-slate-800 font-medium"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined">
+                    {showConfirmPassword ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
               </div>
               <button 
                 type="submit"
