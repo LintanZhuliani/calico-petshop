@@ -23,7 +23,7 @@ export default function LoginPage() {
     setForgotError("");
     setForgotMessage("");
     try {
-      const { error } = await authClient.forgetPassword({
+      const { error } = await authClient.requestPasswordReset({
         email: forgotEmail.toLowerCase(),
         redirectTo: `${window.location.origin}/reset-password`,
       });
