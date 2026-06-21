@@ -10,6 +10,13 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("error") === "INVALID_TOKEN") {
+      setError("Link reset password tidak valid atau sudah kedaluwarsa. Silakan request link baru.");
+    }
+  }, []);
+
   const handleReset = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -21,12 +28,22 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    // Ambil token langsung dari URL untuk berjaga-jaga
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get("token");
+
+    if (!token) {
+      setError("Token tidak ditemukan di URL. Pastikan Anda membuka link dari email terbaru.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
       const { error: resetError } = await authClient.resetPassword({
         newPassword: password,
+        token: token,
       });
 
       if (resetError) {
