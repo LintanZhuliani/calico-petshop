@@ -128,7 +128,14 @@ export default function TransferPage() {
   };
 
   const handleAddItem = () => {
-    if (!selectedProduct || !selectedQty || Number(selectedQty) <= 0) return;
+    if (!selectedProduct) {
+      showToast('Silakan cari dan klik/pilih produk dari daftar terlebih dahulu!');
+      return;
+    }
+    if (!selectedQty || Number(selectedQty) <= 0) {
+      showToast('Masukkan jumlah stok yang valid!');
+      return;
+    }
     const p = products.find(prod => prod.id === selectedProduct);
     if (!p) return;
     
