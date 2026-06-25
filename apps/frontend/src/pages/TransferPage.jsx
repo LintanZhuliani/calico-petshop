@@ -389,7 +389,8 @@ export default function TransferPage() {
                             products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase())).map(p => (
                               <div 
                                 key={p.id}
-                                onClick={() => {
+                                onMouseDown={(e) => {
+                                  e.preventDefault(); // Mencegah input kehilangan fokus (onBlur) prematur
                                   setSelectedProduct(p.id);
                                   setProductSearch(p.name);
                                   setShowDropdown(false);
