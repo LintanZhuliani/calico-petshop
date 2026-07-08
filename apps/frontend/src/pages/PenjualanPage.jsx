@@ -644,7 +644,7 @@ export default function PenjualanPage() {
               onClick={() => handlePrintReceipt(selectedTx)}
               className={`flex-1 ${isAdmin ? 'bg-[#D35400] hover:bg-[#b84800]' : 'bg-[#C0392B] hover:bg-red-800'} active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center`}
             >
-              Lihat Struk
+              Salin Struk
             </button>
             
             {isAdmin && (
