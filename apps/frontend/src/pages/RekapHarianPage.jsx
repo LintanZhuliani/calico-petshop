@@ -28,7 +28,6 @@ export default function RekapHarianPage() {
   const [date] = useState(toLocalDateStr(new Date()));
   const [modalAwal, setModalAwal] = useState('');
   const [uangFisik, setUangFisik] = useState('');
-  const [penjualanKarungan, setPenjualanKarungan] = useState('');
   const [pengeluaran, setPengeluaran] = useState([]);
   const [newPengeluaranName, setNewPengeluaranName] = useState('');
   const [newPengeluaranAmount, setNewPengeluaranAmount] = useState('');
@@ -144,7 +143,6 @@ export default function RekapHarianPage() {
   };
 
   const totalPengeluaran = pengeluaran.reduce((s, p) => s + p.amount, 0);
-  const valKarungan = parseInt(penjualanKarungan) || 0;
   const valUangFisik = parseInt(uangFisik) || 0;
   const valModalAwal = parseInt(modalAwal) || 0;
 
@@ -184,24 +182,10 @@ export default function RekapHarianPage() {
 
     text += `Pic: ${picName || 'Kasir'}\n\n`;
 
-    text += `•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
-    text += `* Total Grooming ${formatRupiah(stats.totalGrooming)}\n`;
-    text += `* cash ${formatRupiah(stats.groomingCash)}\n`;
-    text += `* QR/Transfer ${formatRupiah(stats.groomingNonCash)}\n`;
-    text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
-    text += `* Total Ongkos kirim / Antar Jemput ${formatRupiah(stats.totalOngkir)}\n`;
-    text += `* cash ${formatRupiah(stats.ongkirCash)}\n`;
-    text += `* QR/Transfer ${formatRupiah(stats.ongkirNonCash)}\n`;
-    text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
-    text += `* Total Penginapan kucing ${formatRupiah(stats.totalPenginapan)}\n`;
-    text += `* cash ${formatRupiah(stats.penginapanCash)}\n`;
-    text += `* QR/Transfer ${formatRupiah(stats.penginapanNonCash)}\n`;
-    
-    if (uangLebih > 0 || uangKurang > 0 || valKarungan > 0) {
+    if (uangLebih > 0 || uangKurang > 0) {
       text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
       if (uangLebih > 0) text += `* uang lebih ${formatRupiah(uangLebih)}\n`;
       if (uangKurang > 0) text += `* uang kurang ${formatRupiah(uangKurang)}\n`;
-      if (valKarungan > 0) text += `* penjualan karungan ${formatRupiah(valKarungan)}\n`;
     }
 
     return text;
@@ -372,18 +356,7 @@ export default function RekapHarianPage() {
             )}
           </div>
 
-          {/* Penjualan Karungan */}
-          <div className="pt-3 border-t border-slate-100">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">Penjualan Karungan (Manual)</label>
-            <div className="relative">
-              <span className="absolute left-4 top-2.5 text-slate-400 font-bold">Rp</span>
-              <input 
-                type="number" placeholder="0" 
-                value={penjualanKarungan} onChange={e => setPenjualanKarungan(e.target.value)}
-                className="w-full bg-slate-50 rounded-xl pl-11 pr-4 py-2.5 text-sm font-semibold outline-none border border-slate-200 focus:border-blue-400 transition-colors"
-              />
-            </div>
-          </div>
+
         </section>
 
         {/* STEP 4: Ringkasan Pencocokan Kas */}
