@@ -639,7 +639,7 @@ export default function PenjualanPage() {
           <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center gap-3 shrink-0">
             <button 
               onClick={() => handlePrintReceipt(selectedTx)}
-              className="flex-1 bg-[#EE2737] hover:bg-red-700 active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center"
+              className={`flex-1 ${isAdmin ? 'bg-[#D35400] hover:bg-[#b84800]' : 'bg-[#C0392B] hover:bg-red-800'} active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center`}
             >
               Lihat Struk
             </button>
@@ -647,7 +647,7 @@ export default function PenjualanPage() {
             {isAdmin && (
               <div className="relative group">
                 <button 
-                  className="p-3.5 border-2 border-[#EE2737] rounded-2xl text-[#EE2737] flex items-center justify-center hover:bg-red-50 active:scale-[0.98] transition-all"
+                  className={`p-3.5 border-2 ${isAdmin ? 'border-[#D35400] text-[#D35400] hover:bg-orange-50' : 'border-[#C0392B] text-[#C0392B] hover:bg-red-50'} rounded-2xl flex items-center justify-center active:scale-[0.98] transition-all`}
                   onClick={(e) => {
                     const menu = e.currentTarget.nextElementSibling;
                     menu.classList.toggle('hidden');
