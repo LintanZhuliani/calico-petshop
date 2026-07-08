@@ -39,7 +39,7 @@ export default function BottomNav() {
   const NAV_ITEMS = [
     { path: '/dashboard', icon: 'home', label: 'Home' },
     { path: '/products', icon: 'inventory_2', label: 'Produk' },
-    ...(isAdmin ? [{ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' }] : []),
+    { path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' },
     { path: '/transfer', icon: 'swap_horiz', label: 'Transfer' },
     { path: '/profile', icon: 'person', label: 'Profil' },
   ];
