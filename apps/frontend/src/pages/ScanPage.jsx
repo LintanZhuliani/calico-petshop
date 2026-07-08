@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { formatRupiah, generateId } from '../utils/formatters';
@@ -10,6 +10,7 @@ let Html5QrcodeSupportedFormats = null;
 
 export default function ScanPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const role = location.state?.role || 'kasir';
   const isAdmin = role === 'admin';
 
@@ -131,32 +132,31 @@ export default function ScanPage() {
     findProduct(manualCode.trim());
   };
 
-  // Kasir: Proses jual
+  // Kasir: Tambah ke keranjang
   const handleSell = async () => {
     if (!scanResult || qty <= 0) return;
     const total = scanResult.totalStock || 0;
     if (qty > total) { showToast('Stok tidak cukup!'); return; }
 
     try {
-      await apiFetch('/transactions', {
-        method: 'POST',
-        body: {
-          items: [{ productId: scanResult.id, productName: scanResult.name, qty, price: scanResult.price }],
-          paid: scanResult.price * qty,
-          change: 0,
-          paymentMethod: 'Tunai',
-          branchId: branchId
-        }
-      });
+      const saved = localStorage.getItem('calico_kasir_cart');
+      const cart = saved ? JSON.parse(saved) : [];
       
-      showToast(`${qty} unit ${scanResult.name} terjual (FEFO)`);
+      const existing = cart.find(i => i.id === scanResult.id);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({ ...scanResult, qty });
+      }
+      localStorage.setItem('calico_kasir_cart', JSON.stringify(cart));
+      
       setScanResult(null);
       setQty(1);
       
-      // Refresh products to update stock
-      apiFetch(`/products?branchId=${branchId}`).then(setProducts);
+      // Navigate back to products page with cart open
+      navigate('/products', { state: { ...location.state, cartOpen: true } });
     } catch (err) {
-      showToast('Gagal memproses transaksi: ' + err.message);
+      showToast('Gagal menambah ke keranjang: ' + err.message);
     }
   };
 
@@ -305,8 +305,14 @@ export default function ScanPage() {
         {scanResult && (
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             {/* Product Header */}
-            <div className={`${primaryLight} px-5 py-4 flex items-center gap-3`}>
-              <span className="text-4xl">{scanResult.imageEmoji}</span>
+            <div className={`${primaryLight} px-5 py-4 flex items-center gap-4`}>
+              {scanResult.image ? (
+                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center shrink-0">
+                  <img src={scanResult.image} alt={scanResult.name} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <span className="text-4xl shrink-0">{scanResult.imageEmoji}</span>
+              )}
               <div className="flex-1">
                 <p className="font-bold text-slate-900">{scanResult.name}</p>
                 <p className="text-xs text-slate-500">{scanResult.category} · Barcode: {scanResult.barcode}</p>
@@ -376,8 +382,8 @@ export default function ScanPage() {
               {(!isAdmin || mode === 'sell') && (
                 <button onClick={handleSell} disabled={totalStock === 0}
                   className="w-full py-3.5 bg-[#C0392B] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined !text-[20px]">point_of_sale</span>
-                  {totalStock === 0 ? 'Stok Habis' : `Jual ${qty} unit — ${formatRupiah(scanResult.price * qty)}`}
+                  <span className="material-symbols-outlined !text-[20px]">add_shopping_cart</span>
+                  {totalStock === 0 ? 'Stok Habis' : `Tambah ke Keranjang`}
                 </button>
               )}
               {isAdmin && mode === 'restock' && (

@@ -653,10 +653,27 @@ export default function ProductsPage() {
   const [editTarget, setEditTarget] = useState(null);
 
   // Cart (kasir)
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('calico_kasir_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('calico_kasir_cart', JSON.stringify(cart));
+  }, [cart]);
+
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+
+  useEffect(() => {
+    if (location.state?.cartOpen) {
+      setCartOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const showToast = (msg) => {
     setToastMsg(msg);
