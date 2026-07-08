@@ -560,14 +560,17 @@ export default function PenjualanPage() {
 
       {/* Modal Detail Transaksi */}
       {isDetailOpen && selectedTx && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
           {/* Header Modal */}
           <header className="bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
             <div className="flex items-center gap-3">
               <button onClick={() => setIsDetailOpen(false)} className="p-2 -ml-2 rounded-xl active:bg-slate-100 text-red-600 transition-colors">
                 <span className="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
               </button>
-              <h1 className="font-bold text-slate-800 text-lg uppercase tracking-wide">{selectedTx.id.toUpperCase()}</h1>
+              <h1 className="font-bold text-slate-800 text-sm md:text-lg uppercase tracking-wide flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                <span className="text-xs md:text-sm font-normal text-slate-500 normal-case tracking-normal">ID Transaksi:</span> 
+                {selectedTx.id.toUpperCase()}
+              </h1>
               <button onClick={() => navigator.clipboard.writeText(selectedTx.id)} className="text-slate-400 p-1 hover:text-slate-600 active:scale-90 transition-transform">
                 <span className="material-symbols-outlined !text-[20px]">content_copy</span>
               </button>
