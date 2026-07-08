@@ -563,18 +563,18 @@ export default function PenjualanPage() {
         <div className="fixed inset-0 z-[100] flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
           {/* Header Modal */}
           <header className="bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setIsDetailOpen(false)} className="p-2 -ml-2 rounded-xl active:bg-slate-100 text-red-600 transition-colors">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <button onClick={() => setIsDetailOpen(false)} className="p-2 -ml-2 rounded-xl active:bg-slate-100 text-red-600 transition-colors shrink-0">
                 <span className="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
               </button>
-              <h1 className="font-bold text-slate-800 text-sm md:text-lg uppercase tracking-wide flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
-                <span className="text-xs md:text-sm font-normal text-slate-500 normal-case tracking-normal">ID Transaksi:</span> 
-                {selectedTx.id.toUpperCase()}
-              </h1>
-              <button onClick={() => navigator.clipboard.writeText(selectedTx.id)} className="text-slate-400 p-1 hover:text-slate-600 active:scale-90 transition-transform">
-                <span className="material-symbols-outlined !text-[20px]">content_copy</span>
-              </button>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] md:text-sm font-normal text-slate-500 leading-none mb-1">ID Transaksi:</span> 
+                <span className="font-bold text-slate-800 text-xs md:text-lg uppercase tracking-wide truncate">{selectedTx.id.toUpperCase()}</span>
+              </div>
             </div>
+            <button onClick={() => navigator.clipboard.writeText(selectedTx.id)} className="text-slate-400 p-2 hover:text-slate-600 active:scale-90 transition-transform shrink-0 ml-2 bg-slate-50 rounded-xl">
+              <span className="material-symbols-outlined !text-[20px]">content_copy</span>
+            </button>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -601,18 +601,14 @@ export default function PenjualanPage() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
               <h2 className="font-extrabold text-slate-800 text-lg mb-4">Pesanan</h2>
               
-              <div className="flex justify-between text-[11px] font-bold text-slate-400 border-b border-slate-100 pb-2 mb-3">
-                <span className="w-1/2">Nama Barang</span>
-                <span className="w-1/4 text-center">Jumlah</span>
-                <span className="w-1/4 text-right">Harga</span>
-              </div>
-
-              <div className="space-y-3 mb-4">
+              <div className="space-y-4 mb-4 mt-2">
                 {(selectedTx.items || []).map((item, idx) => (
                   <div key={idx} className="flex justify-between items-start text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0">
-                    <span className="w-1/2 font-medium text-slate-700 pr-2">{item.productName}</span>
-                    <span className="w-1/4 text-center text-slate-500">{formatRupiah(item.price)} x {item.qty}</span>
-                    <span className="w-1/4 text-right font-extrabold text-slate-800">{formatRupiah(item.price * item.qty)}</span>
+                    <div className="flex-1 pr-4 min-w-0">
+                      <p className="font-semibold text-slate-800 leading-tight">{item.productName}</p>
+                      <p className="text-xs text-slate-500 mt-1.5">{item.qty} x {formatRupiah(item.price)}</p>
+                    </div>
+                    <span className="font-extrabold text-slate-800 shrink-0">{formatRupiah(item.price * item.qty)}</span>
                   </div>
                 ))}
               </div>
