@@ -476,10 +476,37 @@ export default function PenjualanPage() {
           </div>
         )}
 
+        {/* Produk Terlaris */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+            <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>emoji_events</span>
+            Produk Terlaris
+          </p>
+          {topProducts.length === 0 ? (
+            <p className="text-center text-sm text-slate-400 py-4">Belum ada data</p>
+          ) : (
+            <div className="space-y-2.5 mt-2">
+              {topProducts.map((p, i) => (
+                <div key={i} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100/50">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm ${
+                    i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-200 text-slate-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-500'
+                  }`}>{i + 1}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{p.name}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{p.qty} item terjual</p>
+                  </div>
+                  <p className={`text-sm font-bold ${primaryText}`}>{formatRupiah(p.revenue)}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Daftar Transaksi */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-6">
+      </main>
+      
+      {/* Daftar Transaksi */}
+      <div className="px-4 pb-6 max-w-xl md:max-w-5xl mx-auto w-full">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-2">
           <div className="p-4 border-b border-slate-100 flex items-center justify-between">
             <p className="font-bold text-slate-800 text-sm flex items-center gap-2">
               <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>list_alt</span>
@@ -529,9 +556,8 @@ export default function PenjualanPage() {
             </div>
           )}
         </div>
+      </div>
 
-      </main>
-      
       {/* Modal Detail Transaksi */}
       {isDetailOpen && selectedTx && (
         <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
