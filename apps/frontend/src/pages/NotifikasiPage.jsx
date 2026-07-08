@@ -63,7 +63,7 @@ export default function NotifikasiPage() {
   }, []);
 
   return (
-    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
+    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* Header */}

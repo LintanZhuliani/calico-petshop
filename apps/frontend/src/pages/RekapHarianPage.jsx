@@ -216,7 +216,7 @@ export default function RekapHarianPage() {
   }, []);
 
   return (
-    <div className={`bg-[#F8F9FA] min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
+    <div className={`bg-slate-100 min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       <header className="bg-white border-b border-slate-100 px-5 py-4 sticky top-0 z-40 flex items-center gap-3">

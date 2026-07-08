@@ -93,7 +93,7 @@ export default function LoginPage() {
   const iconColor = errorMsg ? "text-red-400" : "text-[#8c7a75]";
 
   return (
-    <div className="min-h-screen w-full bg-[#f8f9fa] flex flex-col items-center justify-center py-10 px-6 font-body overflow-y-auto overflow-x-hidden relative">
+    <div className="min-h-screen w-full bg-slate-100 flex flex-col items-center justify-center py-10 px-6 font-body overflow-y-auto overflow-x-hidden relative">
       {/* Decorative Blur Elements */}
       <div className="absolute top-[-5%] left-[-10%] w-[300px] h-[300px] bg-[#F26B3A]/10 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[-5%] right-[-10%] w-[300px] h-[300px] bg-sky-500/5 rounded-full blur-[100px] pointer-events-none"></div>
