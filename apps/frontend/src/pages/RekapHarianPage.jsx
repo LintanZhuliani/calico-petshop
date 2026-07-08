@@ -47,6 +47,8 @@ export default function RekapHarianPage() {
       .catch(err => console.error('Failed to load rekap transactions:', err));
   }, [branchId]);
 
+  const [picName, setPicName] = useState('');
+
   const stats = useMemo(() => {
     let grandCash = 0;
     let grandQR = 0;
@@ -155,29 +157,33 @@ export default function RekapHarianPage() {
   const generateReportText = () => {
     const dObj = new Date();
     const dStr = `${String(dObj.getDate()).padStart(2, '0')}.${String(dObj.getMonth()+1).padStart(2, '0')}. ${dObj.getFullYear()}`;
-    const netCash = stats.grandCash - totalPengeluaran;
+    const hb = valModalAwal;
+    const cashPenjualan = stats.grandCash;
+    const totalCashDiLaci = hb + cashPenjualan;
     
-    let text = `${branchName} ${dStr}\n`;
-    text += `  - Total Pendapatan / Transaksi ${formatRupiah(stats.grandTotal)}\n`;
-    text += ` - Cash (Kotor) ${formatRupiah(stats.grandCash)}\n`;
-    
-    if (pengeluaran.length > 0) {
-      text += ` - Pengeluaran Kasir:\n`;
-      pengeluaran.forEach(p => {
-        text += `    * ${p.name} ${formatRupiah(p.amount)}\n`;
-      });
-      text += ` - Total Pengeluaran ${formatRupiah(totalPengeluaran)}\n`;
-      text += ` - Cash Disetor (Bersih) ${formatRupiah(netCash)}\n`;
-    } else {
-      text += ` - Cash Disetor ${formatRupiah(stats.grandCash)}\n`;
-    }
+    let text = `*${branchName} - ${dStr}*\n\n`;
+    text += `Total penjualan\n`;
+    text += `Cash: ${formatRupiah(stats.grandCash)}\n`;
+    text += `Qr: ${formatRupiah(stats.grandQR)}\n`;
+    text += `Transfer: ${formatRupiah(stats.grandTransfer + stats.grandEDC)}\n`;
+    text += `Omset: ${formatRupiah(stats.grandTotal)}\n\n`;
 
-    text += ` - Transfer ${formatRupiah(stats.grandTransfer)}\n`;
-    text += ` - QR ${formatRupiah(stats.grandQR)}\n`;
-    text += ` - EDC ${formatRupiah(stats.grandEDC)}\n`;
-    text += `* uang lebih ${uangLebih > 0 ? formatRupiah(uangLebih) : '-'}\n`;
-    text += `* uang kurang ${uangKurang > 0 ? formatRupiah(uangKurang) : '-'}\n`;
-    text += `* penjualan karungan ${valKarungan > 0 ? formatRupiah(valKarungan) : '-'}\n`;
+    text += `House bank: ${formatRupiah(hb)}\n`;
+    text += `Cash penjualan: ${formatRupiah(cashPenjualan)}\n`;
+    text += `Total cash di laci: ${formatRupiah(totalCashDiLaci)}\n\n`;
+
+    text += `Pengeluaran:\n`;
+    if (pengeluaran.length > 0) {
+      pengeluaran.forEach(p => {
+        text += `${p.name} = ${formatRupiah(p.amount)}\n`;
+      });
+    } else {
+      text += `-\n`;
+    }
+    text += `\n`;
+
+    text += `Pic: ${picName || 'Kasir'}\n\n`;
+
     text += `•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
     text += `* Total Grooming ${formatRupiah(stats.totalGrooming)}\n`;
     text += `* cash ${formatRupiah(stats.groomingCash)}\n`;
@@ -190,7 +196,13 @@ export default function RekapHarianPage() {
     text += `* Total Penginapan kucing ${formatRupiah(stats.totalPenginapan)}\n`;
     text += `* cash ${formatRupiah(stats.penginapanCash)}\n`;
     text += `* QR/Transfer ${formatRupiah(stats.penginapanNonCash)}\n`;
-    text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n\n`;
+    
+    if (uangLebih > 0 || uangKurang > 0 || valKarungan > 0) {
+      text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
+      if (uangLebih > 0) text += `* uang lebih ${formatRupiah(uangLebih)}\n`;
+      if (uangKurang > 0) text += `* uang kurang ${formatRupiah(uangKurang)}\n`;
+      if (valKarungan > 0) text += `* penjualan karungan ${formatRupiah(valKarungan)}\n`;
+    }
 
     return text;
   };
@@ -267,7 +279,7 @@ export default function RekapHarianPage() {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">
-                Modal Awal Laci
+                House Bank (Modal Awal Laci)
                 <span className="ml-1 normal-case font-normal text-slate-400">(Uang pecahan sebelum buka)</span>
               </label>
               <div className="relative">
@@ -290,6 +302,20 @@ export default function RekapHarianPage() {
                 <input 
                   type="number" placeholder="0" 
                   value={uangFisik} onChange={e => setUangFisik(e.target.value)}
+                  className="w-full bg-slate-50 rounded-xl pl-11 pr-4 py-3 text-sm font-semibold outline-none border border-slate-200 focus:border-orange-400 transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-slate-100">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">
+                PIC / Nama Kasir
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-slate-400 font-bold material-symbols-outlined !text-[20px]">person</span>
+                <input 
+                  type="text" placeholder="Masukkan nama kasir" 
+                  value={picName} onChange={e => setPicName(e.target.value)}
                   className="w-full bg-slate-50 rounded-xl pl-11 pr-4 py-3 text-sm font-semibold outline-none border border-slate-200 focus:border-orange-400 transition-colors"
                 />
               </div>
