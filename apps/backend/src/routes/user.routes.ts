@@ -73,7 +73,7 @@ router.post("/invite", requireAuth, requireAdmin, async (req, res, next) => {
 // DELETE /api/users/:id - Delete an employee (Admin only)
 router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
     
     // Prevent admin from deleting themselves
     if (req.user?.id === userId) {
