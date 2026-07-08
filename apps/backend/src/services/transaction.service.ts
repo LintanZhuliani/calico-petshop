@@ -235,4 +235,31 @@ export const transactionService = {
 
     return [headers.join(","), ...rows].join("\n");
   },
+
+  /**
+   * Delete a transaction (admin only) and restore stock
+   */
+  async delete(id: string) {
+    const tx = await this.getById(id);
+    if (!tx) throw new Error("Transaksi tidak ditemukan");
+
+    // 1. Restore stock for all items
+    for (const item of tx.items) {
+      await productService.addStock({
+        productId: item.productId,
+        branchId: tx.branchId,
+        qty: item.qty,
+        expiredDate: null, // We don't know the exact original expiry, so we append without expiry
+      });
+    }
+
+    // 2. Delete transaction items
+    await db.delete(transactionItem).where(eq(transactionItem.transactionId, id));
+
+    // 3. Delete transaction
+    await db.delete(transaction).where(eq(transaction.id, id));
+
+    getIo()?.emit("DATA_UPDATED");
+    return true;
+  },
 };

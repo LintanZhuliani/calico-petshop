@@ -93,4 +93,14 @@ router.post("/", requireAuth, async (req, res, next) => {
   }
 });
 
+// DELETE /api/transactions/:id — Delete transaction (Admin only)
+router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    await transactionService.delete(req.params.id);
+    res.json({ success: true, message: "Transaksi berhasil dihapus" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

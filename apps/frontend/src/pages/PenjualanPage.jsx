@@ -33,7 +33,11 @@ export default function PenjualanPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // States for Transaction Detail Modal
+  const [selectedTx, setSelectedTx] = useState(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  const fetchTransactions = () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (!isAdmin) params.set('branchId', branchId);
@@ -41,7 +45,58 @@ export default function PenjualanPage() {
       .then(data => setTransactions(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to load transactions:', err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchTransactions();
   }, [isAdmin, branchId]);
+
+  const handleDeleteTransaction = async (id) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus transaksi ini? Stok akan dikembalikan otomatis.")) return;
+    try {
+      await apiFetch(`/transactions/${id}`, { method: 'DELETE' });
+      alert("Transaksi berhasil dihapus");
+      setIsDetailOpen(false);
+      setSelectedTx(null);
+      fetchTransactions(); // Refresh data
+    } catch (error) {
+      alert(error.message || "Gagal menghapus transaksi");
+    }
+  };
+
+  // Helper for receipt printing
+  const handlePrintReceipt = (tx) => {
+    // Generate text for receipt (thermal printer format)
+    const storeName = branchId === 'pusat' ? "Calico's Pet Care" : 
+                      branchId === 'gempi' ? "Gempi Pet Shop" : "Baba Pet Corner";
+    let text = `${storeName}\n`;
+    text += `Tanggal: ${new Date(tx.date).toLocaleString('id-ID')}\n`;
+    text += `Kasir: ${tx.cashierName || 'Admin'}\n`;
+    text += `ID: ${tx.id}\n`;
+    text += `--------------------------------\n`;
+    
+    (tx.items || []).forEach(item => {
+      text += `${item.productName}\n`;
+      text += `${item.qty} x ${formatRupiah(item.price)}\n`;
+      text += `                     ${formatRupiah(item.qty * item.price)}\n`;
+    });
+    
+    text += `--------------------------------\n`;
+    text += `Total     : ${formatRupiah(tx.total)}\n`;
+    text += `Bayar     : ${formatRupiah(tx.paid || tx.total)}\n`;
+    text += `Kembali   : ${formatRupiah(tx.change || 0)}\n`;
+    text += `Metode    : ${tx.paymentMethod}\n`;
+    text += `--------------------------------\n`;
+    text += `Terima Kasih!\n\n`;
+
+    // Try to trigger android bridge or just copy to clipboard if web
+    if (window.Android && typeof window.Android.printReceipt === 'function') {
+      window.Android.printReceipt(text);
+    } else {
+      navigator.clipboard.writeText(text);
+      alert("Struk disalin ke clipboard! (Fitur cetak otomatis khusus di aplikasi Android)");
+    }
+  };
 
   // Navigasi Tanggal / Bulan / Tahun
   const handlePrev = () => {
@@ -421,34 +476,174 @@ export default function PenjualanPage() {
           </div>
         )}
 
-        {/* Produk Terlaris */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-            <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>emoji_events</span>
-            Produk Terlaris
-          </p>
-          {topProducts.length === 0 ? (
-            <p className="text-center text-sm text-slate-400 py-4">Belum ada data</p>
+        </div>
+
+        {/* Daftar Transaksi */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-6">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <p className="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>list_alt</span>
+              Riwayat Transaksi
+            </p>
+          </div>
+          
+          {filteredData.length === 0 ? (
+            <p className="text-center text-sm text-slate-400 py-6">Belum ada transaksi</p>
           ) : (
-            <div className="space-y-2.5 mt-2">
-              {topProducts.map((p, i) => (
-                <div key={i} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100/50">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm ${
-                    i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-200 text-slate-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-500'
-                  }`}>{i + 1}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-800 truncate">{p.name}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{p.qty} item terjual</p>
+            <div className="divide-y divide-slate-100">
+              {filteredData.map((tx) => {
+                const txDate = new Date(tx.date);
+                const isNonTunai = tx.paymentMethod !== 'Tunai';
+                return (
+                  <div 
+                    key={tx.id} 
+                    onClick={() => { setSelectedTx(tx); setIsDetailOpen(true); }}
+                    className="flex p-4 gap-4 hover:bg-slate-50 cursor-pointer transition-colors active:bg-slate-100"
+                  >
+                    {/* Kotak Tanggal */}
+                    <div className="w-16 h-16 bg-amber-400 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm text-slate-900">
+                      <span className="text-xl font-extrabold leading-none">{txDate.getDate().toString().padStart(2, '0')}</span>
+                      <span className="text-[10px] font-bold uppercase mt-0.5">{MONTH_NAMES[txDate.getMonth()].substring(0, 3)} {txDate.getFullYear()}</span>
+                      <span className="text-[9px] font-semibold mt-1">{txDate.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    
+                    {/* Detail Transaksi */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1 truncate">{tx.id.toUpperCase()}</p>
+                      <p className="text-lg font-extrabold text-emerald-600 font-headline leading-none">{formatRupiah(tx.total)}</p>
+                    </div>
+                    
+                    {/* Badge & Kasir */}
+                    <div className="flex flex-col items-end justify-center gap-1.5 shrink-0">
+                      <span className={`text-[9px] font-bold px-2 py-0.5 border rounded-sm ${isNonTunai ? 'text-emerald-600 border-emerald-600 bg-emerald-50' : 'text-red-600 border-red-600 bg-red-50'}`}>
+                        {isNonTunai ? 'NON TUNAI' : 'TUNAI'}
+                      </span>
+                      <div className="text-right mt-1">
+                        <p className="text-[9px] text-slate-400 font-medium leading-none">Dibuat oleh</p>
+                        <p className="text-xs font-bold text-red-600 leading-tight">{tx.cashierName || 'Admin'}</p>
+                      </div>
+                    </div>
                   </div>
-                  <p className={`text-sm font-bold ${primaryText}`}>{formatRupiah(p.revenue)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
       </main>
       
+      {/* Modal Detail Transaksi */}
+      {isDetailOpen && selectedTx && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
+          {/* Header Modal */}
+          <header className="bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setIsDetailOpen(false)} className="p-2 -ml-2 rounded-xl active:bg-slate-100 text-red-600 transition-colors">
+                <span className="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
+              </button>
+              <h1 className="font-bold text-slate-800 text-lg uppercase tracking-wide">{selectedTx.id.toUpperCase()}</h1>
+              <button onClick={() => navigator.clipboard.writeText(selectedTx.id)} className="text-slate-400 p-1 hover:text-slate-600 active:scale-90 transition-transform">
+                <span className="material-symbols-outlined !text-[20px]">content_copy</span>
+              </button>
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {/* Rincian Transaksi */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+              <h2 className="font-extrabold text-slate-800 text-lg mb-4">Rincian Transaksi</h2>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 font-medium">Dibuat Oleh</span>
+                  <span className="font-bold text-slate-800">{selectedTx.cashierName || 'Admin'} <span className="text-slate-400 font-normal">(Staff Kasir)</span></span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 font-medium">Pembayaran</span>
+                  <span className="font-bold text-slate-800">{selectedTx.paymentMethod || 'Tunai'}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500 font-medium">Tanggal Transaksi</span>
+                  <span className="font-bold text-slate-800">{new Date(selectedTx.date).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pesanan */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+              <h2 className="font-extrabold text-slate-800 text-lg mb-4">Pesanan</h2>
+              
+              <div className="flex justify-between text-[11px] font-bold text-slate-400 border-b border-slate-100 pb-2 mb-3">
+                <span className="w-1/2">Nama Barang</span>
+                <span className="w-1/4 text-center">Jumlah</span>
+                <span className="w-1/4 text-right">Harga</span>
+              </div>
+
+              <div className="space-y-3 mb-4">
+                {(selectedTx.items || []).map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-start text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                    <span className="w-1/2 font-medium text-slate-700 pr-2">{item.productName}</span>
+                    <span className="w-1/4 text-center text-slate-500">{formatRupiah(item.price)} x {item.qty}</span>
+                    <span className="w-1/4 text-right font-extrabold text-slate-800">{formatRupiah(item.price * item.qty)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-slate-100 pt-3 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Total Pesanan</span>
+                  <span className="font-bold text-slate-800">{formatRupiah(selectedTx.total)}</span>
+                </div>
+                <div className="flex justify-between pt-1">
+                  <span className="font-extrabold text-slate-900 text-base">Total</span>
+                  <span className="font-extrabold text-slate-900 text-base">{formatRupiah(selectedTx.total)}</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Bayar</span>
+                  <span className="font-bold text-slate-700">{formatRupiah(selectedTx.paid || selectedTx.total)}</span>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Kembali</span>
+                  <span className="font-bold text-slate-700">{formatRupiah(selectedTx.change || 0)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer Actions */}
+          <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center gap-3 shrink-0">
+            <button 
+              onClick={() => handlePrintReceipt(selectedTx)}
+              className="flex-1 bg-[#EE2737] hover:bg-red-700 active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center"
+            >
+              Lihat Struk
+            </button>
+            
+            {isAdmin && (
+              <div className="relative group">
+                <button 
+                  className="p-3.5 border-2 border-[#EE2737] rounded-2xl text-[#EE2737] flex items-center justify-center hover:bg-red-50 active:scale-[0.98] transition-all"
+                  onClick={(e) => {
+                    const menu = e.currentTarget.nextElementSibling;
+                    menu.classList.toggle('hidden');
+                  }}
+                >
+                  <span className="material-symbols-outlined !text-[20px]">more_vert</span>
+                </button>
+                {/* Popover Menu */}
+                <div className="hidden absolute bottom-full right-0 mb-2 w-32 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                  <button 
+                    onClick={() => handleDeleteTransaction(selectedTx.id)}
+                    className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {isAdmin && <BottomNav />}
     </div>
   );
