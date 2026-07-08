@@ -14,44 +14,39 @@ import { productService } from "./product.service.js";
 import { getIo } from "../lib/socket.js";
 
 export const transactionService = {
-  /**
-   * List transactions with optional filters.
-   */
   async getAll(filters: {
     date?: string; // 'YYYY-MM-DD'
     branchId?: string;
     cashierId?: string;
   }) {
-    let txs = await db
-      .select()
-      .from(transaction)
-      .orderBy(sql`${transaction.date} DESC`);
-
+    // Collect conditions
+    const conditions = [];
     if (filters.branchId) {
-      txs = txs.filter((t) => t.branchId === filters.branchId);
+      conditions.push(eq(transaction.branchId, filters.branchId));
     }
     if (filters.cashierId) {
-      txs = txs.filter((t) => t.cashierId === filters.cashierId);
+      conditions.push(eq(transaction.cashierId, filters.cashierId));
     }
+    
+    // We cannot easily filter by YYYY-MM-DD string in raw SQL in a cross-database way without raw sql, 
+    // so we will fetch and filter in JS for the date if provided.
+    
+    const txs = await db.query.transaction.findMany({
+      where: conditions.length > 0 ? and(...conditions) : undefined,
+      orderBy: [sql`${transaction.date} DESC`],
+      with: {
+        items: true
+      }
+    });
+
     if (filters.date) {
-      txs = txs.filter((t) => {
+      return txs.filter((t) => {
         const txDate = new Date(t.date).toISOString().split("T")[0];
         return txDate === filters.date;
       });
     }
 
-    // Attach items to each transaction
-    const result = await Promise.all(
-      txs.map(async (tx) => {
-        const items = await db
-          .select()
-          .from(transactionItem)
-          .where(eq(transactionItem.transactionId, tx.id));
-        return { ...tx, items };
-      })
-    );
-
-    return result;
+    return txs;
   },
 
   /** Get a single transaction with items */
