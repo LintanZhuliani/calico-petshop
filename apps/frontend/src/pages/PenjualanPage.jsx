@@ -528,10 +528,10 @@ export default function PenjualanPage() {
                     className="flex p-4 gap-4 hover:bg-slate-50 cursor-pointer transition-colors active:bg-slate-100"
                   >
                     {/* Kotak Tanggal */}
-                    <div className="w-16 h-16 bg-amber-400 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm text-slate-900">
+                    <div className={`w-16 h-16 ${primaryBg} rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm text-white`}>
                       <span className="text-xl font-extrabold leading-none">{txDate.getDate().toString().padStart(2, '0')}</span>
                       <span className="text-[10px] font-bold uppercase mt-0.5">{MONTH_NAMES[txDate.getMonth()].substring(0, 3)} {txDate.getFullYear()}</span>
-                      <span className="text-[9px] font-semibold mt-1">{txDate.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                      <span className="text-[9px] font-semibold mt-1 opacity-90">{txDate.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                     
                     {/* Detail Transaksi */}
