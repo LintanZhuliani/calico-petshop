@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { socket } from '../lib/socket';
@@ -627,6 +627,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder }) {
 // ─────────────────────────────────────────────
 export default function ProductsPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const role = location.state?.role || 'kasir';
   const isAdmin = role === 'admin';
 
@@ -932,13 +933,21 @@ export default function ProductsPage() {
               </div>
             </div>
             {/* Search */}
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 !text-[20px]">search</span>
-              <input
-                value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Cari nama produk atau barcode..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-2 border-transparent focus:border-orange-300 rounded-xl text-sm text-slate-700 outline-none transition-all"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 !text-[20px]">search</span>
+                <input
+                  value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Cari nama produk atau barcode..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-2 border-transparent focus:border-orange-300 rounded-xl text-sm text-slate-700 outline-none transition-all"
+                />
+              </div>
+              <button 
+                onClick={() => navigate('/scan', { state: location.state })}
+                className={`p-2.5 rounded-xl ${primaryLight} ${primaryText} hover:opacity-80 transition-all flex items-center justify-center shrink-0 border border-transparent shadow-sm`}
+              >
+                <span className="material-symbols-outlined !text-[22px]">qr_code_scanner</span>
+              </button>
             </div>
             {/* Filter Chips */}
             <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
