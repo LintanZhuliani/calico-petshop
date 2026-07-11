@@ -22,9 +22,9 @@ export default function PenjualanPage() {
   const isAdmin = role === 'admin';
   const branchId = location.state?.branchName || 'pusat';
 
-  const primaryText = isAdmin ? 'text-orange-600' : 'text-red-600';
-  const primaryBg = isAdmin ? 'bg-orange-600' : 'bg-red-600';
-  const primaryLight = isAdmin ? 'bg-orange-50' : 'bg-red-50';
+  const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
+  const primaryBg = isAdmin ? 'bg-[#D35400]' : 'bg-[#C0392B]';
+  const primaryLight = isAdmin ? 'bg-[#FFF3E0]' : 'bg-[#FDEDEC]'; // orange-50 / red-50 equivalent
 
   const [reportType, setReportType] = useState(isAdmin ? 'bulanan' : 'harian'); // 'harian', 'bulanan', 'tahunan'
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -32,10 +32,6 @@ export default function PenjualanPage() {
   const [filterBranch, setFilterBranch] = useState(isAdmin ? 'semua' : branchId);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // States for Transaction Detail Modal
-  const [selectedTx, setSelectedTx] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const fetchTransactions = () => {
     setLoading(true);
@@ -50,53 +46,6 @@ export default function PenjualanPage() {
   useEffect(() => {
     fetchTransactions();
   }, [isAdmin, branchId]);
-
-  const handleDeleteTransaction = async (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus transaksi ini? Stok akan dikembalikan otomatis.")) return;
-    try {
-      await apiFetch(`/transactions/${id}`, { method: 'DELETE' });
-      alert("Transaksi berhasil dihapus");
-      setIsDetailOpen(false);
-      setSelectedTx(null);
-      fetchTransactions(); // Refresh data
-    } catch (error) {
-      alert(error.message || "Gagal menghapus transaksi");
-    }
-  };
-
-  // Helper for receipt printing
-  const handlePrintReceipt = (tx) => {
-    // Generate text for receipt (thermal printer format)
-    const storeName = branchId === 'pusat' ? "Calico's Pet Care" : 
-                      branchId === 'gempi' ? "Gempi Pet Shop" : "Baba Pet Corner";
-    let text = `${storeName}\n`;
-    text += `Tanggal: ${new Date(tx.date).toLocaleString('id-ID')}\n`;
-    text += `Kasir: ${tx.cashierName || 'Admin'}\n`;
-    text += `ID: ${tx.id}\n`;
-    text += `--------------------------------\n`;
-    
-    (tx.items || []).forEach(item => {
-      text += `${item.productName}\n`;
-      text += `${item.qty} x ${formatRupiah(item.price)}\n`;
-      text += `                     ${formatRupiah(item.qty * item.price)}\n`;
-    });
-    
-    text += `--------------------------------\n`;
-    text += `Total     : ${formatRupiah(tx.total)}\n`;
-    text += `Bayar     : ${formatRupiah(tx.paid || tx.total)}\n`;
-    text += `Kembali   : ${formatRupiah(tx.change || 0)}\n`;
-    text += `Metode    : ${tx.paymentMethod}\n`;
-    text += `--------------------------------\n`;
-    text += `Terima Kasih!\n\n`;
-
-    // Try to trigger android bridge or just copy to clipboard if web
-    if (window.Android && typeof window.Android.printReceipt === 'function') {
-      window.Android.printReceipt(text);
-    } else {
-      navigator.clipboard.writeText(text);
-      alert("Struk disalin ke clipboard! (Fitur cetak otomatis khusus di aplikasi Android)");
-    }
-  };
 
   // Navigasi Tanggal / Bulan / Tahun
   const handlePrev = () => {
@@ -342,13 +291,13 @@ export default function PenjualanPage() {
   }, []);
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+    <div className={`bg-slate-100 min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* Header */}
       <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan</h1>
+          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan & Analitik</h1>
         </div>
         
         {isAdmin && (
@@ -366,7 +315,7 @@ export default function PenjualanPage() {
         )}
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full">
+      <main className="px-5 py-4 space-y-4 w-full">
 
         {/* Navigasi Tanggal/Bulan/Tahun */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between">
@@ -402,7 +351,7 @@ export default function PenjualanPage() {
         {isAdmin && (
           <button 
             onClick={handleDownloadExcel}
-            className={`w-full py-3.5 ${primaryBg} text-white font-bold rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm shadow-md`}
+            className={`w-full py-3.5 ${primaryBg} hover:opacity-90 text-white font-bold rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm shadow-md`}
           >
             <span className="material-symbols-outlined !text-[20px]">download</span>
             Unduh Excel
@@ -436,7 +385,7 @@ export default function PenjualanPage() {
                       </div>
                     )}
                     <div
-                      className={`w-full max-w-[20px] rounded-t-md transition-all ${item.val > 0 ? (isAdmin ? 'bg-orange-400 hover:bg-orange-500' : 'bg-red-400 hover:bg-red-500') : 'bg-slate-100'}`}
+                      className={`w-full max-w-[20px] rounded-t-md transition-all ${item.val > 0 ? (isAdmin ? 'bg-[#D35400] hover:bg-[#b84800]' : 'bg-[#C0392B] hover:bg-red-800') : 'bg-slate-100'}`}
                       style={{ height: `${height}%` }}
                     />
                     <p className={`text-[9px] mt-1.5 transition-all ${showLabel ? 'text-slate-500 font-medium' : 'text-transparent'}`}>
@@ -504,172 +453,7 @@ export default function PenjualanPage() {
 
       </main>
       
-      {/* Daftar Transaksi */}
-      <div className="px-4 pb-6 max-w-xl md:max-w-5xl mx-auto w-full">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-2">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-            <p className="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>list_alt</span>
-              Riwayat Transaksi
-            </p>
-          </div>
-          
-          {filteredData.length === 0 ? (
-            <p className="text-center text-sm text-slate-400 py-6">Belum ada transaksi</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {filteredData.map((tx) => {
-                const txDate = new Date(tx.date);
-                const isNonTunai = tx.paymentMethod !== 'Tunai';
-                return (
-                  <div 
-                    key={tx.id} 
-                    onClick={() => { setSelectedTx(tx); setIsDetailOpen(true); }}
-                    className="flex p-4 gap-4 hover:bg-slate-50 cursor-pointer transition-colors active:bg-slate-100"
-                  >
-                    {/* Kotak Tanggal */}
-                    <div className={`w-16 h-16 ${primaryBg} rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm text-white`}>
-                      <span className="text-xl font-extrabold leading-none">{txDate.getDate().toString().padStart(2, '0')}</span>
-                      <span className="text-[10px] font-bold uppercase mt-0.5">{MONTH_NAMES[txDate.getMonth()].substring(0, 3)} {txDate.getFullYear()}</span>
-                      <span className="text-[9px] font-semibold mt-1 opacity-90">{txDate.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
-                    </div>
-                    
-                    {/* Detail Transaksi */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1 truncate">{tx.id.toUpperCase()}</p>
-                      <p className="text-lg font-extrabold text-emerald-600 font-headline leading-none">{formatRupiah(tx.total)}</p>
-                    </div>
-                    
-                    {/* Badge & Kasir */}
-                    <div className="flex flex-col items-end justify-center gap-1.5 shrink-0">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 border rounded-sm ${isNonTunai ? 'text-emerald-600 border-emerald-600 bg-emerald-50' : 'text-red-600 border-red-600 bg-red-50'}`}>
-                        {isNonTunai ? 'NON TUNAI' : 'TUNAI'}
-                      </span>
-                      <div className="text-right mt-1">
-                        <p className="text-[9px] text-slate-400 font-medium leading-none">Dibuat oleh</p>
-                        <p className="text-xs font-bold text-red-600 leading-tight">{tx.cashierName || 'Admin'}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Modal Detail Transaksi */}
-      {isDetailOpen && selectedTx && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
-          {/* Header Modal */}
-          <header className="bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <button onClick={() => setIsDetailOpen(false)} className="p-2 -ml-2 rounded-xl active:bg-slate-100 text-red-600 transition-colors shrink-0">
-                <span className="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
-              </button>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] md:text-sm font-normal text-slate-500 leading-none mb-1">ID Transaksi:</span> 
-                <span className="font-bold text-slate-800 text-xs md:text-lg uppercase tracking-wide truncate">{selectedTx.id.toUpperCase()}</span>
-              </div>
-            </div>
-            <button onClick={() => navigator.clipboard.writeText(selectedTx.id)} className="text-slate-400 p-2 hover:text-slate-600 active:scale-90 transition-transform shrink-0 ml-2 bg-slate-50 rounded-xl">
-              <span className="material-symbols-outlined !text-[20px]">content_copy</span>
-            </button>
-          </header>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            {/* Rincian Transaksi */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-              <h2 className="font-extrabold text-slate-800 text-lg mb-4">Rincian Transaksi</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Dibuat Oleh</span>
-                  <span className="font-bold text-slate-800">{selectedTx.cashierName || 'Admin'} <span className="text-slate-400 font-normal">(Staff Kasir)</span></span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Pembayaran</span>
-                  <span className="font-bold text-slate-800">{selectedTx.paymentMethod || 'Tunai'}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Tanggal Transaksi</span>
-                  <span className="font-bold text-slate-800">{new Date(selectedTx.date).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':')}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Pesanan */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-              <h2 className="font-extrabold text-slate-800 text-lg mb-4">Pesanan</h2>
-              
-              <div className="space-y-4 mb-4 mt-2">
-                {(selectedTx.items || []).map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-start text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0">
-                    <div className="flex-1 pr-4 min-w-0">
-                      <p className="font-semibold text-slate-800 leading-tight">{item.productName}</p>
-                      <p className="text-xs text-slate-500 mt-1.5">{item.qty} x {formatRupiah(item.price)}</p>
-                    </div>
-                    <span className="font-extrabold text-slate-800 shrink-0">{formatRupiah(item.price * item.qty)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-slate-100 pt-3 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Total Pesanan</span>
-                  <span className="font-bold text-slate-800">{formatRupiah(selectedTx.total)}</span>
-                </div>
-                <div className="flex justify-between pt-1">
-                  <span className="font-extrabold text-slate-900 text-base">Total</span>
-                  <span className="font-extrabold text-slate-900 text-base">{formatRupiah(selectedTx.total)}</span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Bayar</span>
-                  <span className="font-bold text-slate-700">{formatRupiah(selectedTx.paid || selectedTx.total)}</span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Kembali</span>
-                  <span className="font-bold text-slate-700">{formatRupiah(selectedTx.change || 0)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Modal Footer Actions */}
-          <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center gap-3 shrink-0">
-            <button 
-              onClick={() => handlePrintReceipt(selectedTx)}
-              className={`flex-1 ${isAdmin ? 'bg-[#D35400] hover:bg-[#b84800]' : 'bg-[#C0392B] hover:bg-red-800'} active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center`}
-            >
-              Salin Struk
-            </button>
-            
-            {isAdmin && (
-              <div className="relative group">
-                <button 
-                  className={`p-3.5 border-2 ${isAdmin ? 'border-[#D35400] text-[#D35400] hover:bg-orange-50' : 'border-[#C0392B] text-[#C0392B] hover:bg-red-50'} rounded-2xl flex items-center justify-center active:scale-[0.98] transition-all`}
-                  onClick={(e) => {
-                    const menu = e.currentTarget.nextElementSibling;
-                    menu.classList.toggle('hidden');
-                  }}
-                >
-                  <span className="material-symbols-outlined !text-[20px]">more_vert</span>
-                </button>
-                {/* Popover Menu */}
-                <div className="hidden absolute bottom-full right-0 mb-2 w-32 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
-                  <button 
-                    onClick={() => handleDeleteTransaction(selectedTx.id)}
-                    className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {isAdmin && <BottomNav />}
+      <BottomNav />
     </div>
   );
 }

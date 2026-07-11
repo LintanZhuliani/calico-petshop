@@ -181,7 +181,7 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      <main className="px-5 py-5 space-y-6 max-w-xl md:max-w-6xl mx-auto w-full">
+      <main className="px-5 py-6 space-y-4 w-full">
         {/* ── Greeting ── */}
         <section className="text-center md:text-left md:mt-4">
           <h1 className={`text-2xl md:text-3xl font-extrabold font-headline ${primaryText} leading-tight`}>

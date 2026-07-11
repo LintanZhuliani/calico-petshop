@@ -132,7 +132,7 @@ export default function ScanPage() {
     findProduct(manualCode.trim());
   };
 
-  // Kasir: Tambah ke keranjang
+  // Kasir/Admin: Tambah ke keranjang
   const handleSell = async () => {
     if (!scanResult || qty <= 0) return;
     const total = scanResult.totalStock || 0;
@@ -153,8 +153,12 @@ export default function ScanPage() {
       setScanResult(null);
       setQty(1);
       
-      // Navigate back to products page with cart open
-      navigate('/products', { state: { ...location.state, cartOpen: true } });
+      // Navigate back to cart page with cart open
+      if (isAdmin) {
+        navigate('/kasir', { state: { ...location.state, cartOpen: true } });
+      } else {
+        navigate('/products', { state: { ...location.state, cartOpen: true } });
+      }
     } catch (err) {
       showToast('Gagal menambah ke keranjang: ' + err.message);
     }
@@ -227,14 +231,14 @@ export default function ScanPage() {
         </div>
       </header>
 
-      <main className="px-5 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full">
-        {/* Mode Toggle (khusus admin dapat restock mode) */}
+      <main className="px-5 py-5 space-y-5 w-full">
+        {/* Mode Toggle (khusus admin dapat restock & sell mode) */}
         {isAdmin && (
           <div className="bg-slate-100 p-1 rounded-2xl flex">
-            {['check', 'restock'].map(m => (
+            {['check', 'sell', 'restock'].map(m => (
               <button key={m} onClick={() => { setMode(m); setScanResult(null); setNotFound(false); }}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === m ? `bg-white ${primaryText} shadow-sm` : 'text-slate-400'}`}>
-                {m === 'check' ? '🔍 Cek Stok' : '📦 Restock'}
+                {m === 'check' ? '🔍 Cek Stok' : m === 'sell' ? '🛒 Kasir' : '📦 Restock'}
               </button>
             ))}
           </div>

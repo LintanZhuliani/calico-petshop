@@ -288,7 +288,7 @@ export default function TransferPage() {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-xl md:max-w-5xl mx-auto w-full">
+      <main className="px-5 py-6 space-y-4 w-full">
 
         {/* ── ADMIN: Form Buat Mutasi ── */}
         {activeTab === 'new' && isAdmin && (
@@ -316,7 +316,7 @@ export default function TransferPage() {
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ke Cabang</label>
                 <select value={toBranch} onChange={e => setToBranch(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 font-medium outline-none">
-                  <option value="">-- Pilih cabang tujuan --</option>
+                  <option value="" disabled>Pilih cabang tujuan</option>
                   {BRANCHES.filter(b => b.id !== fromBranch).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>

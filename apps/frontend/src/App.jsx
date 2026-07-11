@@ -8,6 +8,8 @@ import ScanPage from "./pages/ScanPage";
 import TransferPage from "./pages/TransferPage";
 import ProfilePage from "./pages/ProfilePage";
 import PenjualanPage from "./pages/PenjualanPage";
+import KasirPage from "./pages/KasirPage";
+import RiwayatPage from "./pages/RiwayatPage";
 
 import RekapHarianPage from "./pages/RekapHarianPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -25,6 +27,8 @@ export default function App() {
         <Route path="/scan" element={<ScanPage />} />
         <Route path="/transfer" element={<TransferPage />} />
         <Route path="/penjualan" element={<PenjualanPage />} />
+        <Route path="/kasir" element={<KasirPage />} />
+        <Route path="/riwayat" element={<RiwayatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/notifikasi" element={<NotifikasiPage />} />

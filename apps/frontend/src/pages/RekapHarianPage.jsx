@@ -226,7 +226,7 @@ export default function RekapHarianPage() {
         </div>
       </header>
 
-      <main className="px-4 py-5 space-y-5 max-w-xl md:max-w-5xl mx-auto w-full">
+      <main className="px-5 py-6 space-y-4 w-full">
         
         {/* STEP 1: Ringkasan Sistem */}
         <section className="bg-slate-800 text-white p-5 rounded-2xl shadow-sm">
