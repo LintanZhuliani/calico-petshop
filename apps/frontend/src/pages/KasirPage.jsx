@@ -467,9 +467,15 @@ export default function KasirPage() {
       <div className="flex flex-col flex-1 w-full min-h-screen">
         <div className="flex-1 flex flex-col shrink-0 w-full">
           {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 py-3 flex flex-col gap-3">
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-3 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+                  className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined !text-[24px]">menu</span>
+                </button>
                 <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
                   Checkout
                 </h1>
@@ -507,13 +513,6 @@ export default function KasirPage() {
             </div>
             {/* Filter Chips */}
             <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
-              {['Semua', 'Kritis', 'Habis'].map(s => (
-                <button key={s} onClick={() => setFilterStatus(s)}
-                  className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {s}
-                </button>
-              ))}
-              <div className="w-px bg-slate-200 my-1" />
               {uniqueCats.map(c => (
                 <button key={c} onClick={() => setFilterCat(c)}
                   className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>

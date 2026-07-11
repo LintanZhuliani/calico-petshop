@@ -221,9 +221,14 @@ export default function ScanPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 py-4 flex items-center justify-between text-left">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between text-left">
         <div className="flex items-center gap-3">
-
+          <button 
+            onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+            className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined !text-[24px]">menu</span>
+          </button>
           <div>
             <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
             <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>

@@ -272,9 +272,14 @@ export default function TransferPage() {
       )}
 
       {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 pt-4 pb-3 flex flex-col gap-3">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3 flex flex-col gap-3">
         <div className="flex items-center gap-3">
-
+          <button 
+            onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+            className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined !text-[24px]">menu</span>
+          </button>
           <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Transfer Barang</h1>
         </div>
         {/* Tabs */}

@@ -34,7 +34,14 @@ export default function BottomNav() {
       });
     };
     window.addEventListener('toggle-sidebar', handleExternalToggle);
-    return () => window.removeEventListener('toggle-sidebar', handleExternalToggle);
+    
+    const handleMobileToggle = () => setIsMoreOpen(true);
+    window.addEventListener('mobile-drawer-toggle', handleMobileToggle);
+    
+    return () => {
+      window.removeEventListener('toggle-sidebar', handleExternalToggle);
+      window.removeEventListener('mobile-drawer-toggle', handleMobileToggle);
+    };
   }, []);
 
   const allMenus = [];
@@ -85,7 +92,7 @@ export default function BottomNav() {
           if (window.innerWidth < 768) setIsMoreOpen(true);
           else toggleSidebar();
         }}
-        className="flex fixed top-4 left-4 z-[55] p-2 rounded-xl text-slate-700 active:scale-95 transition-all md:bg-white md:border md:border-slate-200 md:shadow-md md:hover:bg-slate-50"
+        className="hidden md:flex fixed top-4 left-4 z-[55] p-2 rounded-xl text-slate-700 active:scale-95 transition-all bg-white border border-slate-200 shadow-md hover:bg-slate-50"
       >
         <span className="material-symbols-outlined !text-[22px]">menu</span>
       </button>

@@ -167,8 +167,14 @@ export default function DashboardPage() {
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 py-4 flex justify-between items-center">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
+          <button 
+            onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+            className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined !text-[24px]">menu</span>
+          </button>
         </div>
         <button 
           onClick={() => navigate('/notifikasi', { state: { ...location.state, lowStock, expiring } })}

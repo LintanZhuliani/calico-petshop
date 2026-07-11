@@ -931,9 +931,15 @@ export default function ProductsPage() {
         {/* Full-width container: Search, Filters, Product Grid */}
         <div className="flex-1 flex flex-col shrink-0 w-full">
           {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 pt-4 pb-3 flex flex-col gap-3">
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+                  className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined !text-[24px]">menu</span>
+                </button>
                 <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
                   {isAdmin ? 'Produk (Admin)' : 'Kasir POS'}
                 </h1>

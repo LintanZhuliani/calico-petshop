@@ -188,10 +188,17 @@ export default function RiwayatPage() {
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 pl-16 md:pl-5 pr-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
+      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Riwayat Transaksi</h1>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+              className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined !text-[24px]">menu</span>
+            </button>
+            <div>
+              <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Riwayat Transaksi</h1>
             <p className="text-sm text-slate-400">Daftar semua transaksi yang telah dilakukan</p>
           </div>
         </div>
