@@ -314,8 +314,10 @@ export default function ScanPage() {
                 <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center shrink-0">
                   <img src={scanResult.image} alt={scanResult.name} className="w-full h-full object-cover" />
                 </div>
+              ) : scanResult.imageEmoji ? (
+                <span className="material-symbols-outlined text-4xl shrink-0 text-slate-400" style={{ fontVariationSettings: "'FILL' 1" }}>{scanResult.imageEmoji}</span>
               ) : (
-                <span className="text-4xl shrink-0">{scanResult.imageEmoji}</span>
+                <span className="material-symbols-outlined text-4xl shrink-0 text-slate-400">shopping_bag</span>
               )}
               <div className="flex-1">
                 <p className="font-bold text-slate-900">{scanResult.name}</p>

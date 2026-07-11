@@ -342,7 +342,7 @@ export default function TransferPage() {
 
               {transferItems.length === 0 && (
                 <div className="text-center py-6 text-slate-300">
-                  <span className="material-symbols-outlined !text-[36px]">inventory_2</span>
+                  <span className="material-symbols-outlined !text-[36px]">shopping_bag</span>
                   <p className="text-sm mt-1">Belum ada barang ditambahkan</p>
                 </div>
               )}

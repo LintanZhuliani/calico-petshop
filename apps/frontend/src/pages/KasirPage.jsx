@@ -532,7 +532,7 @@ export default function KasirPage() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="col-span-full flex flex-col items-center py-16 text-slate-400">
-                <span className="material-symbols-outlined !text-[48px] mb-3">inventory_2</span>
+                <span className="material-symbols-outlined !text-[48px] mb-3">shopping_bag</span>
                 <p className="font-bold text-slate-500">Tidak ada produk ditemukan</p>
                 <p className="text-sm">Coba ubah filter pencarian</p>
               </div>
@@ -555,7 +555,7 @@ export default function KasirPage() {
                           {p.imageEmoji}
                         </span>
                       ) : (
-                        <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">inventory_2</span>
+                        <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
