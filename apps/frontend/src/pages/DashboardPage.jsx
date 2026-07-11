@@ -192,9 +192,9 @@ export default function DashboardPage() {
     return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
   });
 
-  const lowStockCount = notifPrefs.stok ? lowStock.length : 0;
+  const notifLowStockCount = notifPrefs.stok ? lowStock.length : 0;
   const expiringCount = notifPrefs.expired ? expiring.length : 0;
-  const badgeCount = lowStockCount + expiringCount;
+  const badgeCount = notifLowStockCount + expiringCount;
 
   return (
     <div className={`bg-slate-100 min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
