@@ -53,7 +53,7 @@ export default function BottomNav() {
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
     allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Transfer' });
     allMenus.push({ path: '/products', icon: 'inventory_2', label: 'Kelola Produk' });
-    allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat' });
+    allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/profile', icon: 'person', label: 'Profil' });
   } else {
     allMenus.push({ path: '/dashboard', icon: 'home', label: 'Home' });
@@ -61,7 +61,7 @@ export default function BottomNav() {
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
     allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Transfer' });
     allMenus.push({ path: '/rekap', icon: 'point_of_sale', label: 'Tutup Kasir' });
-    allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat' });
+    allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/profile', icon: 'person', label: 'Profil' });
   }
 
