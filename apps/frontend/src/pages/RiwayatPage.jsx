@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { formatRupiah } from '../utils/formatters';
-import { printToBluetooth } from '../utils/printer';
+import { printReceipt } from '../utils/printer';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -141,18 +141,8 @@ export default function RiwayatPage() {
     if (window.Android && typeof window.Android.printReceipt === 'function') {
       window.Android.printReceipt(text);
     } else {
-      // Coba cetak ke printer Bluetooth lewat Web Bluetooth API
-      printToBluetooth(text)
-        .then(() => alert("Struk berhasil dikirim ke printer!"))
-        .catch(err => {
-          // Jika gagal (atau dibatalkan), salin teks sebagai fallback
-          navigator.clipboard.writeText(text);
-          if (err.name === 'NotFoundError') {
-            // User membatalkan pemilihan perangkat
-            return;
-          }
-          alert(`Gagal terhubung ke printer Bluetooth:\n${err.message}\n\nStruk telah disalin ke clipboard sebagai alternatif.`);
-        });
+      // Lempar ke RawBT (Android) atau window.print (PC)
+      printReceipt(text);
     }
   };
 

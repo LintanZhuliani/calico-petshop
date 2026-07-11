@@ -1,70 +1,52 @@
-export async function printToBluetooth(text) {
-  if (!navigator.bluetooth) {
-    throw new Error('Web Bluetooth API tidak didukung di browser ini. Gunakan Chrome atau Edge terbaru, dan pastikan koneksi HTTPS.');
-  }
-
-  try {
-    // Meminta akses ke perangkat Bluetooth
-    const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [
-        '000018f0-0000-1000-8000-00805f9b34fb', // Standard BLE Printer
-        'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // Goojprt / Poiner
-        '49535343-fe7d-4ae5-8fa9-9fafd205e455', // ISSC
-        '0000ff00-0000-1000-8000-00805f9b34fb'  // Generic FF00
-      ]
-    });
-
-    const server = await device.gatt.connect();
-    const services = await server.getPrimaryServices();
+export async function printReceipt(text) {
+  const isAndroid = /android/i.test(navigator.userAgent);
+  
+  if (isAndroid) {
+    // Jalur Android: Lempar ke aplikasi RawBT
+    const encodedText = encodeURIComponent(text);
+    // Intent URL untuk Android agar membuka aplikasi RawBT
+    const intentUrl = `intent:${encodedText}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dru.a402d.rawbtprinter;end;`;
     
-    let writeCharacteristic = null;
-
-    // Cari characteristic yang bisa di-write
-    for (const service of services) {
-      const characteristics = await service.getCharacteristics();
-      for (const char of characteristics) {
-        if (char.properties.write || char.properties.writeWithoutResponse) {
-          writeCharacteristic = char;
-          break;
-        }
-      }
-      if (writeCharacteristic) break;
-    }
-
-    if (!writeCharacteristic) {
-      throw new Error('Tidak dapat menemukan fitur cetak pada perangkat ini. Mungkin printer ini tidak didukung.');
-    }
-
-    // Persiapkan perintah cetak (ESC/POS)
-    const encoder = new TextEncoder();
-    const initCmd = new Uint8Array([0x1B, 0x40]); // Reset printer
-    const textBytes = encoder.encode(text);
-    const endCmd = new Uint8Array([0x0A, 0x0A, 0x0A]); // Feed 3 baris
-    
-    // Gabungkan array
-    const fullData = new Uint8Array(initCmd.length + textBytes.length + endCmd.length);
-    fullData.set(initCmd, 0);
-    fullData.set(textBytes, initCmd.length);
-    fullData.set(endCmd, initCmd.length + textBytes.length);
-
-    // Kirim data secara bertahap (chunking max 256 bytes) untuk mencegah buffer overflow di printer BLE
-    const chunkSize = 256;
-    for (let i = 0; i < fullData.length; i += chunkSize) {
-      const chunk = fullData.slice(i, i + chunkSize);
-      if (writeCharacteristic.properties.writeWithoutResponse) {
-        await writeCharacteristic.writeValueWithoutResponse(chunk);
-      } else {
-        await writeCharacteristic.writeValue(chunk);
-      }
-      // Beri jeda kecil agar printer tidak hang
-      await new Promise(r => setTimeout(r, 50));
-    }
-
-    device.gatt.disconnect();
+    // Pindah ke URL intent
+    window.location.href = intentUrl;
     return true;
-  } catch (err) {
-    console.error('Bluetooth Print Error:', err);
-    throw err;
+  } else {
+    // Jalur PC/Laptop: Gunakan sistem Print bawaan browser (window.print)
+    // Membuat iframe tak terlihat berisi teks struk
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.top = '-9999px';
+    document.body.appendChild(printFrame);
+    
+    const doc = printFrame.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <style>
+            @media print {
+              @page { margin: 0; size: 58mm auto; }
+              body { margin: 0; padding: 10px; font-family: monospace; font-size: 12px; width: 58mm; white-space: pre-wrap; word-wrap: break-word; }
+            }
+            body { font-family: monospace; white-space: pre-wrap; }
+          </style>
+        </head>
+        <body>${text}</body>
+      </html>
+    `);
+    doc.close();
+    
+    // Tunggu sebentar lalu cetak
+    setTimeout(() => {
+      printFrame.contentWindow.focus();
+      printFrame.contentWindow.print();
+      // Hapus iframe setelah dialog print muncul
+      setTimeout(() => {
+        document.body.removeChild(printFrame);
+      }, 1000);
+    }, 250);
+    
+    return true;
   }
 }
+
