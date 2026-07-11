@@ -82,9 +82,12 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('userAccount');
     clearSession();
+    try {
+      await authClient.signOut();
+    } catch(e) { console.error(e); }
     navigate('/login', { replace: true });
   };
 
