@@ -102,13 +102,13 @@ export default function NotifikasiPage() {
             <span className="material-symbols-outlined animate-spin !text-[40px] mb-4">autorenew</span>
             <p className="font-semibold text-sm">Memeriksa data stok...</p>
           </div>
-        ) : lowStock.length === 0 && expiring.length === 0 ? (
+        ) : validLowStock.length === 0 && validExpiring.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center">
             <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
               <span className="material-symbols-outlined !text-[40px] text-emerald-500">check_circle</span>
             </div>
             <h2 className="text-lg font-bold text-slate-800 mb-1">Semua Aman! 🎉</h2>
-            <p className="text-sm">Tidak ada peringatan stok menipis atau barang hampir kadaluarsa.</p>
+            <p className="text-sm">Tidak ada peringatan stok menipis atau barang hampir kadaluarsa yang aktif.</p>
           </div>
         ) : (
           <div className="space-y-6">

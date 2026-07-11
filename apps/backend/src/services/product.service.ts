@@ -428,7 +428,7 @@ export const productService = {
       const prod = prodResult[0];
 
       batches.forEach((b, index) => {
-        if (!b.expiredDate) return;
+        if (!b.expiredDate || b.qty <= 0) return;
         const days = daysUntilExpiry(b.expiredDate);
         if (days <= withinDays) {
           alerts.push({
