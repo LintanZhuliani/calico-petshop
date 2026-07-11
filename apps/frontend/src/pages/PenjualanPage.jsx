@@ -29,14 +29,14 @@ export default function PenjualanPage() {
   const [reportType, setReportType] = useState(isAdmin ? 'bulanan' : 'harian'); // 'harian', 'bulanan', 'tahunan'
   const [selectedDate, setSelectedDate] = useState(new Date());
   
-  const [filterBranch, setFilterBranch] = useState(isAdmin ? 'semua' : branchId);
+  const [filterBranch, setFilterBranch] = useState(branchId || 'semua');
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTransactions = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (!isAdmin) params.set('branchId', branchId);
+    if (branchId) params.set('branchId', branchId);
     apiFetch(`/transactions?${params}`)
       .then(data => setTransactions(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to load transactions:', err))
