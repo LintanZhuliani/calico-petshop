@@ -116,27 +116,50 @@ export default function RiwayatPage() {
 
   // Helper for receipt printing
   const handlePrintReceipt = (tx) => {
-    const storeName = branchId === 'pusat' ? "Calico's Pet Care" : 
-                      branchId === 'gempi' ? "Gempi Pet Shop" : "Baba Pet Corner";
-    let text = `${storeName}\n`;
-    text += `Tanggal: ${new Date(tx.date).toLocaleString('id-ID')}\n`;
-    text += `Kasir: ${tx.cashierName || 'Admin'}\n`;
-    text += `ID: ${tx.id}\n`;
-    text += `--------------------------------\n`;
+    // 32 chars width standard for 58mm
+    const pad = (left, right) => {
+      const space = 32 - left.length - right.length;
+      return left + (space > 0 ? ' '.repeat(space) : ' ') + right;
+    };
+    const center = (text) => {
+      if (text.length >= 32) return text;
+      const padLeft = Math.floor((32 - text.length) / 2);
+      return ' '.repeat(padLeft) + text;
+    };
+
+    let text = center("Calico's Pet Care") + '\n';
+    text += center("Jl. Ps. Jengkol no 20, Babakan,") + '\n';
+    text += center("Setu, Tangsel") + '\n';
+    text += center("085702002027") + '\n';
+    text += '-'.repeat(32) + '\n';
+    
+    text += pad("No", tx.id) + '\n';
+    const txDate = new Date(tx.date);
+    const dateStr = `${String(txDate.getDate()).padStart(2, '0')}-${String(txDate.getMonth() + 1).padStart(2, '0')}-${txDate.getFullYear()} ${String(txDate.getHours()).padStart(2, '0')}:${String(txDate.getMinutes()).padStart(2, '0')}`;
+    text += pad("Tanggal", dateStr) + '\n';
+    text += pad("Kasir", tx.cashierName || 'Admin') + '\n';
+    text += pad("Pembayaran", tx.paymentMethod || 'Tunai') + '\n';
+    text += '-'.repeat(32) + '\n';
     
     (tx.items || []).forEach(item => {
-      text += `${item.productName}\n`;
-      text += `${item.qty} x ${formatRupiah(item.price)}\n`;
-      text += `                     ${formatRupiah(item.qty * item.price)}\n`;
+      let pName = item.productName;
+      if (pName.length > 32) pName = pName.substring(0, 32);
+      text += pName + '\n';
+      
+      const leftLine = `${formatRupiah(item.price)} x ${item.qty}`;
+      const rightLine = formatRupiah(item.qty * item.price);
+      text += pad(leftLine, rightLine) + '\n';
     });
     
-    text += `--------------------------------\n`;
-    text += `Total     : ${formatRupiah(tx.total)}\n`;
-    text += `Bayar     : ${formatRupiah(tx.paid || tx.total)}\n`;
-    text += `Kembali   : ${formatRupiah(tx.change || 0)}\n`;
-    text += `Metode    : ${tx.paymentMethod}\n`;
-    text += `--------------------------------\n`;
-    text += `Terima Kasih!\n\n`;
+    text += '-'.repeat(32) + '\n';
+    text += pad("Total Pesanan", formatRupiah(tx.total)) + '\n';
+    text += pad("Total", formatRupiah(tx.total)) + '\n';
+    text += pad("Bayar", formatRupiah(tx.paid || tx.total)) + '\n';
+    text += pad("Kembali", formatRupiah(tx.change || 0)) + '\n';
+    text += '-'.repeat(32) + '\n';
+    
+    text += center("Gratis Antar & Jemput. Delivery,") + '\n';
+    text += center("Grooming, Penginapan") + '\n\n';
 
     if (window.Android && typeof window.Android.printReceipt === 'function') {
       window.Android.printReceipt(text);

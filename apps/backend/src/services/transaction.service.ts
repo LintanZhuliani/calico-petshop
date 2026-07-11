@@ -9,7 +9,7 @@ import {
   transactionItem,
   product,
 } from "../db/schema/index.js";
-import { generateId } from "../lib/utils.js";
+import { generateId, generateTxId } from "../lib/utils.js";
 import { productService } from "./product.service.js";
 import { getIo } from "../lib/socket.js";
 
@@ -86,7 +86,7 @@ export const transactionService = {
     paymentMethod: string;
   }) {
     const total = data.items.reduce((s, i) => s + i.price * i.qty, 0);
-    const txId = generateId("tx");
+    const txId = generateTxId();
 
     // Step 1: Create transaction record FIRST (safe — no stock changes yet)
     const txResult = await db
