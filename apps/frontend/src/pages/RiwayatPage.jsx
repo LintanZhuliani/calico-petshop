@@ -133,7 +133,7 @@ export default function RiwayatPage() {
     text += center("085702002027") + '\n';
     text += '-'.repeat(32) + '\n';
     
-    text += pad("No", tx.id) + '\n';
+    text += pad("ID", tx.id) + '\n';
     const txDate = new Date(tx.date);
     const dateStr = `${String(txDate.getDate()).padStart(2, '0')}-${String(txDate.getMonth() + 1).padStart(2, '0')}-${txDate.getFullYear()} ${String(txDate.getHours()).padStart(2, '0')}:${String(txDate.getMinutes()).padStart(2, '0')}`;
     text += pad("Tanggal", dateStr) + '\n';
@@ -152,7 +152,6 @@ export default function RiwayatPage() {
     });
     
     text += '-'.repeat(32) + '\n';
-    text += pad("Total Pesanan", formatRupiah(tx.total)) + '\n';
     text += pad("Total", formatRupiah(tx.total)) + '\n';
     text += pad("Bayar", formatRupiah(tx.paid || tx.total)) + '\n';
     text += pad("Kembali", formatRupiah(tx.change || 0)) + '\n';
