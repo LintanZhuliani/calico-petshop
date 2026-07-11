@@ -39,13 +39,20 @@ export default function NotifikasiPage() {
     fetchData();
   }, [branchId, location.state]);
 
+  const [notifPrefs] = useState(() => {
+    const saved = localStorage.getItem('calico_notif_prefs');
+    return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
+  });
+
   // Separate Expiring into Expired and Expiring Soon
-  const expiredItems = expiring.filter(item => item.daysLeft <= 0);
-  const expiringSoonItems = expiring.filter(item => item.daysLeft > 0);
+  const validExpiring = notifPrefs.expired ? expiring : [];
+  const expiredItems = validExpiring.filter(item => item.daysLeft <= 0);
+  const expiringSoonItems = validExpiring.filter(item => item.daysLeft > 0);
 
   // Separate Low Stock into Out of Stock and Critical Stock
-  const outOfStockItems = lowStock.filter(item => (item.totalStock || 0) <= 0);
-  const criticalStockItems = lowStock.filter(item => (item.totalStock || 0) > 0);
+  const validLowStock = notifPrefs.stok ? lowStock : [];
+  const outOfStockItems = validLowStock.filter(item => (item.totalStock || 0) <= 0);
+  const criticalStockItems = validLowStock.filter(item => (item.totalStock || 0) > 0);
 
   return (
     <div className="bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300">

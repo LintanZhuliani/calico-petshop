@@ -187,6 +187,15 @@ export default function DashboardPage() {
   const greeting = greetingHour < 11 ? 'Selamat Pagi' : greetingHour < 15 ? 'Selamat Siang' : greetingHour < 18 ? 'Selamat Sore' : 'Selamat Malam';
   const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
+  const [notifPrefs, setNotifPrefs] = useState(() => {
+    const saved = localStorage.getItem('calico_notif_prefs');
+    return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
+  });
+
+  const lowStockCount = notifPrefs.stok ? lowStock.length : 0;
+  const expiringCount = notifPrefs.expired ? expiring.length : 0;
+  const badgeCount = lowStockCount + expiringCount;
+
   return (
     <div className={`bg-slate-100 min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
@@ -206,9 +215,9 @@ export default function DashboardPage() {
           className={`relative p-2 rounded-full bg-slate-50 hover:bg-slate-100 transition-all`}
         >
           <span className={`material-symbols-outlined !text-[20px] text-slate-600`}>notifications</span>
-          {(lowStock.length > 0 || expiring.length > 0) && (
+          {badgeCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] font-bold text-white px-1 shadow-sm">
-              {lowStock.length + expiring.length > 99 ? '99+' : lowStock.length + expiring.length}
+              {badgeCount > 99 ? '99+' : badgeCount}
             </span>
           )}
         </button>
@@ -222,8 +231,18 @@ export default function DashboardPage() {
           </h1>
         </section>
 
-        {/* ── Quick Links ── */}
+        {/* ── Quick Links & Alerts ── */}
         <div className="flex flex-col gap-3">
+
+          {!isAdmin && notifPrefs.shift && todayTxCount > 0 && new Date().getHours() >= 15 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 shadow-sm animate-in fade-in slide-in-from-top-4">
+              <span className="material-symbols-outlined text-amber-500 !text-[24px]">warning</span>
+              <div className="flex-1">
+                <p className="font-bold text-amber-900 text-sm">Jangan lupa Rekap Kasir!</p>
+                <p className="text-xs text-amber-700 mt-0.5">Ada {todayTxCount} transaksi hari ini. Lakukan tutup kasir sebelum pergantian shift.</p>
+              </div>
+            </div>
+          )}
 
           {!isAdmin && (
             <button 
