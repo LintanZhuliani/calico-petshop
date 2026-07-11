@@ -83,7 +83,7 @@ export default function NotifikasiPage() {
         <div className="w-10"></div> {/* Spacer to keep flex balance */}
       </header>
 
-      <main className="px-5 py-6 max-w-xl md:max-w-5xl mx-auto w-full space-y-6">
+      <main className="px-5 py-6 w-full space-y-6">
         
         {/* Note / Legenda Informasi */}
         <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">

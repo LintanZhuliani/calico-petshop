@@ -451,7 +451,7 @@ export default function KasirPage() {
 
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const uniqueCats = ['Semua', ...new Set(products.map(p => p.category))];
+  const uniqueCats = ['Semua', ...new Set(products.map(p => p.category).filter(c => c && c.toLowerCase() !== 'semua'))];
 
   return (
     <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-20 md:pb-0 transition-all duration-300 ${
