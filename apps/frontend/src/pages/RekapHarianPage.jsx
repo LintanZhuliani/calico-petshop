@@ -180,13 +180,7 @@ export default function RekapHarianPage() {
     }
     text += `\n`;
 
-    text += `Pic: ${picName || 'Kasir'}\n\n`;
-
-    if (uangLebih > 0 || uangKurang > 0) {
-      text += `••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••\n`;
-      if (uangLebih > 0) text += `* uang lebih ${formatRupiah(uangLebih)}\n`;
-      if (uangKurang > 0) text += `* uang kurang ${formatRupiah(uangKurang)}\n`;
-    }
+    text += `Pic: ${picName || 'Kasir'}`;
 
     return text;
   };
