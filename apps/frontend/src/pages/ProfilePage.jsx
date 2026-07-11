@@ -443,16 +443,6 @@ export default function ProfilePage() {
                       <div className="w-11 h-6 bg-slate-200 peer-checked:bg-orange-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
-                    <div>
-                      <p className="font-bold text-slate-800">Rekap Shift Harian</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Pengingat untuk merekap transaksi shift</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
-                      <input type="checkbox" checked={notifState.shift} onChange={() => setNotifState(s => ({...s, shift: !s.shift}))} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-slate-200 peer-checked:bg-orange-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                    </label>
-                  </div>
                 </div>
               )}
 

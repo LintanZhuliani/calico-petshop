@@ -231,18 +231,8 @@ export default function DashboardPage() {
           </h1>
         </section>
 
-        {/* ── Quick Links & Alerts ── */}
+        {/* ── Quick Links ── */}
         <div className="flex flex-col gap-3">
-
-          {!isAdmin && notifPrefs.shift && todayTxCount > 0 && new Date().getHours() >= 15 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 shadow-sm animate-in fade-in slide-in-from-top-4">
-              <span className="material-symbols-outlined text-amber-500 !text-[24px]">warning</span>
-              <div className="flex-1">
-                <p className="font-bold text-amber-900 text-sm">Jangan lupa Rekap Kasir!</p>
-                <p className="text-xs text-amber-700 mt-0.5">Ada {todayTxCount} transaksi hari ini. Lakukan tutup kasir sebelum pergantian shift.</p>
-              </div>
-            </div>
-          )}
 
           {!isAdmin && (
             <button 
