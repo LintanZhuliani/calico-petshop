@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
-import { formatRupiah, generateId } from '../utils/formatters';
+import { formatRupiah, generateId, formatDate } from '../utils/formatters';
 import { getExpiryStatus, getExpiryColorClass } from '../utils/stockAlerts';
 
 let Html5Qrcode = null;
