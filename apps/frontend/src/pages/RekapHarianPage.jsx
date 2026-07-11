@@ -410,23 +410,25 @@ export default function RekapHarianPage() {
             Salin Format WhatsApp
           </button>
           
-          <button 
-            onClick={() => {
-              if (window.confirm("Apakah Anda yakin ingin Tutup Kasir? Laporan akan disalin dan semua perhitungan rekap akan di-reset (0) untuk shift berikutnya hari ini.")) {
-                copyToClipboard();
-                setModalAwal('');
-                setUangFisik('');
-                setPengeluaran([]);
-                const now = new Date().toISOString();
-                localStorage.setItem(`calico_last_closed_at_${userName}`, now);
-                setLastClosedAt(now);
-              }
-            }}
-            className="w-full bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-300 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm mt-2"
-          >
-            <span className="material-symbols-outlined">point_of_sale</span>
-            Tutup Kasir
-          </button>
+          {role !== 'admin' && (
+            <button 
+              onClick={() => {
+                if (window.confirm("Apakah Anda yakin ingin Tutup Kasir? Laporan akan disalin dan semua perhitungan rekap akan di-reset (0) untuk shift berikutnya hari ini.")) {
+                  copyToClipboard();
+                  setModalAwal('');
+                  setUangFisik('');
+                  setPengeluaran([]);
+                  const now = new Date().toISOString();
+                  localStorage.setItem(`calico_last_closed_at_${userName}`, now);
+                  setLastClosedAt(now);
+                }
+              }}
+              className="w-full bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-300 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm mt-2"
+            >
+              <span className="material-symbols-outlined">point_of_sale</span>
+              Tutup Kasir
+            </button>
+          )}
         </section>
 
       </main>
