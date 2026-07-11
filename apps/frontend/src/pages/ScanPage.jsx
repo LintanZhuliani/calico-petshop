@@ -238,7 +238,13 @@ export default function ScanPage() {
             {['check', 'sell', 'restock'].map(m => (
               <button key={m} onClick={() => { setMode(m); setScanResult(null); setNotFound(false); }}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === m ? `bg-white ${primaryText} shadow-sm` : 'text-slate-400'}`}>
-                {m === 'check' ? '🔍 Cek Stok' : m === 'sell' ? '🛒 Kasir' : '📦 Restock'}
+                {m === 'check' ? (
+                  <span className="flex items-center gap-1.5 justify-center"><span className="material-symbols-outlined !text-[18px]">search</span> Cek Stok</span>
+                ) : m === 'sell' ? (
+                  <span className="flex items-center gap-1.5 justify-center"><span className="material-symbols-outlined !text-[18px]">shopping_cart</span> Kasir</span>
+                ) : (
+                  <span className="flex items-center gap-1.5 justify-center"><span className="material-symbols-outlined !text-[18px]">add_box</span> Restock</span>
+                )}
               </button>
             ))}
           </div>
@@ -402,7 +408,7 @@ export default function ScanPage() {
               {isAdmin && mode === 'check' && (
                 <button onClick={() => setMode('restock')}
                   className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all text-sm">
-                  📦 Switch ke mode Restock
+                  <span className="flex items-center gap-2 justify-center"><span className="material-symbols-outlined !text-[18px]">add_box</span> Switch ke mode Restock</span>
                 </button>
               )}
             </div>
