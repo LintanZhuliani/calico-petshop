@@ -33,6 +33,9 @@ export default function RekapHarianPage() {
   const [newPengeluaranAmount, setNewPengeluaranAmount] = useState('');
 
   const [transactions, setTransactions] = useState([]);
+  const [lastClosedAt, setLastClosedAt] = useState(() => {
+    return localStorage.getItem(`calico_last_closed_at_${branchId}`) || null;
+  });
 
   useEffect(() => {
     // Fetch all transactions for this branch and filter locally to ensure consistency with Dashboard
@@ -40,11 +43,20 @@ export default function RekapHarianPage() {
       .then(data => {
         const txs = Array.isArray(data) ? data : [];
         const todayStrLocal = new Date().toDateString();
-        const todaysTxs = txs.filter(tx => new Date(tx.date).toDateString() === todayStrLocal);
+        let todaysTxs = txs.filter(tx => new Date(tx.date).toDateString() === todayStrLocal);
+        
+        if (lastClosedAt) {
+          const closedDate = new Date(lastClosedAt);
+          // Only filter if lastClosedAt is from today. If it's from yesterday, it doesn't apply to today's shift.
+          if (closedDate.toDateString() === todayStrLocal) {
+             todaysTxs = todaysTxs.filter(tx => new Date(tx.date) >= closedDate);
+          }
+        }
+
         setTransactions(todaysTxs);
       })
       .catch(err => console.error('Failed to load rekap transactions:', err));
-  }, [branchId]);
+  }, [branchId, lastClosedAt]);
 
   const [picName, setPicName] = useState('');
 
@@ -146,8 +158,8 @@ export default function RekapHarianPage() {
   const valUangFisik = parseInt(uangFisik) || 0;
   const valModalAwal = parseInt(modalAwal) || 0;
 
-  // Kas Sistem = Modal Awal + Semua penerimaan tunai (Grand Cash) - pengeluaran tunai
-  const kasSistem = valModalAwal + stats.grandCash - totalPengeluaran;
+  // Kas Sistem = Modal Awal + Semua penerimaan tunai (Grand Cash)
+  const kasSistem = valModalAwal + stats.grandCash;
   const selisih = valUangFisik - kasSistem;
   const uangLebih = selisih > 0 ? selisih : 0;
   const uangKurang = selisih < 0 ? Math.abs(selisih) : 0;
@@ -392,6 +404,24 @@ export default function RekapHarianPage() {
           >
             <span className="material-symbols-outlined">content_copy</span>
             Salin Format WhatsApp
+          </button>
+          
+          <button 
+            onClick={() => {
+              if (window.confirm("Apakah Anda yakin ingin Tutup Kasir? Laporan akan disalin dan semua perhitungan rekap akan di-reset (0) untuk shift berikutnya hari ini.")) {
+                copyToClipboard();
+                setModalAwal('');
+                setUangFisik('');
+                setPengeluaran([]);
+                const now = new Date().toISOString();
+                localStorage.setItem(`calico_last_closed_at_${branchId}`, now);
+                setLastClosedAt(now);
+              }
+            }}
+            className="w-full bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-300 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm mt-2"
+          >
+            <span className="material-symbols-outlined">point_of_sale</span>
+            Tutup Kasir
           </button>
         </section>
 

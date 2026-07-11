@@ -41,34 +41,56 @@ export default function DashboardPage() {
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const branch = branchId;
+    const lastClosedAt = localStorage.getItem(`calico_last_closed_at_${branchId}`);
     
-    // Fetch today's transaction summary
-    apiFetch(`/transactions/summary?date=${today}&branchId=${branch}`)
-      .then(data => {
-        const txCount = data.totalTransactions || 0;
-        const revenue = data.totalRevenue || 0;
-        setTodayTxCount(txCount);
-        setTodayRevenue(revenue);
-        
-        const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-        localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayTxCount: txCount, todayRevenue: revenue }));
-      })
-      .catch(err => console.error('Dashboard summary error:', err));
-
-    // Fetch today's transactions to count items sold
+    // Fetch today's transaction summary (Manually calculate if kasir has a closed shift, otherwise use API summary)
+    
+    // Fetch today's transactions to count items sold and recalculate revenue/count if shift is active
     apiFetch(`/transactions?date=${today}&branchId=${branch}`)
       .then(data => {
         if (Array.isArray(data)) {
-          const totalItems = data.reduce((sum, tx) =>
+          let todaysTxs = data;
+          
+          if (!isAdmin && lastClosedAt) {
+            const closedDate = new Date(lastClosedAt);
+            if (closedDate.toDateString() === new Date().toDateString()) {
+              todaysTxs = data.filter(tx => new Date(tx.date) >= closedDate);
+            }
+          }
+
+          const totalItems = todaysTxs.reduce((sum, tx) =>
             sum + (tx.items || []).reduce((s, item) => s + item.qty, 0), 0
           );
           setTodayItemsSold(totalItems);
           
-          const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-          localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems }));
+          if (!isAdmin && lastClosedAt) {
+             const revenue = todaysTxs.reduce((sum, tx) => sum + tx.total, 0);
+             setTodayTxCount(todaysTxs.length);
+             setTodayRevenue(revenue);
+             
+             const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+             localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems, todayTxCount: todaysTxs.length, todayRevenue: revenue }));
+          } else {
+             const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+             localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems }));
+          }
         }
       })
       .catch(err => console.error('Items sold error:', err));
+
+    if (isAdmin || !lastClosedAt) {
+      apiFetch(`/transactions/summary?date=${today}&branchId=${branch}`)
+        .then(data => {
+          const txCount = data.totalTransactions || 0;
+          const revenue = data.totalRevenue || 0;
+          setTodayTxCount(txCount);
+          setTodayRevenue(revenue);
+          
+          const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
+          localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayTxCount: txCount, todayRevenue: revenue }));
+        })
+        .catch(err => console.error('Dashboard summary error:', err));
+    }
 
     // Fetch products + stock info
     apiFetch(`/products?branchId=${branch}`)
