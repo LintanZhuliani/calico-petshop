@@ -199,7 +199,8 @@ export default function RiwayatPage() {
             </button>
             <div>
               <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Riwayat Transaksi</h1>
-            <p className="text-sm text-slate-400">Daftar semua transaksi yang telah dilakukan</p>
+              <p className="text-sm text-slate-400">Daftar semua transaksi yang telah dilakukan</p>
+            </div>
           </div>
         </div>
 
