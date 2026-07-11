@@ -22,7 +22,7 @@ function toLocalDateStr(dateStr) {
 export default function RekapHarianPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, branchName: branchId } = useSession();
+  const { role, branchName: branchId, userName } = useSession();
   const branchName = BRANCHES.find(b => b.id === branchId)?.name || 'Toko';
 
   const [date] = useState(toLocalDateStr(new Date()));
@@ -34,16 +34,20 @@ export default function RekapHarianPage() {
 
   const [transactions, setTransactions] = useState([]);
   const [lastClosedAt, setLastClosedAt] = useState(() => {
-    return localStorage.getItem(`calico_last_closed_at_${branchId}`) || null;
+    return localStorage.getItem(`calico_last_closed_at_${userName}`) || null;
   });
 
   useEffect(() => {
-    // Fetch all transactions for this branch and filter locally to ensure consistency with Dashboard
+    // Fetch all transactions for this branch and filter locally
     apiFetch(`/transactions?branchId=${branchId}`)
       .then(data => {
         const txs = Array.isArray(data) ? data : [];
         const todayStrLocal = new Date().toDateString();
-        let todaysTxs = txs.filter(tx => new Date(tx.date).toDateString() === todayStrLocal);
+        // Filter by today and only for the currently logged-in user
+        let todaysTxs = txs.filter(tx => 
+          new Date(tx.date).toDateString() === todayStrLocal &&
+          tx.cashierName === userName
+        );
         
         if (lastClosedAt) {
           const closedDate = new Date(lastClosedAt);
@@ -414,7 +418,7 @@ export default function RekapHarianPage() {
                 setUangFisik('');
                 setPengeluaran([]);
                 const now = new Date().toISOString();
-                localStorage.setItem(`calico_last_closed_at_${branchId}`, now);
+                localStorage.setItem(`calico_last_closed_at_${userName}`, now);
                 setLastClosedAt(now);
               }
             }}

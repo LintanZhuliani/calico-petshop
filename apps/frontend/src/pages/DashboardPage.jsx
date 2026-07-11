@@ -41,7 +41,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const branch = branchId;
-    const lastClosedAt = localStorage.getItem(`calico_last_closed_at_${branchId}`);
+    const lastClosedAt = localStorage.getItem(`calico_last_closed_at_${userName}`);
     
     // Fetch today's transaction summary (Manually calculate if kasir has a closed shift, otherwise use API summary)
     
