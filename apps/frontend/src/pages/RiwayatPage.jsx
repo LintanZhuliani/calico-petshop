@@ -35,7 +35,16 @@ export default function RiwayatPage() {
     if (!isAdmin) params.set('branchId', branchId);
     apiFetch(`/transactions?${params}`)
       .then(data => {
-        const txs = Array.isArray(data) ? data : [];
+        let txs = Array.isArray(data) ? data : [];
+        
+        // Kasir only sees their own transactions
+        if (!isAdmin) {
+          const { userName } = JSON.parse(localStorage.getItem('calico_session')) || {};
+          if (userName) {
+             txs = txs.filter(tx => tx.cashierName === userName);
+          }
+        }
+        
         // Sort descending by date
         txs.sort((a, b) => new Date(b.date) - new Date(a.date));
         setTransactions(txs);

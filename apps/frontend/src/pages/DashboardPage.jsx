@@ -45,16 +45,20 @@ export default function DashboardPage() {
     
     // Fetch today's transaction summary (Manually calculate if kasir has a closed shift, otherwise use API summary)
     
-    // Fetch today's transactions to count items sold and recalculate revenue/count if shift is active
+    // Fetch today's transactions to count items sold and recalculate revenue/count if Kasir
     apiFetch(`/transactions?date=${today}&branchId=${branch}`)
       .then(data => {
         if (Array.isArray(data)) {
           let todaysTxs = data;
           
-          if (!isAdmin && lastClosedAt) {
-            const closedDate = new Date(lastClosedAt);
-            if (closedDate.toDateString() === new Date().toDateString()) {
-              todaysTxs = data.filter(tx => new Date(tx.date) >= closedDate);
+          if (!isAdmin) {
+            todaysTxs = data.filter(tx => tx.cashierName === userName);
+            
+            if (lastClosedAt) {
+              const closedDate = new Date(lastClosedAt);
+              if (closedDate.toDateString() === new Date().toDateString()) {
+                todaysTxs = todaysTxs.filter(tx => new Date(tx.date) >= closedDate);
+              }
             }
           }
 
@@ -63,7 +67,7 @@ export default function DashboardPage() {
           );
           setTodayItemsSold(totalItems);
           
-          if (!isAdmin && lastClosedAt) {
+          if (!isAdmin) {
              const revenue = todaysTxs.reduce((sum, tx) => sum + tx.total, 0);
              setTodayTxCount(todaysTxs.length);
              setTodayRevenue(revenue);
@@ -78,7 +82,7 @@ export default function DashboardPage() {
       })
       .catch(err => console.error('Items sold error:', err));
 
-    if (isAdmin || !lastClosedAt) {
+    if (isAdmin) {
       apiFetch(`/transactions/summary?date=${today}&branchId=${branch}`)
         .then(data => {
           const txCount = data.totalTransactions || 0;
