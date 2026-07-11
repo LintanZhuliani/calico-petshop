@@ -169,7 +169,7 @@ export default function RekapHarianPage() {
     const dStr = `${String(dObj.getDate()).padStart(2, '0')}.${String(dObj.getMonth()+1).padStart(2, '0')}. ${dObj.getFullYear()}`;
     const hb = valModalAwal;
     const cashPenjualan = stats.grandCash;
-    const totalCashDiLaci = hb + cashPenjualan;
+    const totalCashDiLaci = hb + cashPenjualan - totalPengeluaran;
     
     let text = `*${branchName} - ${dStr}*\n\n`;
     text += `Total penjualan\n`;
