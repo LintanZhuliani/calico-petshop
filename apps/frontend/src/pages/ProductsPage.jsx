@@ -995,14 +995,14 @@ export default function ProductsPage() {
               {['Semua', 'Kritis', 'Habis'].map(s => (
                 <button key={s} onClick={() => setFilterStatus(s)}
                   className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {s}
+                  {s === 'Semua' ? 'SEMUA STATUS' : s}
                 </button>
               ))}
               <div className="w-px bg-slate-200 my-1" />
               {uniqueCats.map(c => (
                 <button key={c} onClick={() => setFilterCat(c)}
                   className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {c}
+                  {c === 'Semua' ? 'SEMUA KATEGORI' : c}
                 </button>
               ))}
             </div>
