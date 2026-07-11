@@ -215,7 +215,7 @@ export default function RekapHarianPage() {
     <div className={`bg-slate-100 min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
-      <header className="bg-white border-b border-slate-100 px-5 py-4 sticky top-0 z-40 flex items-center gap-3">
+      <header className="bg-white border-b border-slate-100 pl-16 md:pl-5 pr-5 py-4 sticky top-0 z-40 flex items-center gap-3">
 
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-50 border border-slate-100 active:scale-95 transition-all">
           <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>

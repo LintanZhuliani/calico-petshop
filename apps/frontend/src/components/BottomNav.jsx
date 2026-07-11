@@ -79,10 +79,13 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* Floating Toggle Button for collapsed desktop view */}
+      {/* Floating Toggle Button for collapsed desktop view & mobile top-left menu */}
       <button
-        onClick={toggleSidebar}
-        className="hidden md:flex fixed top-4 left-4 z-[55] bg-white border border-slate-200 shadow-md p-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-all active:scale-95"
+        onClick={() => {
+          if (window.innerWidth < 768) setIsMoreOpen(true);
+          else toggleSidebar();
+        }}
+        className="flex fixed top-4 left-4 z-[55] bg-white border border-slate-200 shadow-md p-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-all active:scale-95"
       >
         <span className="material-symbols-outlined !text-[22px]">menu</span>
       </button>
@@ -169,30 +172,8 @@ export default function BottomNav() {
           })}
         </div>
 
-        {/* ── MOBILE NAVIGATION (Shows 1 Lainnya + 4 main menus) ── */}
+        {/* ── MOBILE NAVIGATION (Shows 4 main menus only, menu is now at top left) ── */}
         <div className="flex md:hidden justify-around items-center h-16 px-2 w-full">
-          {/* Lainnya Button (Pindah ke kiri) */}
-          <button
-            onClick={() => setIsMoreOpen(true)}
-            className={`relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-200 ${
-              otherMenus.some(m => isActive(m.path)) 
-                ? `${primaryText}` 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            {otherMenus.some(m => isActive(m.path)) && (
-              <span className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 ${indicatorBg} rounded-b-full`} />
-            )}
-            <span
-              className="material-symbols-outlined !text-[26px] transition-all duration-200"
-              style={{ fontVariationSettings: otherMenus.some(m => isActive(m.path)) ? "'FILL' 1" : "'FILL' 0" }}
-            >
-              menu
-            </span>
-            <span className={`text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0 ${otherMenus.some(m => isActive(m.path)) ? 'opacity-100' : 'opacity-70'}`}>
-              Lainnya
-            </span>
-          </button>
 
           {mainMenus.map(({ path, icon, label }) => {
             const active = isActive(path);

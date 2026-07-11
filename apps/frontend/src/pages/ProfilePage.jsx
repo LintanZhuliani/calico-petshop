@@ -188,7 +188,7 @@ export default function ProfilePage() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex items-center gap-3">
+      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex items-center gap-3 pl-16 md:pl-5">
 
         <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Profil</h1>
       </header>

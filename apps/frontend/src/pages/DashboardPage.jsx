@@ -167,7 +167,7 @@ export default function DashboardPage() {
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex justify-between items-center">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
         </div>
         <button 

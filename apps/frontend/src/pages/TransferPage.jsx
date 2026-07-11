@@ -271,7 +271,8 @@ export default function TransferPage() {
         </div>
       )}
 
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-0 flex flex-col gap-3">
+      {/* ── Header ── */}
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 pt-4 pb-3 flex flex-col gap-3">
         <div className="flex items-center gap-3">
 
           <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Transfer Barang</h1>

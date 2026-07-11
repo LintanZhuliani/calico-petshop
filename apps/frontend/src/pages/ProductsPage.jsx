@@ -931,7 +931,7 @@ export default function ProductsPage() {
         {/* Full-width container: Search, Filters, Product Grid */}
         <div className="flex-1 flex flex-col shrink-0 w-full">
           {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3 flex flex-col gap-3">
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 pt-4 pb-3 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
