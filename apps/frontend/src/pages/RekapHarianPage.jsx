@@ -158,8 +158,8 @@ export default function RekapHarianPage() {
   const valUangFisik = parseInt(uangFisik) || 0;
   const valModalAwal = parseInt(modalAwal) || 0;
 
-  // Kas Sistem = Modal Awal + Semua penerimaan tunai (Grand Cash)
-  const kasSistem = valModalAwal + stats.grandCash;
+  // Kas Sistem = Modal Awal + Semua penerimaan tunai (Grand Cash) - Pengeluaran Tunai
+  const kasSistem = valModalAwal + stats.grandCash - totalPengeluaran;
   const selisih = valUangFisik - kasSistem;
   const uangLebih = selisih > 0 ? selisih : 0;
   const uangKurang = selisih < 0 ? Math.abs(selisih) : 0;
