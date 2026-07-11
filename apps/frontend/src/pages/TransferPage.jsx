@@ -53,7 +53,7 @@ export default function TransferPage() {
 
   const fetchTransfers = async () => {
     try {
-      const data = await apiFetch('/transfers');
+      const data = await apiFetch(`/transfers?branchId=${branchId}`);
       setTransfers(data || []);
     } catch (err) {
       console.error('Failed to fetch transfers:', err);

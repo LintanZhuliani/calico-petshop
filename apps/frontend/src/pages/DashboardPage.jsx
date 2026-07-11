@@ -90,7 +90,7 @@ export default function DashboardPage() {
       .catch(err => console.error('Expiring error:', err));
 
     // Fetch transfers in transit
-    apiFetch('/transfers?status=transit')
+    apiFetch(`/transfers?status=transit&branchId=${branch}`)
       .then(data => {
         const trs = Array.isArray(data) ? data : [];
         setTransfers(trs);
