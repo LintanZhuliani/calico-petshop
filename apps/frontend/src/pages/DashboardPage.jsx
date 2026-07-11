@@ -176,7 +176,9 @@ export default function DashboardPage() {
         >
           <span className={`material-symbols-outlined !text-[20px] text-slate-600`}>notifications</span>
           {(lowStock.length > 0 || expiring.length > 0) && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border border-white rounded-full animate-pulse"></span>
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] font-bold text-white px-1 shadow-sm">
+              {lowStock.length + expiring.length > 99 ? '99+' : lowStock.length + expiring.length}
+            </span>
           )}
         </button>
       </header>
