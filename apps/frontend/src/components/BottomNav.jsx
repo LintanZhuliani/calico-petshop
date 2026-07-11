@@ -90,52 +90,20 @@ export default function BottomNav() {
         <span className="material-symbols-outlined !text-[22px]">menu</span>
       </button>
 
-      {/* Mobile "Lainnya" Overlay & Bottom Sheet */}
-      {isMoreOpen && (
-        <div className="md:hidden fixed inset-0 z-[60] flex flex-col justify-end">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/40 animate-[fadeIn_0.2s_ease]" onClick={() => setIsMoreOpen(false)} />
-          
-          {/* Sheet */}
-          <div className="relative bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pt-6 pb-24 px-6 animate-[slideUp_0.25s_ease-out]">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline font-extrabold text-xl text-slate-900">Menu Lainnya</h3>
-              <button onClick={() => setIsMoreOpen(false)} className="p-2 rounded-xl bg-slate-100 active:scale-95 transition-transform text-slate-500">
-                <span className="material-symbols-outlined !text-[20px]">close</span>
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              {otherMenus.map((menu) => {
-                const active = isActive(menu.path);
-                return (
-                  <button
-                    key={menu.path}
-                    onClick={() => handleOtherMenuClick(menu.path)}
-                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${
-                      active ? `${popupBg} text-white shadow-md` : `bg-slate-50 text-slate-600 ${popupTextHover}`
-                    }`}
-                  >
-                    <span className="material-symbols-outlined !text-[28px]" style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}>
-                      {menu.icon}
-                    </span>
-                    <span className="text-xs font-bold tracking-wide text-center">
-                      {menu.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+      {/* Mobile Backdrop for Sidebar */}
+      {isOpen && (
+        <div 
+          className="md:hidden fixed inset-0 z-[45] bg-black/40 animate-[fadeIn_0.2s_ease]" 
+          onClick={() => setIsOpen(false)} 
+        />
       )}
 
-      {/* Navbar Container */}
-      <nav className={`fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] z-[50] transition-all duration-300 md:bottom-auto md:top-0 md:h-screen md:border-r md:border-t-0 md:flex md:flex-col md:py-6 md:px-4 ${
-        isOpen ? 'md:w-64 md:translate-x-0' : 'md:w-0 md:-translate-x-64'
+      {/* Navbar Container (Sidebar) */}
+      <nav className={`fixed top-0 left-0 h-screen bg-white border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.06)] z-[50] transition-all duration-300 flex flex-col py-6 px-4 ${
+        isOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-64 overflow-hidden px-0'
       }`}>
-        {/* Brand logo for desktop sidebar */}
-        <div className="hidden md:flex flex-col items-center mb-8 px-2 relative">
+        {/* Brand logo for sidebar */}
+        <div className="flex flex-col items-center mb-8 px-2 relative">
           <span className="material-symbols-outlined text-4xl text-slate-800 mb-1">pets</span>
           <span className="font-extrabold text-lg tracking-tight text-slate-800 text-center">Calico's Pet Care</span>
           <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-0.5">
@@ -143,8 +111,8 @@ export default function BottomNav() {
           </span>
         </div>
 
-        {/* ── DESKTOP NAVIGATION (Shows all menus) ── */}
-        <div className="hidden md:flex md:flex-col md:h-auto md:w-full md:gap-2 md:items-stretch overflow-y-auto overflow-x-hidden scrollbar-hide">
+        {/* ── NAVIGATION (Universal) ── */}
+        <div className="flex flex-col h-auto w-full gap-2 items-stretch overflow-y-auto overflow-x-hidden scrollbar-hide">
           {allMenus.map(({ path, icon, label }) => {
             const active = isActive(path);
             return (
@@ -152,9 +120,10 @@ export default function BottomNav() {
                 key={path}
                 to={path}
                 state={safeState}
+                onClick={() => { if(window.innerWidth < 768) setIsOpen(false); }}
                 className={`relative flex items-center px-4 py-3.5 rounded-xl gap-3 transition-all duration-200 flex-none ${
                   active 
-                    ? `${primaryText} ${activeBg}` 
+                    ? `${primaryText} ${activeBg} text-white shadow-md` 
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -165,39 +134,6 @@ export default function BottomNav() {
                   {icon}
                 </span>
                 <span className={`text-sm font-bold tracking-wider transition-all duration-200 shrink-0 ${active ? 'opacity-100 text-white' : 'opacity-70 text-slate-600'}`}>
-                  {label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* ── MOBILE NAVIGATION (Shows 4 main menus only, menu is now at top left) ── */}
-        <div className="flex md:hidden justify-around items-center h-16 px-2 w-full">
-
-          {mainMenus.map(({ path, icon, label }) => {
-            const active = isActive(path);
-            return (
-              <Link
-                key={path}
-                to={path}
-                state={safeState}
-                className={`relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-200 ${
-                  active 
-                    ? `${primaryText}` 
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                {active && (
-                  <span className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 ${indicatorBg} rounded-b-full`} />
-                )}
-                <span
-                  className="material-symbols-outlined !text-[26px] transition-all duration-200"
-                  style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
-                >
-                  {icon}
-                </span>
-                <span className={`text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0 ${active ? 'opacity-100' : 'opacity-70'}`}>
                   {label}
                 </span>
               </Link>

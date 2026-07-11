@@ -454,7 +454,7 @@ export default function KasirPage() {
   const uniqueCats = ['Semua', ...new Set(products.map(p => p.category).filter(c => c && c.toLowerCase() !== 'semua'))];
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-20 md:pb-0 transition-all duration-300 ${
+    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-0 md:pb-0 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Toast ── */}

@@ -160,7 +160,7 @@ export default function ProfilePage() {
   }, []);
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col pb-20 font-body transition-all duration-300 ${
+    <div className={`bg-slate-100 min-h-screen flex flex-col pb-4 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* Logout Dialog */}
