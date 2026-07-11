@@ -67,7 +67,12 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
     && splitCashAmt >= sisaCash
     && sisaCash > 0;
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const handleConfirm = () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
     if (payMethod === 'tunai') {
       onConfirm(parseAmount(paid), change, 'Tunai');
     } else if (payMethod === 'nontunai') {
@@ -79,6 +84,9 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
       const methodLabel = `Campuran (${ntLabel} ${formatRupiah(splitNonTunaiAmt)} + Tunai ${formatRupiah(splitCashAmt)})`;
       onConfirm(splitNonTunaiAmt + splitCashAmt, Math.max(0, splitChange), methodLabel);
     }
+    
+    // In case onConfirm fails and modal stays open
+    setTimeout(() => setIsProcessing(false), 2000);
   };
 
   return (
