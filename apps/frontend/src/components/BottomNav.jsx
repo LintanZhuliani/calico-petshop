@@ -169,8 +169,31 @@ export default function BottomNav() {
           })}
         </div>
 
-        {/* ── MOBILE NAVIGATION (Shows 4 main menus + 1 Lainnya) ── */}
+        {/* ── MOBILE NAVIGATION (Shows 1 Lainnya + 4 main menus) ── */}
         <div className="flex md:hidden justify-around items-center h-16 px-2 w-full">
+          {/* Lainnya Button (Pindah ke kiri) */}
+          <button
+            onClick={() => setIsMoreOpen(true)}
+            className={`relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-200 ${
+              otherMenus.some(m => isActive(m.path)) 
+                ? `${primaryText}` 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            {otherMenus.some(m => isActive(m.path)) && (
+              <span className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 ${indicatorBg} rounded-b-full`} />
+            )}
+            <span
+              className="material-symbols-outlined !text-[26px] transition-all duration-200"
+              style={{ fontVariationSettings: otherMenus.some(m => isActive(m.path)) ? "'FILL' 1" : "'FILL' 0" }}
+            >
+              menu
+            </span>
+            <span className={`text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0 ${otherMenus.some(m => isActive(m.path)) ? 'opacity-100' : 'opacity-70'}`}>
+              Lainnya
+            </span>
+          </button>
+
           {mainMenus.map(({ path, icon, label }) => {
             const active = isActive(path);
             return (
@@ -199,30 +222,6 @@ export default function BottomNav() {
               </Link>
             );
           })}
-
-          {/* Lainnya Button */}
-          <button
-            onClick={() => setIsMoreOpen(true)}
-            className={`relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-200 ${
-              otherMenus.some(m => isActive(m.path)) 
-                ? `${primaryText}` 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            {otherMenus.some(m => isActive(m.path)) && (
-              <span className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 ${indicatorBg} rounded-b-full`} />
-            )}
-            <span
-              className="material-symbols-outlined !text-[26px] transition-all duration-200"
-              style={{ fontVariationSettings: otherMenus.some(m => isActive(m.path)) ? "'FILL' 1" : "'FILL' 0" }}
-            >
-              menu
-            </span>
-            <span className={`text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0 ${otherMenus.some(m => isActive(m.path)) ? 'opacity-100' : 'opacity-70'}`}>
-              Lainnya
-            </span>
-          </button>
-
         </div>
       </nav>
     </>
