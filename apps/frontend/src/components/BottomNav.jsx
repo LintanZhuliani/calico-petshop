@@ -123,7 +123,7 @@ export default function BottomNav() {
                   onClick={() => setIsMoreOpen(false)}
                   className={`relative flex items-center px-4 py-3.5 rounded-xl gap-3 transition-all duration-200 flex-none ${
                     active 
-                      ? `${primaryText} ${activeBg} text-white shadow-md` 
+                      ? `${popupBg} text-white shadow-md` 
                       : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
                   }`}
                 >
