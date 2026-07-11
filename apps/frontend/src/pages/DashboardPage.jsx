@@ -197,7 +197,7 @@ export default function DashboardPage() {
           {!isAdmin && (
             <button 
               onClick={() => navigate('/rekap', { state: location.state })}
-              className={`border ${primaryBorder} rounded-2xl px-5 py-4 flex items-center justify-between bg-white shadow-sm active:scale-[0.98] transition-all cursor-pointer md:max-w-xs`}
+              className={`border ${primaryBorder} rounded-2xl px-5 py-4 flex items-center justify-between bg-white shadow-sm active:scale-[0.98] transition-all cursor-pointer`}
             >
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full ${primaryLight} flex items-center justify-center`}>
