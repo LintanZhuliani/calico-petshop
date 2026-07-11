@@ -422,8 +422,6 @@ export default function KasirPage() {
       setTimeout(() => {
         navigate('/riwayat', { 
           state: { 
-            role, 
-            branchName: branchId, 
             autoOpenLatest: true 
           } 
         });

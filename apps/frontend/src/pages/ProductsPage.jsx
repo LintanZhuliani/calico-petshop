@@ -883,8 +883,6 @@ export default function ProductsPage() {
       setTimeout(() => {
         navigate('/riwayat', { 
           state: { 
-            role, 
-            branchName: branchId, 
             autoOpenLatest: true 
           } 
         });
