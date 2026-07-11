@@ -91,6 +91,20 @@ export default function ProfilePage() {
     navigate('/login', { replace: true });
   };
 
+  const handleSwitchBranch = (newBranchId) => {
+    if (newBranchId === branchId) return;
+    const currentSession = JSON.parse(localStorage.getItem('calico_session')) || {};
+    const newSession = { ...currentSession, branchName: newBranchId, role, userName };
+    localStorage.setItem('calico_session', JSON.stringify(newSession));
+    
+    // Clear caches to prevent data bleeding
+    localStorage.removeItem('calico_products_cache');
+    localStorage.removeItem('calico_dashboard_stats');
+    
+    // Navigate and hard reload to apply new branch state everywhere
+    window.location.href = '/dashboard';
+  };
+
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPassError("");
@@ -138,8 +152,8 @@ export default function ProfilePage() {
   const MENU_ITEMS = [
     ...(isAdmin ? [
       { id: 'users', icon: 'manage_accounts', label: 'Kelola Karyawan', desc: 'Tambah, edit, atau nonaktifkan akun', color: primaryText },
-      { id: 'branches', icon: 'store', label: 'Kelola Cabang', desc: 'Data & konfigurasi semua cabang', color: primaryText },
     ] : []),
+    { id: 'branches', icon: 'store', label: isAdmin ? 'Kelola Cabang' : 'Ganti Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
     { id: 'notif', icon: 'notifications', label: 'Preferensi Notifikasi', desc: 'Atur alert stok & expired', color: primaryText },
@@ -391,7 +405,11 @@ export default function ProfilePage() {
               {activeModal === 'branches' && (
                 <div className="space-y-3">
                   {BRANCHES.map(b => (
-                    <div key={b.id} className="bg-slate-50 p-4 rounded-2xl flex items-center gap-4 border border-slate-100">
+                    <div 
+                      key={b.id} 
+                      onClick={() => handleSwitchBranch(b.id)}
+                      className={`cursor-pointer bg-slate-50 p-4 rounded-2xl flex items-center gap-4 border ${b.id === branchId ? `border-${primaryLightText.split('-')[1]}-400 shadow-sm bg-${primaryLightText.split('-')[1]}-50/30` : 'border-slate-100 hover:border-slate-300'} transition-all active:scale-95`}
+                    >
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${b.id === branchId ? primaryBg : 'bg-slate-200'}`}>
                         <span className={`material-symbols-outlined text-white`}>store</span>
                       </div>
