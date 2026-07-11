@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
+import { useSession } from '../lib/useSession';
 import { formatRupiah, generateId, formatDate } from '../utils/formatters';
 import { getExpiryStatus, getExpiryColorClass } from '../utils/stockAlerts';
 
@@ -11,7 +12,7 @@ let Html5QrcodeSupportedFormats = null;
 export default function ScanPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
+  const { role, branchName: sessionBranch } = useSession();
   const isAdmin = role === 'admin';
 
   const primary = isAdmin ? '#D35400' : '#C0392B';
@@ -34,7 +35,7 @@ export default function ScanPage() {
   const scannerRef = useRef(null);
   const scannerDivId = 'calico-qr-scanner';
 
-  const branchId = location.state?.branchName || 'pusat';
+  const branchId = sessionBranch;
 
   useEffect(() => {
     apiFetch(`/products?branchId=${branchId}`)

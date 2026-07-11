@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { authClient } from "../lib/auth-client";
+import { saveSession } from "../lib/useSession";
 
 export default function LoginPage() {
   const [role, setRole] = useState("admin");
@@ -69,6 +70,7 @@ export default function LoginPage() {
 
         // Simpan data di state lokal untuk navigasi (opsional, karena auth tersimpan di cookie)
         setErrorMsg("");
+        saveSession({ role: user.role, branchName: branch, userName: user.name });
         navigate("/dashboard", { 
           state: { 
             role: user.role, 

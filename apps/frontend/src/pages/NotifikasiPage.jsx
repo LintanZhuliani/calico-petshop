@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
+import { useSession } from '../lib/useSession';
 
 export default function NotifikasiPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
-  const branchId = location.state?.branchName || 'pusat';
+  const { role, branchName: branchId } = useSession();
   const isAdmin = role === 'admin';
 
   const primaryText = isAdmin ? 'text-orange-600' : 'text-red-600';

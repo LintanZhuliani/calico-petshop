@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
+import { useSession } from '../lib/useSession';
 import { formatRupiah } from '../utils/formatters';
 
 const BRANCHES = [
@@ -21,8 +22,7 @@ function toLocalDateStr(dateStr) {
 export default function RekapHarianPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
-  const branchId = location.state?.branchName || 'pusat';
+  const { role, branchName: branchId } = useSession();
   const branchName = BRANCHES.find(b => b.id === branchId)?.name || 'Toko';
 
   const [date] = useState(toLocalDateStr(new Date()));

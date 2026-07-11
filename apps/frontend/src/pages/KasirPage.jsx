@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
+import { useSession } from '../lib/useSession';
 import { socket } from '../lib/socket';
 import { formatRupiah, generateId } from '../utils/formatters';
 
@@ -283,7 +284,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder }) {
 export default function KasirPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'admin';
+  const { role, branchName: branchId } = useSession();
   const isAdmin = role === 'admin';
 
   // Always use Kasir's theme color (Red) for Checkout to maintain POS consistency, 
@@ -331,7 +332,7 @@ export default function KasirPage() {
     setTimeout(() => setToastMsg(''), 2500);
   };
 
-  const branchId = location.state?.branchName || 'pusat';
+
 
   const fetchProducts = async () => {
     try {

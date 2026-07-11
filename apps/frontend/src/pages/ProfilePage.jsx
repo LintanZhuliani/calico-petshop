@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { BRANCHES } from '../data/mockData';
 import { formatRupiah, formatDateTime } from '../utils/formatters';
 import { authClient } from '../lib/auth-client';
+import { useSession, clearSession } from '../lib/useSession';
 
 export default function ProfilePage() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
+  const { role, branchName: branchId, userName } = useSession();
   const isAdmin = role === 'admin';
-  const branchId = location.state?.branchName || 'pusat';
-  const userName = location.state?.userName || (isAdmin ? 'Admin' : 'Kasir');
 
   const primaryText = isAdmin ? 'text-orange-600' : 'text-red-600';
   const primaryBg = isAdmin ? 'bg-orange-600' : 'bg-red-600';
@@ -86,6 +84,7 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem('userAccount');
+    clearSession();
     navigate('/login', { replace: true });
   };
 
@@ -245,7 +244,6 @@ export default function ProfilePage() {
                 <Link
                   key={i}
                   to="/penjualan"
-                  state={location.state}
                   className="w-full flex items-center gap-3.5 px-5 py-4 text-left active:bg-slate-50 transition-colors"
                 >
                   {inner}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
+import { useSession } from '../lib/useSession';
 import { formatRupiah } from '../utils/formatters';
 import ExcelJS from 'exceljs';
 
@@ -18,9 +19,8 @@ const MONTH_NAMES = [
 
 export default function PenjualanPage() {
   const location = useLocation();
-  const role = location.state?.role || 'admin';
+  const { role, branchName: branchId } = useSession();
   const isAdmin = role === 'admin';
-  const branchId = location.state?.branchName || 'pusat';
 
   const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
   const primaryBg = isAdmin ? 'bg-[#D35400]' : 'bg-[#C0392B]';

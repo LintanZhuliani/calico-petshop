@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSession } from '../lib/useSession';
 
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
+  const { role } = useSession();
   const isAdmin = role === 'admin';
 
   // Toggle state for sidebar on desktop
@@ -118,6 +119,7 @@ export default function BottomNav() {
                 <Link
                   key={menu.path}
                   to={menu.path}
+                  state={safeState}
                   onClick={() => setIsMoreOpen(false)}
                   className={`relative flex items-center px-4 py-3.5 rounded-xl gap-3 transition-all duration-200 flex-none ${
                     active 

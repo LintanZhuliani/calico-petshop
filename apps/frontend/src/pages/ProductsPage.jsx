@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSession } from '../lib/useSession';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { socket } from '../lib/socket';
@@ -628,7 +629,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder }) {
 export default function ProductsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
+  const { role, branchName: sessionBranch } = useSession();
   const isAdmin = role === 'admin';
 
   const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
@@ -680,7 +681,7 @@ export default function ProductsPage() {
     setTimeout(() => setToastMsg(''), 2500);
   };
 
-  const branchId = location.state?.branchName || 'pusat';
+  const branchId = sessionBranch;
 
   const fetchProducts = async () => {
     try {

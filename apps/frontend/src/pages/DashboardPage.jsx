@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { formatRupiah } from '../utils/formatters';
+import { useSession } from '../lib/useSession';
 
 const BRANCHES = [
   { id: 'pusat', name: "Calico's Pet Care (Pusat)" },
@@ -13,9 +14,7 @@ const BRANCHES = [
 export default function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = location.state?.role || 'kasir';
-  const branchId = location.state?.branchName || 'pusat';
-  const userName = location.state?.userName || (role === 'admin' ? 'Admin' : 'Kasir');
+  const { role, branchName: branchId, userName } = useSession();
   const isAdmin = role === 'admin';
   const branchName = BRANCHES.find(b => b.id === branchId)?.name || "Calico's Pet Care";
   const shopName = branchName;

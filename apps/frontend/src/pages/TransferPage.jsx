@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
+import { useSession } from '../lib/useSession';
 import { socket } from '../lib/socket';
 import { BRANCHES } from '../data/mockData';
 import { formatRupiah, formatDateTime, generateId } from '../utils/formatters';
@@ -18,10 +19,8 @@ function getBranchName(id) {
 
 export default function TransferPage() {
   const location = useLocation();
-  const role = location.state?.role || 'kasir';
+  const { role, branchName: branchId, userName } = useSession();
   const isAdmin = role === 'admin';
-  const branchId = location.state?.branchName || 'pusat';
-  const userName = location.state?.userName || (isAdmin ? 'Admin' : 'Kasir');
 
   const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
   const primaryBg = isAdmin ? 'bg-[#D35400]' : 'bg-[#C0392B]';
