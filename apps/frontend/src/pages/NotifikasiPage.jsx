@@ -47,25 +47,8 @@ export default function NotifikasiPage() {
   const outOfStockItems = lowStock.filter(item => (item.totalStock || 0) <= 0);
   const criticalStockItems = lowStock.filter(item => (item.totalStock || 0) > 0);
 
-  // Track sidebar toggle state dynamically
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    const saved = localStorage.getItem('calico_sidebar_open');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
-
-  useEffect(() => {
-    const handleSidebarToggle = () => {
-      const saved = localStorage.getItem('calico_sidebar_open');
-      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
-    };
-    window.addEventListener('sidebar-toggle', handleSidebarToggle);
-    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
-  }, []);
-
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
-      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
-    }`}>
+    <div className="bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
       {/* Header */}
       <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between relative">
         <button
