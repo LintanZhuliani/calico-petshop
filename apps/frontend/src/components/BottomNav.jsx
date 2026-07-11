@@ -85,7 +85,7 @@ export default function BottomNav() {
           if (window.innerWidth < 768) setIsMoreOpen(true);
           else toggleSidebar();
         }}
-        className="flex fixed top-4 left-4 z-[55] bg-white border border-slate-200 shadow-md p-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-all active:scale-95"
+        className="flex fixed top-4 left-4 z-[55] p-2 rounded-xl text-slate-700 active:scale-95 transition-all md:bg-white md:border md:border-slate-200 md:shadow-md md:hover:bg-slate-50"
       >
         <span className="material-symbols-outlined !text-[22px]">menu</span>
       </button>

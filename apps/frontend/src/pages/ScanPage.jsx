@@ -221,7 +221,7 @@ export default function ScanPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between text-left">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 pl-16 md:pl-5 pr-5 py-4 flex items-center justify-between text-left">
         <div className="flex items-center gap-3">
 
           <div>
