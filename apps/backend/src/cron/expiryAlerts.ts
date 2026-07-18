@@ -32,20 +32,22 @@ async function checkAndSendExpiryAlerts() {
       expiredDate: batch.expiredDate,
       qty: batch.qty,
       productName: product.name,
+      productId: product.id,
       branchId: branchStock.branchId,
     })
     .from(batch)
     .innerJoin(branchStock, eq(batch.branchStockId, branchStock.id))
     .innerJoin(product, eq(branchStock.productId, product.id));
 
-  // 2. Filter batches that expire in EXACTLY 30 days or EXACTLY 7 days and have qty > 0
+  // 2. Filter batches that expire in EXACTLY 30 days or EXACTLY 7 days, or EXACTLY 0 days and have qty > 0
   const alertsByBranch: Record<string, any[]> = {};
+  const logsToInsert: any[] = [];
 
   allBatchesInfo.forEach((b) => {
     if (!b.expiredDate || b.qty <= 0) return;
     const days = daysUntilExpiry(b.expiredDate);
     
-    if (days === 30 || days === 7) {
+    if (days === 30 || days === 7 || days === 0) {
       if (!alertsByBranch[b.branchId]) {
         alertsByBranch[b.branchId] = [];
       }
@@ -53,8 +55,41 @@ async function checkAndSendExpiryAlerts() {
         ...b,
         daysLeft: days,
       });
+
+      // Prepare DB log
+      let type = '';
+      let message = '';
+      if (days === 0) {
+        type = 'expired';
+        message = 'Telah Kadaluarsa Hari Ini';
+      } else if (days === 7) {
+        type = 'expiry_7';
+        message = 'Akan Kadaluarsa dalam 7 hari (1 Minggu)';
+      } else if (days === 30) {
+        type = 'expiry_30';
+        message = 'Akan Kadaluarsa dalam 30 hari (1 Bulan)';
+      }
+
+      if (type) {
+        logsToInsert.push({
+          branchId: b.branchId,
+          productId: b.productId,
+          batchId: b.batchId,
+          type: type,
+          message: message,
+        });
+      }
     }
   });
+
+  // 2.5 Insert Logs into DB (on conflict do nothing)
+  if (logsToInsert.length > 0) {
+    // Import at top of file needed for notificationLog, I'll add it
+    const { notificationLog } = await import('../db/schema/notification-log.js');
+    for (const log of logsToInsert) {
+      await db.insert(notificationLog).values(log).onConflictDoNothing();
+    }
+  }
 
   // 3. For each branch that has alerts, get branch info and users (Admin + Kasir)
   for (const branchId of Object.keys(alertsByBranch)) {

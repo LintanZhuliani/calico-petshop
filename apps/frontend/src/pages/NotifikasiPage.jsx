@@ -16,6 +16,10 @@ export default function NotifikasiPage() {
   const [expiring, setExpiring] = useState(location.state?.expiring || []);
   const [loading, setLoading] = useState(!(location.state?.lowStock && location.state?.expiring));
   const [selectedItem, setSelectedItem] = useState(null);
+  
+  const [activeTab, setActiveTab] = useState('aktif');
+  const [historyLogs, setHistoryLogs] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     if (location.state?.lowStock && location.state?.expiring) {
@@ -39,6 +43,17 @@ export default function NotifikasiPage() {
     };
     fetchData();
   }, [branchId, location.state]);
+
+  // Fetch History Logs
+  useEffect(() => {
+    if (activeTab === 'riwayat') {
+      setLoadingHistory(true);
+      apiFetch(`/notifications?branchId=${branchId}`)
+        .then(data => setHistoryLogs(data || []))
+        .catch(err => console.error("Failed to fetch history:", err))
+        .finally(() => setLoadingHistory(false));
+    }
+  }, [activeTab, branchId]);
 
   const [notifPrefs] = useState(() => {
     const saved = localStorage.getItem('calico_notif_prefs');
@@ -74,6 +89,24 @@ export default function NotifikasiPage() {
         <div className="w-10"></div> {/* Spacer to keep flex balance */}
       </header>
 
+      {/* TABS */}
+      <div className="px-5 mt-4">
+        <div className="flex p-1 bg-slate-200/60 rounded-xl">
+          <button 
+            onClick={() => setActiveTab('aktif')}
+            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'aktif' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Peringatan Aktif
+          </button>
+          <button 
+            onClick={() => setActiveTab('riwayat')}
+            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'riwayat' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Buku Riwayat
+          </button>
+        </div>
+      </div>
+
       <main className="px-5 py-6 w-full space-y-6">
         
         {/* Note / Legenda Informasi */}
@@ -98,21 +131,24 @@ export default function NotifikasiPage() {
           </div>
         </section>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-            <span className="material-symbols-outlined animate-spin !text-[40px] mb-4">autorenew</span>
-            <p className="font-semibold text-sm">Memeriksa data stok...</p>
-          </div>
-        ) : validLowStock.length === 0 && validExpiring.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center">
-            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined !text-[40px] text-emerald-500">check_circle</span>
-            </div>
-            <h2 className="text-lg font-bold text-slate-800 mb-1">Semua Aman! 🎉</h2>
-            <p className="text-sm">Tidak ada peringatan stok menipis atau barang hampir kadaluarsa yang aktif.</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
+        {/* TAB: AKTIF */}
+        {activeTab === 'aktif' && (
+          <>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <span className="material-symbols-outlined animate-spin !text-[40px] mb-4">autorenew</span>
+                <p className="font-semibold text-sm">Memeriksa data stok...</p>
+              </div>
+            ) : validLowStock.length === 0 && validExpiring.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center">
+                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined !text-[40px] text-emerald-500">check_circle</span>
+                </div>
+                <h2 className="text-lg font-bold text-slate-800 mb-1">Semua Aman! 🎉</h2>
+                <p className="text-sm">Tidak ada peringatan stok menipis atau barang hampir kadaluarsa yang aktif.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
             
             {/* EXPIRED ALERTS (BLACK) */}
             {expiredItems.length > 0 && (
@@ -241,8 +277,51 @@ export default function NotifikasiPage() {
               </section>
             )}
 
+          </div>
+        )}
+        </>
+        )}
 
-
+        {/* TAB: RIWAYAT */}
+        {activeTab === 'riwayat' && (
+          <div className="space-y-4">
+            {loadingHistory ? (
+              <div className="flex justify-center py-20"><span className="material-symbols-outlined animate-spin text-slate-400 !text-[40px]">autorenew</span></div>
+            ) : historyLogs.length === 0 ? (
+              <div className="text-center py-20 text-slate-400">
+                <span className="material-symbols-outlined !text-[48px] mb-4 text-slate-300">history</span>
+                <p>Belum ada riwayat peringatan tersimpan.</p>
+              </div>
+            ) : (
+              historyLogs.map((log) => (
+                <div 
+                  key={log.id} 
+                  onClick={() => setSelectedItem({ type: log.type === 'expired' ? 'expired' : log.type.includes('expiry') ? 'expiring' : 'oos', product: log.product, batch: log.batch, sessionIndex: 'N/A' })}
+                  className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
+                    log.type === 'expired' ? 'bg-slate-900 text-white' :
+                    log.type === 'oos' ? 'bg-red-600 text-white' :
+                    'bg-orange-50 text-orange-500'
+                  }`}>
+                    <span className="material-symbols-outlined !text-[24px]">
+                      {log.type === 'expired' ? 'dangerous' : log.type === 'oos' ? 'warning' : 'history_toggle_off'}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-slate-800 leading-tight mb-1">{log.product?.name || 'Produk Dihapus'}</p>
+                    <p className="text-xs text-slate-500 font-medium mb-1">{log.message}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                      <span className="material-symbols-outlined !text-[12px]">schedule</span>
+                      {new Date(log.createdAt).toLocaleString('id-ID')}
+                    </p>
+                  </div>
+                  <div className="flex items-center text-slate-400">
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </main>

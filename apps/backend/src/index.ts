@@ -24,6 +24,10 @@ import transferRoutes from "./routes/transfer.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { reportRoutes } from "./routes/report.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import branchStockRoutes from "./routes/branch-stock.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import shiftRoutes from "./routes/shift.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -63,6 +67,9 @@ app.use("/api/transfers", transferRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
+app.use("/branch-stocks", branchStockRoutes);
+app.use("/shifts", shiftRoutes);
+app.use("/notifications", notificationRoutes);
 
 // ── Health Check ──
 app.get("/api/health", (req, res) => {
