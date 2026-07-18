@@ -1,11 +1,64 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
 import { notificationLog } from "../db/schema/notification-log.js";
-import { product } from "../db/schema/product.js";
+import { branchStock } from "../db/schema/branch-stock.js";
 import { batch } from "../db/schema/batch.js";
-import { eq, desc } from "drizzle-orm";
+import { product } from "../db/schema/product.js";
+import { eq, desc, and } from "drizzle-orm";
+import { daysUntilExpiry } from "../lib/utils.js";
 
 const router = Router();
+
+// GET /notifications/seed
+router.get("/seed", async (req, res) => {
+  try {
+    let count = 0;
+    const bsResults = await db.select().from(branchStock);
+    for (const bs of bsResults) {
+      const batches = await db.select().from(batch).where(eq(batch.branchStockId, bs.id));
+      for (const b of batches) {
+        if (!b.expiredDate || b.qty <= 0) continue;
+        
+        const days = daysUntilExpiry(b.expiredDate);
+        let type = '';
+        let message = '';
+        
+        if (days <= 0) {
+          type = 'expired';
+          message = `Telah Kadaluarsa sejak ${Math.abs(days)} hari yang lalu`;
+        } else if (days <= 7) {
+          type = 'expiry_7';
+          message = `Akan Kadaluarsa dalam ${days} hari (1 Minggu)`;
+        } else if (days <= 30) {
+          type = 'expiry_30';
+          message = `Akan Kadaluarsa dalam ${days} hari (1 Bulan)`;
+        }
+
+        if (type) {
+          const existing = await db.select().from(notificationLog).where(
+            and(
+              eq(notificationLog.batchId, b.id),
+              eq(notificationLog.type, type)
+            )
+          );
+          if (existing.length === 0) {
+            await db.insert(notificationLog).values({
+              branchId: bs.branchId,
+              productId: bs.productId,
+              batchId: b.id,
+              type: type,
+              message: message,
+            });
+            count++;
+          }
+        }
+      }
+    }
+    res.json({ success: true, count });
+  } catch(e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // GET /notifications?branchId=xyz
 router.get("/", async (req, res) => {

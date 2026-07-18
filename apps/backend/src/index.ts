@@ -67,9 +67,9 @@ app.use("/api/transfers", transferRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
-app.use("/branch-stocks", branchStockRoutes);
-app.use("/shifts", shiftRoutes);
-app.use("/notifications", notificationRoutes);
+app.use("/api/branch-stocks", branchStockRoutes);
+app.use("/api/shifts", shiftRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ── Health Check ──
 app.get("/api/health", (req, res) => {
