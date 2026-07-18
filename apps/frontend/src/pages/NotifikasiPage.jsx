@@ -293,7 +293,17 @@ export default function NotifikasiPage() {
                 <p>Belum ada riwayat peringatan tersimpan.</p>
               </div>
             ) : (
-              historyLogs.map((log) => (
+              [...historyLogs].sort((a, b) => {
+                const getWeight = (type) => {
+                  if (type?.includes('expiry')) return 1;
+                  if (type === 'oos') return 2;
+                  if (type === 'expired') return 3;
+                  return 4;
+                };
+                const weightDiff = getWeight(a.type) - getWeight(b.type);
+                if (weightDiff !== 0) return weightDiff;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+              }).map((log) => (
                 <div 
                   key={log.id} 
                   onClick={() => setSelectedItem({ type: log.type === 'expired' ? 'expired' : log.type.includes('expiry') ? 'expiring' : 'oos', product: log.product, batch: log.batch, sessionIndex: 'N/A' })}
