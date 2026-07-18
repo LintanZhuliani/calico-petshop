@@ -177,8 +177,93 @@ function AddStockModal({ product, onClose, onSave }) {
   );
 }
 
+// ── Komponen Editor Sesi ──
+function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [qty, setQty] = useState(batch.qty);
+  const [date, setDate] = useState(batch.expiredDate ? new Date(batch.expiredDate).toISOString().split('T')[0] : '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onUpdate(batch.id, Number(qty), date || null);
+      setIsEditing(false);
+    } catch (e) {
+      alert("Gagal update sesi: " + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Hapus sesi ini?')) return;
+    setSaving(true);
+    try {
+      await onDelete(batch.id);
+    } catch (e) {
+      alert("Gagal hapus: " + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className="p-3 rounded-xl border bg-orange-50 border-orange-200">
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <span className="font-bold text-sm text-orange-800">Edit Sesi {index + 1}</span>
+            <button onClick={() => setIsEditing(false)} className="text-[10px] font-bold text-orange-500 hover:text-orange-700 uppercase">Batal</button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] font-bold text-slate-500">Jumlah (Qty)</label>
+              <input type="number" value={qty} onChange={e => setQty(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-slate-500">Tgl Kadaluarsa</label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-1">
+            <button onClick={handleDelete} disabled={saving} className="flex-1 py-2 bg-red-100 text-red-600 rounded-lg text-[11px] font-bold hover:bg-red-200 active:scale-95 transition-all">HAPUS SESI</button>
+            <button onClick={handleSave} disabled={saving} className="flex-1 py-2 bg-[#D35400] text-white rounded-lg text-[11px] font-bold hover:bg-[#b84800] active:scale-95 transition-all">{saving ? 'Menyimpan...' : 'SIMPAN'}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isExpired = batch.expiredDate && new Date(batch.expiredDate).getTime() < Date.now();
+  return (
+    <div className={`flex items-center justify-between p-3 rounded-xl border ${isExpired ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+      <div className="flex flex-col">
+        <span className="font-bold text-sm">Sesi {index + 1}</span>
+        <span className="text-[10px] opacity-80">Tgl Masuk: {new Date(batch.createdAt).toLocaleDateString('id-ID')}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end text-right">
+          <span className="font-bold">{batch.qty} unit</span>
+          {batch.expiredDate ? (
+            <span className={`text-[10px] font-semibold ${isExpired ? 'line-through opacity-80' : 'text-orange-500'}`}>
+              Exp: {new Date(batch.expiredDate).toLocaleDateString('id-ID')}
+            </span>
+          ) : (
+            <span className="text-[10px] text-slate-400">Tanpa Exp</span>
+          )}
+        </div>
+        <button onClick={() => setIsEditing(true)} className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-slate-400">
+          <span className="material-symbols-outlined !text-[16px]">edit</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Modal Edit Produk (Admin) ──
 function EditProductModal({ product, onClose, onSave }) {
+  const [localBatches, setLocalBatches] = useState(product.batches || []);
   const [form, setForm] = useState({
     name: product.name || '',
     category: product.category || CATEGORIES[0],
@@ -192,6 +277,24 @@ function EditProductModal({ product, onClose, onSave }) {
   const [customCat, setCustomCat] = useState('');
   const [showCustomCat, setShowCustomCat] = useState(false);
   const handle = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  
+  const handleBatchUpdate = async (batchId, qty, expiredDate) => {
+    await apiFetch(`/products/${product.id}/stock/${batchId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ qty, expiredDate })
+    });
+    setLocalBatches(prev => prev.map(b => b.id === batchId ? { ...b, qty, expiredDate } : b));
+    // Update local form stock to reflect changes
+    const newTotal = localBatches.map(b => b.id === batchId ? qty : b.qty).reduce((a, b) => a + b, 0);
+    handle('stock', newTotal);
+  };
+
+  const handleBatchDelete = async (batchId) => {
+    await apiFetch(`/products/${product.id}/stock/${batchId}`, { method: 'DELETE' });
+    setLocalBatches(prev => prev.filter(b => b.id !== batchId));
+    const newTotal = localBatches.filter(b => b.id !== batchId).reduce((a, b) => a + b, 0);
+    handle('stock', newTotal);
+  };
 
   const handleCategoryChange = (val) => {
     if (val === '__custom__') {
@@ -330,31 +433,19 @@ function EditProductModal({ product, onClose, onSave }) {
         </div>
 
         {/* List of Batches / Sessions */}
-        {product.batches && product.batches.length > 0 && (
+        {localBatches && localBatches.length > 0 && (
           <div className="space-y-2 mt-4">
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Riwayat Sesi Stok (FEFO)</label>
             <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-              {product.batches.map((b, i) => {
-                const isExpired = b.expiredDate && new Date(b.expiredDate).getTime() < Date.now();
-                return (
-                  <div key={b.id} className={`flex items-center justify-between p-3 rounded-xl border ${isExpired ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm">Sesi {i + 1}</span>
-                      <span className="text-[10px] opacity-80">Tgl Masuk: {new Date(b.createdAt).toLocaleDateString('id-ID')}</span>
-                    </div>
-                    <div className="flex flex-col items-end text-right">
-                      <span className="font-bold">{b.qty} unit</span>
-                      {b.expiredDate ? (
-                        <span className={`text-[10px] font-semibold ${isExpired ? 'line-through opacity-80' : 'text-orange-500'}`}>
-                          Exp: {new Date(b.expiredDate).toLocaleDateString('id-ID')}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400">Tanpa Exp</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {localBatches.map((b, i) => (
+                <BatchItemEditor 
+                  key={b.id} 
+                  batch={b} 
+                  index={i} 
+                  onUpdate={handleBatchUpdate} 
+                  onDelete={handleBatchDelete} 
+                />
+              ))}
             </div>
           </div>
         )}

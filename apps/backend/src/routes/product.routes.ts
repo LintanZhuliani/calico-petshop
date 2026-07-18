@@ -192,17 +192,21 @@ router.post("/:id/stock/deduct", requireAuth, requireAdmin, async (req, res, nex
   }
 });
 
-// PATCH /api/products/:id/stock/:batchId — Update batch qty (Admin only, per-branch correction)
+// PATCH /api/products/:id/stock/:batchId — Update batch qty/expiry (Admin only, per-branch correction)
 router.patch("/:id/stock/:batchId", requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const { qty } = req.body;
-    if (qty === undefined || qty === null) {
-      res.status(400).json({ error: "qty is required" });
+    const { qty, expiredDate } = req.body;
+    if (qty === undefined && expiredDate === undefined) {
+      res.status(400).json({ error: "qty or expiredDate is required" });
       return;
     }
-    const result = await productService.updateBatchQty(
+    const updates: any = {};
+    if (qty !== undefined) updates.qty = Number(qty);
+    if (expiredDate !== undefined) updates.expiredDate = expiredDate;
+
+    const result = await productService.updateBatch(
       req.params.batchId as string,
-      Number(qty)
+      updates
     );
     if (!result) {
       res.status(404).json({ error: "Batch not found" });

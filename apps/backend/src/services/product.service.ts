@@ -303,19 +303,20 @@ export const productService = {
   },
 
   /**
-   * Update a batch's quantity (admin stock correction).
+   * Update a batch's quantity and/or expiration date (admin stock correction).
    * Only affects the specific batch at a specific branch.
    */
-  async updateBatchQty(batchId: string, newQty: number) {
-    if (newQty <= 0) {
+  async updateBatch(batchId: string, updates: { qty?: number; expiredDate?: string | null }) {
+    if (updates.qty !== undefined && updates.qty <= 0) {
       // If qty is 0 or negative, delete the batch
       return this.deleteBatch(batchId);
     }
     const results = await db
       .update(batch)
-      .set({ qty: newQty })
+      .set(updates)
       .where(eq(batch.id, batchId))
       .returning();
+    getIo()?.emit("DATA_UPDATED");
     return results[0] || null;
   },
 
