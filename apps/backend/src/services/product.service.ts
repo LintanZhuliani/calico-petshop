@@ -25,8 +25,8 @@ export const productService = {
     branchId?: string;
     status?: "critical" | "empty";
   }) {
-    // Get all products
-    let products = await db.select().from(product);
+    // Get all unarchived products
+    let products = await db.select().from(product).where(eq(product.isArchived, false));
 
     // Apply search filter
     if (filters.search) {
@@ -224,7 +224,7 @@ export const productService = {
     return results[0] || null;
   },
 
-  /** Delete a product */
+  /** Delete a product (soft delete if transactions exist) */
   async delete(id: string) {
     try {
       const results = await db
@@ -236,10 +236,15 @@ export const productService = {
       return results[0] || null;
     } catch (err: any) {
       if (err.code === "23503") {
-        throw Object.assign(
-          new Error("Produk ini tidak bisa dihapus karena sudah memiliki riwayat transaksi."),
-          { statusCode: 400 }
-        );
+        // Soft delete
+        const results = await db
+          .update(product)
+          .set({ isArchived: true, updatedAt: new Date() })
+          .where(eq(product.id, id))
+          .returning();
+          
+        getIo()?.emit("DATA_UPDATED");
+        return results[0] || null;
       }
       throw err;
     }

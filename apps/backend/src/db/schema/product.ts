@@ -4,7 +4,7 @@
 // per-branch via the branch_stock table.
 // ===================================================
 
-import { pgTable, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { branchStock } from "./branch-stock.js";
 
@@ -18,6 +18,7 @@ export const product = pgTable("product", {
   image: text("image"), // base64 data URI or URL
   imageEmoji: text("image_emoji"), // Material Symbols icon name fallback
   minStock: integer("min_stock").notNull().default(5),
+  isArchived: boolean("is_archived").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
