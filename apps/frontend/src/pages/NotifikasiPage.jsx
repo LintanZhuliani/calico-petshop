@@ -15,6 +15,7 @@ export default function NotifikasiPage() {
   const [lowStock, setLowStock] = useState(location.state?.lowStock || []);
   const [expiring, setExpiring] = useState(location.state?.expiring || []);
   const [loading, setLoading] = useState(!(location.state?.lowStock && location.state?.expiring));
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     if (location.state?.lowStock && location.state?.expiring) {
@@ -128,7 +129,11 @@ export default function NotifikasiPage() {
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {expiredItems.map(({ product, batch, sessionIndex }, i) => (
-                    <div key={`expd-${i}`} className="p-4 flex gap-4 hover:bg-slate-50 transition-colors">
+                    <div 
+                      key={`expd-${i}`} 
+                      onClick={() => setSelectedItem({ type: 'expired', product, batch, sessionIndex })}
+                      className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
                       <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm">
                         <span className="material-symbols-outlined !text-[24px]">dangerous</span>
                       </div>
@@ -142,6 +147,9 @@ export default function NotifikasiPage() {
                             Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong> <span className="italic">(Sesi {sessionIndex})</span>
                           </span>
                         </div>
+                      </div>
+                      <div className="flex items-center text-slate-400">
+                        <span className="material-symbols-outlined">chevron_right</span>
                       </div>
                     </div>
                   ))}
@@ -164,7 +172,11 @@ export default function NotifikasiPage() {
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {outOfStockItems.map((p, i) => (
-                    <div key={`oos-${i}`} className="p-4 flex gap-4 hover:bg-slate-50 transition-colors">
+                    <div 
+                      key={`oos-${i}`} 
+                      onClick={() => setSelectedItem({ type: 'oos', product: p })}
+                      className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
                       <div className="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                         <span className="material-symbols-outlined !text-[24px]">warning</span>
                       </div>
@@ -175,6 +187,9 @@ export default function NotifikasiPage() {
                             Stok saat ini: <strong className="text-red-600">0 unit</strong>
                           </span>
                         </div>
+                      </div>
+                      <div className="flex items-center text-slate-400">
+                        <span className="material-symbols-outlined">chevron_right</span>
                       </div>
                     </div>
                   ))}
@@ -197,7 +212,11 @@ export default function NotifikasiPage() {
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {expiringSoonItems.map(({ product, batch, daysLeft, sessionIndex }, i) => (
-                    <div key={`exp-${i}`} className="p-4 flex gap-4 hover:bg-slate-50 transition-colors">
+                    <div 
+                      key={`exp-${i}`} 
+                      onClick={() => setSelectedItem({ type: 'expiring', product, batch, daysLeft, sessionIndex })}
+                      className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
                       <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-orange-500 !text-[24px]">event_busy</span>
                       </div>
@@ -213,6 +232,9 @@ export default function NotifikasiPage() {
                         </div>
                         <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> <span className="italic">(Sesi {sessionIndex})</span></p>
                       </div>
+                      <div className="flex items-center text-slate-400">
+                        <span className="material-symbols-outlined">chevron_right</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -224,6 +246,82 @@ export default function NotifikasiPage() {
           </div>
         )}
       </main>
+
+      {/* Item Detail Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedItem(null)}>
+          <div className="w-full md:max-w-md bg-white rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]" onClick={e => e.stopPropagation()}>
+            <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="font-headline font-bold text-lg text-slate-800">Detail Produk</h3>
+              <button onClick={() => setSelectedItem(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
+                <span className="material-symbols-outlined !text-[20px]">close</span>
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex gap-4 items-center mb-6">
+                <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200">
+                  {selectedItem.product.image ? (
+                    <img src={selectedItem.product.image} alt={selectedItem.product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl">{selectedItem.product.imageEmoji || '📦'}</span>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-lg leading-tight">{selectedItem.product.name}</h4>
+                  <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg mt-2 uppercase tracking-wide">
+                    {selectedItem.product.category}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="text-slate-500 text-sm">Status Peringatan</span>
+                  {selectedItem.type === 'expired' && <span className="text-slate-900 font-bold bg-slate-200 px-3 py-1 rounded-full text-xs">SUDAH KADALUARSA</span>}
+                  {selectedItem.type === 'oos' && <span className="text-red-600 font-bold bg-red-50 px-3 py-1 rounded-full text-xs">STOK HABIS</span>}
+                  {selectedItem.type === 'expiring' && <span className="text-orange-600 font-bold bg-orange-50 px-3 py-1 rounded-full text-xs">HAMPIR KADALUARSA</span>}
+                </div>
+
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="text-slate-500 text-sm">Barcode</span>
+                  <span className="text-slate-800 font-mono font-medium">{selectedItem.product.barcode || '-'}</span>
+                </div>
+
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="text-slate-500 text-sm">Harga Jual</span>
+                  <span className="text-slate-800 font-bold">Rp {selectedItem.product.price.toLocaleString('id-ID')}</span>
+                </div>
+
+                {selectedItem.type === 'oos' && (
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 text-sm">Total Stok Tersisa</span>
+                    <span className="text-red-600 font-bold text-lg">0 Unit</span>
+                  </div>
+                )}
+
+                {selectedItem.batch && (
+                  <>
+                    <div className="flex justify-between py-3 border-b border-slate-100">
+                      <span className="text-slate-500 text-sm">Tanggal Kadaluarsa (Batch)</span>
+                      <span className="text-slate-800 font-bold">{new Date(selectedItem.batch.expiredDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    </div>
+                    <div className="flex justify-between py-3 border-b border-slate-100">
+                      <span className="text-slate-500 text-sm">Sisa Stok (Batch Ini)</span>
+                      <span className="text-slate-800 font-bold">{selectedItem.batch.qty} Unit</span>
+                    </div>
+                    <div className="flex justify-between py-3">
+                      <span className="text-slate-500 text-sm">Informasi Penempatan</span>
+                      <span className="text-slate-800 font-medium">Rak Penyimpanan / Sesi {selectedItem.sessionIndex}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
