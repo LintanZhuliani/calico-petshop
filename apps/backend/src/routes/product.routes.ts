@@ -108,7 +108,11 @@ router.post("/", requireAuth, requireAdmin, async (req, res, next) => {
       minStock,
     });
     res.status(201).json(product);
-  } catch (err) {
+  } catch (err: any) {
+    if (err.code === "23505") {
+      res.status(400).json({ error: "Gagal: Barcode sudah terdaftar untuk produk lain." });
+      return;
+    }
     next(err);
   }
 });
@@ -122,7 +126,11 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res, next) => {
       return;
     }
     res.json(product);
-  } catch (err) {
+  } catch (err: any) {
+    if (err.code === "23505") {
+      res.status(400).json({ error: "Gagal: Barcode sudah terdaftar untuk produk lain." });
+      return;
+    }
     next(err);
   }
 });
@@ -136,7 +144,11 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
       return;
     }
     res.json({ message: "Product deleted", product });
-  } catch (err) {
+  } catch (err: any) {
+    if (err.statusCode === 400) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
     next(err);
   }
 });
