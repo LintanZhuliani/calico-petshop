@@ -421,13 +421,13 @@ function EditProductModal({ product, onClose, onSave }) {
         
         <div className="grid grid-cols-2 gap-3">
           <InputField label="Stok Minimum (Alert)" type="number" value={form.minStock} onChange={v => handle('minStock', v)} placeholder="10" />
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Timpa Total Stok Cabang</label>
+          <div className="space-y-1.5 opacity-80">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Total Stok Cabang</label>
             <input
               type="number"
               value={form.stock}
-              onChange={e => handle('stock', e.target.value)}
-              className="w-full px-4 py-3 bg-white border-2 border-slate-200 focus:border-[#D35400] rounded-2xl text-slate-900 font-bold outline-none transition-all"
+              readOnly
+              className="w-full px-4 py-3 bg-slate-100 border-2 border-transparent rounded-2xl text-slate-500 font-bold outline-none cursor-not-allowed"
             />
           </div>
         </div>
