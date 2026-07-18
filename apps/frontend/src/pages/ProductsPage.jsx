@@ -992,17 +992,24 @@ export default function ProductsPage() {
             </div>
             {/* Filter Chips */}
             <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
-              {['Semua', 'Kritis', 'Habis'].map(s => (
-                <button key={s} onClick={() => setFilterStatus(s)}
-                  className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {s === 'Semua' ? 'SEMUA STATUS' : s}
+              <button 
+                onClick={() => { setFilterStatus('Semua'); setFilterCat('Semua'); }}
+                className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === 'Semua' && filterCat === 'Semua' ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}
+              >
+                SEMUA
+              </button>
+              <div className="w-px bg-slate-200 my-1" />
+              {['Kritis', 'Habis'].map(s => (
+                <button key={s} onClick={() => setFilterStatus(filterStatus === s ? 'Semua' : s)}
+                  className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}>
+                  {s}
                 </button>
               ))}
               <div className="w-px bg-slate-200 my-1" />
-              {uniqueCats.map(c => (
-                <button key={c} onClick={() => setFilterCat(c)}
-                  className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {c === 'Semua' ? 'SEMUA KATEGORI' : c}
+              {uniqueCats.filter(c => c !== 'Semua').map(c => (
+                <button key={c} onClick={() => setFilterCat(filterCat === c ? 'Semua' : c)}
+                  className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}>
+                  {c}
                 </button>
               ))}
             </div>

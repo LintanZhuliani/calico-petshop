@@ -523,7 +523,7 @@ export default function KasirPage() {
               {uniqueCats.map(c => (
                 <button key={c} onClick={() => setFilterCat(c)}
                   className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {c === 'Semua' ? 'SEMUA KATEGORI' : c}
+                  {c === 'Semua' ? 'SEMUA' : c}
                 </button>
               ))}
             </div>
