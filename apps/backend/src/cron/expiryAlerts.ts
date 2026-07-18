@@ -10,8 +10,8 @@ import { sendEmail } from "../lib/mailer.js";
  */
 export function initCronJobs() {
   // Check if SMTP is configured, else log a warning
-  if (!process.env.SMTP_USER || process.env.SMTP_USER === "your-email@gmail.com") {
-    console.warn("⚠️  SMTP is not configured. Email notifications will not be sent successfully. Set SMTP_USER and SMTP_PASS in .env");
+  if (!process.env.SMTP_EMAIL && !process.env.SMTP_USER) {
+    console.warn("⚠️  SMTP is not configured. Email notifications will not be sent successfully. Set SMTP_EMAIL and SMTP_PASSWORD in .env");
   }
 
   cron.schedule("0 8 * * *", async () => {
