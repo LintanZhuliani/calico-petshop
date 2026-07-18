@@ -725,9 +725,11 @@ export default function ProductsPage() {
   // Filter logic (Optimized with useMemo to prevent lag)
   const filtered = useMemo(() => {
     return products.filter(p => {
-      const s = search.toLowerCase();
+      const s = search.toLowerCase().trim();
+      const sNorm = s.replace(/^0+/, '');
       const matchSearch = (p.name || '').toLowerCase().includes(s) ||
-        (p.barcode || '').toLowerCase().includes(s);
+        (p.barcode || '').toLowerCase().includes(s) ||
+        (p.barcode && sNorm && p.barcode.replace(/^0+/, '').includes(sNorm));
       const matchCat = filterCat === 'Semua' || p.category === filterCat;
       const total = p.totalStock || 0;
       const matchStatus = filterStatus === 'Semua'

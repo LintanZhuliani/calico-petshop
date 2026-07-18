@@ -57,7 +57,11 @@ export default function ScanPage() {
 
   const findProduct = (code) => {
     const term = code.toLowerCase().trim();
-    const p = products.find(p => p.barcode === term || p.id === term || p.name.toLowerCase().includes(term));
+    const termNorm = term.replace(/^0+/, '');
+    const p = products.find(p => {
+      if (p.barcode && termNorm && p.barcode.replace(/^0+/, '') === termNorm) return true;
+      return p.id === term || p.name.toLowerCase().includes(term);
+    });
     if (p) {
       setScanResult(p);
       setNotFound(false);
