@@ -150,39 +150,40 @@ export default function NotifikasiPage() {
             ) : (
               <div className="space-y-6">
             
-            {/* EXPIRED ALERTS (BLACK) */}
-            {expiredItems.length > 0 && (
+            {/* EXPIRING SOON ALERTS (ORANGE) */}
+            {expiringSoonItems.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-slate-900 !text-[20px]">block</span>
-                    Sudah Kadaluarsa
+                    <span className="material-symbols-outlined text-orange-500 !text-[20px]">history_toggle_off</span>
+                    Hampir Kadaluarsa
                   </h2>
-                  <span className="px-2.5 py-0.5 bg-slate-900 text-white text-xs font-black rounded-full">
-                    {expiredItems.length} item
+                  <span className="px-2.5 py-0.5 bg-orange-100 text-orange-700 text-xs font-black rounded-full">
+                    {expiringSoonItems.length} item
                   </span>
                 </div>
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
-                  {expiredItems.map(({ product, batch, sessionIndex }, i) => (
+                  {expiringSoonItems.map(({ product, batch, daysLeft, sessionIndex }, i) => (
                     <div 
-                      key={`expd-${i}`} 
-                      onClick={() => setSelectedItem({ type: 'expired', product, batch, sessionIndex })}
+                      key={`exp-${i}`} 
+                      onClick={() => setSelectedItem({ type: 'expiring', product, batch, daysLeft, sessionIndex })}
                       className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm">
-                        <span className="material-symbols-outlined !text-[24px]">dangerous</span>
+                      <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-orange-500 !text-[24px]">event_busy</span>
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-slate-800 leading-tight mb-1">{product.name}</p>
                         <div className="flex flex-col gap-1 text-xs">
                           <span className="text-slate-500">
-                            Kadaluarsa: <strong className="text-slate-900">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
+                            Kadaluarsa: <strong className="text-orange-600">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
                           </span>
-                          <span className="text-slate-400">
-                            Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong> <span className="italic">(Sesi {sessionIndex})</span>
+                          <span className="text-orange-600 font-semibold">
+                            Sisa {daysLeft} hari lagi
                           </span>
                         </div>
+                        <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> {sessionIndex !== 'N/A' && <span className="italic">(Sesi {sessionIndex})</span>}</p>
                       </div>
                       <div className="flex items-center text-slate-400">
                         <span className="material-symbols-outlined">chevron_right</span>
@@ -233,40 +234,39 @@ export default function NotifikasiPage() {
               </section>
             )}
 
-            {/* EXPIRING SOON ALERTS (ORANGE) */}
-            {expiringSoonItems.length > 0 && (
+            {/* EXPIRED ALERTS (BLACK) */}
+            {expiredItems.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-orange-500 !text-[20px]">history_toggle_off</span>
-                    Hampir Kadaluarsa
+                    <span className="material-symbols-outlined text-slate-900 !text-[20px]">block</span>
+                    Sudah Kadaluarsa
                   </h2>
-                  <span className="px-2.5 py-0.5 bg-orange-100 text-orange-700 text-xs font-black rounded-full">
-                    {expiringSoonItems.length} item
+                  <span className="px-2.5 py-0.5 bg-slate-900 text-white text-xs font-black rounded-full">
+                    {expiredItems.length} item
                   </span>
                 </div>
                 
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
-                  {expiringSoonItems.map(({ product, batch, daysLeft, sessionIndex }, i) => (
+                  {expiredItems.map(({ product, batch, sessionIndex }, i) => (
                     <div 
-                      key={`exp-${i}`} 
-                      onClick={() => setSelectedItem({ type: 'expiring', product, batch, daysLeft, sessionIndex })}
+                      key={`expd-${i}`} 
+                      onClick={() => setSelectedItem({ type: 'expired', product, batch, sessionIndex })}
                       className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-orange-500 !text-[24px]">event_busy</span>
+                      <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <span className="material-symbols-outlined !text-[24px]">dangerous</span>
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-slate-800 leading-tight mb-1">{product.name}</p>
                         <div className="flex flex-col gap-1 text-xs">
                           <span className="text-slate-500">
-                            Kadaluarsa: <strong className="text-orange-600">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
+                            Kadaluarsa: <strong className="text-slate-900">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
                           </span>
-                          <span className="text-orange-600 font-semibold">
-                            Sisa {daysLeft} hari lagi
+                          <span className="text-slate-400">
+                            Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong> {sessionIndex !== 'N/A' && <span className="italic">(Sesi {sessionIndex})</span>}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> <span className="italic">(Sesi {sessionIndex})</span></p>
                       </div>
                       <div className="flex items-center text-slate-400">
                         <span className="material-symbols-outlined">chevron_right</span>
@@ -391,7 +391,9 @@ export default function NotifikasiPage() {
                     </div>
                     <div className="flex justify-between py-3">
                       <span className="text-slate-500 text-sm">Informasi Penempatan</span>
-                      <span className="text-slate-800 font-medium">Rak Penyimpanan / Sesi {selectedItem.sessionIndex}</span>
+                      <span className="text-slate-800 font-medium">
+                        {selectedItem.sessionIndex === 'N/A' ? 'Rak Penyimpanan' : `Rak Penyimpanan / Sesi ${selectedItem.sessionIndex}`}
+                      </span>
                     </div>
                   </>
                 )}
