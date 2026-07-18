@@ -11,6 +11,10 @@ import { auth } from "./auth/index.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { createServer } from "http";
 import { initSocket } from "./lib/socket.js";
+import { initCronJobs } from "./cron/expiryAlerts.js";
+
+// Initialize Background Cron Jobs
+initCronJobs();
 
 // Routes
 import branchRoutes from "./routes/branch.routes.js";

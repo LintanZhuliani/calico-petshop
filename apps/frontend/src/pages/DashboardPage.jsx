@@ -110,8 +110,8 @@ export default function DashboardPage() {
       })
       .catch(err => console.error('Products error:', err));
 
-    // Fetch expiring batches (within 60 days)
-    apiFetch(`/products/alerts/expiring?branchId=${branch}&days=60`)
+    // Fetch expiring batches (within 30 days)
+    apiFetch(`/products/alerts/expiring?branchId=${branch}&days=30`)
       .then(data => setExpiring(data || []))
       .catch(err => console.error('Expiring error:', err));
 

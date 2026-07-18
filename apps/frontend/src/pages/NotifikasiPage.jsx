@@ -27,8 +27,8 @@ export default function NotifikasiPage() {
         const products = await apiFetch(`/products?branchId=${branchId}`);
         setLowStock(products.filter(p => (p.totalStock || 0) <= p.minStock));
 
-        // Fetch expiring batches (within 60 days)
-        const expiringBatches = await apiFetch(`/products/alerts/expiring?branchId=${branchId}&days=60`);
+        // Fetch expiring batches (within 30 days)
+        const expiringBatches = await apiFetch(`/products/alerts/expiring?branchId=${branchId}&days=30`);
         setExpiring(expiringBatches || []);
       } catch (err) {
         console.error('Failed to fetch notifications:', err);

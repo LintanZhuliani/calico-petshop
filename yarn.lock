@@ -465,6 +465,11 @@
 "@types/json-schema@^7.0.15":
   version "7.0.15"
 
+"@types/node-cron@^3.0.11":
+  version "3.0.11"
+  resolved "https://registry.npmjs.org/@types/node-cron/-/node-cron-3.0.11.tgz"
+  integrity sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==
+
 "@types/node@*", "@types/node@^18.0.0 || ^20.0.0 || >=22.0.0", "@types/node@>=10.0.0":
   version "25.6.0"
   dependencies:
@@ -649,6 +654,7 @@ autoprefixer@^10.5.0:
     dotenv "^16.4.7"
     drizzle-orm "^0.39.3"
     express "^5.1.0"
+    node-cron "^4.6.0"
     nodemailer "^8.0.11"
     socket.io "^4.8.3"
 
@@ -1493,6 +1499,7 @@ fresh@^2.0.0:
   resolved "file:apps/frontend"
   dependencies:
     better-auth "^1.6.11"
+    exceljs "^4.4.0"
     html5-qrcode "^2.3.8"
     lucide-react "^1.8.0"
     react "^19.1.0"
@@ -1955,6 +1962,11 @@ negotiator@^1.0.0:
 
 negotiator@0.6.3:
   version "0.6.3"
+
+node-cron@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.npmjs.org/node-cron/-/node-cron-4.6.0.tgz"
+  integrity sha512-Si/bzYiKRHOB8/a99T2+SDGN582ONDMSTlJr5oCkT6GtnqPjZ2s10eoQRYkW9ZHwjVxONL+W8Fb+qR0AHMQsdg==
 
 node-releases@^2.0.36:
   version "2.0.37"
