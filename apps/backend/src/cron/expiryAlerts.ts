@@ -108,19 +108,19 @@ export async function checkAndSendExpiryAlerts() {
     
     const branchName = branchInfo[0]?.name || "Cabang";
 
-    // Get Users for this branch (both admin and kasir)
-    const branchUsers = await db
+    // Get all users in the system (Admin + Kasir)
+    // Send to everyone so admins and new cashiers all get notified
+    const allUsers = await db
       .select({ email: user.email, name: user.name, role: user.role })
-      .from(user)
-      .where(eq(user.branchId, branchId));
+      .from(user);
 
-    if (branchUsers.length === 0) continue;
+    if (allUsers.length === 0) continue;
 
     // 4. Construct HTML Email
     const htmlContent = generateEmailHTML(branchName, alerts);
 
     // 5. Send emails
-    for (const u of branchUsers) {
+    for (const u of allUsers) {
       if (!u.email) continue;
       
       console.log(`Sending expiry alert email to ${u.email} (${u.role}) at ${branchName}`);
