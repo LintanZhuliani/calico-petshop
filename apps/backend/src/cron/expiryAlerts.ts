@@ -47,7 +47,7 @@ async function checkAndSendExpiryAlerts() {
     if (!b.expiredDate || b.qty <= 0) return;
     const days = daysUntilExpiry(b.expiredDate);
     
-    if (days === 30 || days === 7 || days === 0) {
+    if (days === 30 || days === 7 || days === 1 || days === 0) {
       if (!alertsByBranch[b.branchId]) {
         alertsByBranch[b.branchId] = [];
       }
@@ -62,6 +62,9 @@ async function checkAndSendExpiryAlerts() {
       if (days === 0) {
         type = 'expired';
         message = 'Telah Kadaluarsa Hari Ini';
+      } else if (days === 1) {
+        type = 'expiry_1';
+        message = 'Akan Kadaluarsa BESOK (1 Hari)';
       } else if (days === 7) {
         type = 'expiry_7';
         message = 'Akan Kadaluarsa dalam 7 hari (1 Minggu)';
@@ -133,7 +136,7 @@ async function checkAndSendExpiryAlerts() {
 function generateEmailHTML(branchName: string, alerts: any[]) {
   const tableRows = alerts
     .map((alert) => {
-      const color = alert.daysLeft === 7 ? "#dc2626" : "#eab308"; // red for 7 days, yellow for 30
+      const color = alert.daysLeft <= 7 ? "#dc2626" : "#eab308"; // red for <= 7 days, yellow for 30
       const dateStr = new Date(alert.expiredDate).toLocaleDateString("id-ID");
       return `
         <tr>
@@ -152,7 +155,7 @@ function generateEmailHTML(branchName: string, alerts: any[]) {
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #1e293b;">Peringatan Kadaluarsa Barang</h2>
       <p>Halo Tim <strong>${branchName}</strong>,</p>
-      <p>Berikut adalah daftar barang yang akan kadaluarsa dalam waktu dekat (1 bulan atau 1 minggu lagi) di cabang Anda. Mohon segera periksa stok fisik dan lakukan tindakan yang diperlukan (seperti promosi diskon atau retur).</p>
+      <p>Berikut adalah daftar barang yang akan kadaluarsa dalam waktu dekat (1 bulan, 1 minggu, atau besok) di cabang Anda. Mohon segera periksa stok fisik dan lakukan tindakan yang diperlukan (seperti promosi diskon atau retur).</p>
       
       <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
