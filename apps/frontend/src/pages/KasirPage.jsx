@@ -566,7 +566,7 @@ export default function KasirPage() {
                         <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-semibold text-slate-900 text-sm md:text-base leading-tight truncate">{p.name}</p>
                         <StockBadge total={total} min={p.minStock} />

@@ -1184,7 +1184,7 @@ export default function ProductsPage() {
                         <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-semibold text-slate-900 text-sm md:text-base leading-tight truncate">{p.name}</p>
                         <StockBadge total={total} min={p.minStock} />
@@ -1199,7 +1199,7 @@ export default function ProductsPage() {
                         <div className="flex flex-col gap-0.5">
                           <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
                           {isAdmin && (
-                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 w-fit">
+                            <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 w-fit">
                               Modal: {formatRupiah(p.buyPrice || 0)}
                             </span>
                           )}
