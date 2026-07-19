@@ -1122,19 +1122,6 @@ export default function ProductsPage() {
                 SEMUA
               </button>
               <div className="w-px bg-slate-200 my-1" />
-              {['Kritis', 'Habis'].map(s => {
-                let selectedBg = `${primaryBg}`;
-                if (s === 'Habis') selectedBg = 'bg-red-600';
-                if (s === 'Kritis') selectedBg = 'bg-orange-500';
-                
-                return (
-                  <button key={s} onClick={() => setFilterStatus(filterStatus === s ? 'Semua' : s)}
-                    className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === s ? `${selectedBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}>
-                    {s}
-                  </button>
-                );
-              })}
-              <div className="w-px bg-slate-200 my-1" />
               {uniqueCats.filter(c => c !== 'Semua').map(c => (
                 <button key={c} onClick={() => setFilterCat(filterCat === c ? 'Semua' : c)}
                   className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}>
