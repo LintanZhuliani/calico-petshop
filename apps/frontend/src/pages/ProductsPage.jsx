@@ -1189,7 +1189,6 @@ export default function ProductsPage() {
                         <p className="font-semibold text-slate-900 text-sm md:text-base leading-tight truncate">{p.name}</p>
                         <StockBadge total={total} min={p.minStock} />
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">{p.category}</p>
                       {p.expiredStock > 0 && (
                         <div className="mt-1 inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold">
                           <span className="material-symbols-outlined !text-[12px]">warning</span>
