@@ -19,6 +19,7 @@ export default function NotifikasiPage() {
   const [activeTab, setActiveTab] = useState('aktif');
   const [historyLogs, setHistoryLogs] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [selectedNotif, setSelectedNotif] = useState(null);
 
   useEffect(() => {
     if (location.state?.lowStock && location.state?.expiring) {
@@ -166,7 +167,7 @@ export default function NotifikasiPage() {
                   {expiringSoonItems.map(({ product, batch, daysLeft, sessionIndex }, i) => (
                     <div 
                       key={`exp-${i}`} 
-                      onClick={() => navigate('/products', { state: { search: product.name } })}
+                      onClick={() => setSelectedNotif({ type: 'expiringSoon', product, batch, daysLeft, sessionIndex })}
                       className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0">
@@ -212,7 +213,7 @@ export default function NotifikasiPage() {
                   {outOfStockItems.map((p, i) => (
                     <div 
                       key={`oos-${i}`} 
-                      onClick={() => navigate('/products', { state: { search: p.name } })}
+                      onClick={() => setSelectedNotif({ type: 'outOfStock', product: p })}
                       className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -251,8 +252,8 @@ export default function NotifikasiPage() {
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {expiredItems.map(({ product, batch, sessionIndex }, i) => (
                     <div 
-                      key={`expired-${i}`} 
-                      onClick={() => navigate('/products', { state: { search: product.name } })}
+                      key={`expd-${i}`} 
+                      onClick={() => setSelectedNotif({ type: 'expired', product, batch, sessionIndex })}
                       className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -307,7 +308,7 @@ export default function NotifikasiPage() {
               }).map((log) => (
                 <div 
                   key={log.id} 
-                  onClick={() => log.product ? navigate('/products', { state: { search: log.product.name } }) : null}
+                  onClick={() => log.product ? setSelectedNotif({ type: 'history', log }) : null}
                   className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
                 >
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
@@ -337,6 +338,112 @@ export default function NotifikasiPage() {
         )}
       </main>
 
+      {/* MODAL NOTIFIKASI */}
+      {selectedNotif && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 sm:p-0" onClick={() => setSelectedNotif(null)}>
+          <div 
+            className="bg-white w-full sm:w-[400px] rounded-[32px] overflow-hidden shadow-2xl transform transition-all translate-y-0"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6 relative">
+              <button 
+                onClick={() => setSelectedNotif(null)}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+              >
+                <span className="material-symbols-outlined !text-[20px]">close</span>
+              </button>
+
+              <div className="flex flex-col items-center text-center mt-2">
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 shadow-sm ${
+                  selectedNotif.type === 'expired' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'expired') ? 'bg-slate-900 text-white' :
+                  selectedNotif.type === 'outOfStock' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'oos') ? 'bg-red-600 text-white' :
+                  selectedNotif.type === 'expiringSoon' || (selectedNotif.type === 'history' && selectedNotif.log.type?.includes('expiry')) ? 'bg-orange-100 text-orange-600' :
+                  'bg-yellow-100 text-yellow-600'
+                }`}>
+                  <span className="material-symbols-outlined !text-[32px]">
+                    {selectedNotif.type === 'expired' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'expired') ? 'block' :
+                     selectedNotif.type === 'outOfStock' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'oos') ? 'remove_shopping_cart' :
+                     selectedNotif.type === 'expiringSoon' || (selectedNotif.type === 'history' && selectedNotif.log.type?.includes('expiry')) ? 'event_busy' :
+                     'warning'}
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-800 leading-tight mb-2">
+                  {selectedNotif.product?.name || selectedNotif.log?.product?.name}
+                </h3>
+
+                <div className="w-full bg-slate-50 rounded-2xl p-4 text-left text-sm text-slate-600 space-y-3 mb-6">
+                  {(selectedNotif.type === 'expiringSoon' || selectedNotif.type === 'expired') && (
+                    <>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Status</span>
+                        <strong className={selectedNotif.type === 'expired' ? 'text-slate-900' : 'text-orange-600'}>
+                          {selectedNotif.type === 'expired' ? 'Sudah Kadaluarsa' : `Sisa ${selectedNotif.daysLeft} Hari Lagi`}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Tgl Kadaluarsa</span>
+                        <strong className="text-slate-700">{new Date(selectedNotif.batch.expiredDate).toLocaleDateString('id-ID')}</strong>
+                      </div>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Stok Batch Ini</span>
+                        <strong className="text-slate-700">{selectedNotif.batch.qty} unit</strong>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Sesi/Rak</span>
+                        <strong className="text-slate-700">{selectedNotif.sessionIndex !== 'N/A' ? `Sesi ${selectedNotif.sessionIndex}` : 'N/A'}</strong>
+                      </div>
+                    </>
+                  )}
+
+                  {(selectedNotif.type === 'outOfStock' || selectedNotif.type === 'criticalStock') && (
+                    <>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Status</span>
+                        <strong className={selectedNotif.type === 'outOfStock' ? 'text-red-600' : 'text-yellow-600'}>
+                          {selectedNotif.type === 'outOfStock' ? 'Stok Habis' : 'Stok Menipis'}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Stok Saat Ini</span>
+                        <strong className="text-slate-700">{selectedNotif.product.totalStock || 0} unit</strong>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Batas Minimum</span>
+                        <strong className="text-slate-700">{selectedNotif.product.minStock} unit</strong>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedNotif.type === 'history' && (
+                    <>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span className="text-slate-500">Pesan</span>
+                        <strong className="text-slate-700 text-right max-w-[60%]">{selectedNotif.log.message}</strong>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Waktu Kejadian</span>
+                        <strong className="text-slate-700 text-right">{new Date(selectedNotif.log.createdAt).toLocaleString('id-ID')}</strong>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => {
+                    const productName = selectedNotif.product?.name || selectedNotif.log?.product?.name;
+                    setSelectedNotif(null);
+                    navigate('/products', { state: { search: productName } });
+                  }}
+                  className={`w-full py-3.5 rounded-2xl font-bold text-white shadow-lg shadow-opacity-50 active:scale-95 transition-all ${primaryBg} ${primaryBg.replace('bg-', 'shadow-')}`}
+                >
+                  Kelola Produk Ini
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
