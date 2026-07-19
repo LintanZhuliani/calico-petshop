@@ -16,6 +16,36 @@ function getOptimizedImageUrl(url, width = 150, height = 150) {
   return url;
 }
 
+// Compress image before uploading to reduce payload size and prevent Vercel 504 timeouts
+function compressImage(file, maxWidth = 800, quality = 0.7) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Output as jpeg for better compression
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+    };
+  });
+}
+
 const CATEGORIES = [
   "Makanan Kering", "Makanan Basah", "Camilan & Treat", "Susu & Minuman",
   "Vitamin & Suplemen", "Obat-obatan", "Pasir Kucing", "Shampo & Grooming",
@@ -52,12 +82,11 @@ function AddProductModal({ onClose, onSave }) {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => handle('image', reader.result);
-      reader.readAsDataURL(file);
+      const compressedBase64 = await compressImage(file, 800, 0.7);
+      handle('image', compressedBase64);
     }
   };
 
@@ -306,12 +335,11 @@ function EditProductModal({ product, onClose, onSave }) {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => handle('image', reader.result);
-      reader.readAsDataURL(file);
+      const compressedBase64 = await compressImage(file, 800, 0.7);
+      handle('image', compressedBase64);
     }
   };
 
