@@ -409,38 +409,41 @@ export const productService = {
 
   /** Get expiring batches at a branch within N days */
   async getExpiringBatches(branchId: string, withinDays: number = 90) {
-    // Get all branch_stocks for this branch
-    const bsResults = await db
-      .select()
-      .from(branchStock)
-      .where(eq(branchStock.branchId, branchId));
-
     const alerts: any[] = [];
 
-    for (const bs of bsResults) {
-      const batches = await db
-        .select()
-        .from(batch)
-        .where(eq(batch.branchStockId, bs.id));
+    // Use a single JOIN query to avoid N+1 queries timeout
+    const results = await db
+      .select({
+        batch: batch,
+        product: product,
+        branchId: branchStock.branchId,
+      })
+      .from(batch)
+      .innerJoin(branchStock, eq(batch.branchStockId, branchStock.id))
+      .innerJoin(product, eq(branchStock.productId, product.id))
+      .where(eq(branchStock.branchId, branchId));
 
-      // Sort batches to compute sessionIndex consistently
-      batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    // Group batches by product to determine sessionIndex correctly
+    const productBatches: Record<string, any[]> = {};
+    for (const row of results) {
+      if (!row.batch.expiredDate || row.batch.qty <= 0) continue;
+      if (!productBatches[row.product.id]) {
+        productBatches[row.product.id] = [];
+      }
+      productBatches[row.product.id].push(row);
+    }
 
-      // Get product info
-      const prodResult = await db
-        .select()
-        .from(product)
-        .where(eq(product.id, bs.productId));
-      const prod = prodResult[0];
-
-      batches.forEach((b, index) => {
-        if (!b.expiredDate || b.qty <= 0) return;
-        const days = daysUntilExpiry(b.expiredDate);
+    for (const pid in productBatches) {
+      const pBatches = productBatches[pid];
+      pBatches.sort((a, b) => new Date(a.batch.createdAt).getTime() - new Date(b.batch.createdAt).getTime());
+      
+      pBatches.forEach((row, index) => {
+        const days = daysUntilExpiry(row.batch.expiredDate);
         if (days <= withinDays) {
           alerts.push({
-            product: prod,
-            batch: b,
-            branchId: bs.branchId,
+            product: row.product,
+            batch: row.batch,
+            branchId: row.branchId,
             daysLeft: days,
             sessionIndex: index + 1,
           });
