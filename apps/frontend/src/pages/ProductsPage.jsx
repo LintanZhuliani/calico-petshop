@@ -843,7 +843,7 @@ export default function ProductsPage() {
 
   // Filter logic (Optimized with useMemo to prevent lag)
   const filtered = useMemo(() => {
-    return products.filter(p => {
+    const result = products.filter(p => {
       const s = search.toLowerCase().trim();
       const sNorm = s.replace(/^0+/, '');
       const matchSearch = (p.name || '').toLowerCase().includes(s) ||
@@ -857,6 +857,13 @@ export default function ProductsPage() {
           : filterStatus === 'Habis' ? total === 0
             : true;
       return matchSearch && matchCat && matchStatus;
+    });
+
+    // Urutkan berdasarkan update terakhir (yang baru diupdate ada di paling atas)
+    return result.sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return timeB - timeA;
     });
   }, [products, search, filterCat, filterStatus]);
 
@@ -1189,9 +1196,18 @@ export default function ProductsPage() {
                           {p.expiredStock} kadaluarsa (Tidak bisa dijual)
                         </div>
                       )}
-                      <div className="flex items-baseline justify-between mt-1.5 gap-2">
-                        <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
-                        <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit layak jual</span>
+                      <div className="flex items-end justify-between mt-1.5 gap-2">
+                        <div className="flex flex-col">
+                          {isAdmin ? (
+                            <>
+                              <span className="text-[10px] text-slate-500 font-medium">Beli: {formatRupiah(p.buyPrice || 0)}</span>
+                              <span className={`font-bold text-sm md:text-base ${primaryText}`}>Jual: {formatRupiah(p.price)}</span>
+                            </>
+                          ) : (
+                            <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-500 font-medium shrink-0 mb-0.5">{total} unit layak jual</span>
                       </div>
                     </div>
                   </div>
