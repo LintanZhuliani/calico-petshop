@@ -55,6 +55,18 @@ export default function NotifikasiPage() {
     }
   }, [activeTab, branchId]);
 
+  const handleDeleteHistory = async (id) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus riwayat ini?")) return;
+    try {
+      await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
+      setHistoryLogs(prev => prev.filter(log => log.id !== id));
+      setSelectedNotif(null);
+    } catch (error) {
+      console.error("Failed to delete notification", error);
+      alert("Gagal menghapus riwayat notifikasi");
+    }
+  };
+
   const [notifPrefs] = useState(() => {
     const saved = localStorage.getItem('calico_notif_prefs');
     return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
@@ -429,16 +441,27 @@ export default function NotifikasiPage() {
                   )}
                 </div>
 
-                <button
-                  onClick={() => {
-                    const productName = selectedNotif.product?.name || selectedNotif.log?.product?.name;
-                    setSelectedNotif(null);
-                    navigate('/products', { state: { search: productName } });
-                  }}
-                  className={`w-full py-3.5 rounded-2xl font-bold text-white shadow-lg shadow-opacity-50 active:scale-95 transition-all ${primaryBg} ${primaryBg.replace('bg-', 'shadow-')}`}
-                >
-                  Kelola Produk Ini
-                </button>
+                <div className="flex flex-col gap-2 w-full">
+                  <button
+                    onClick={() => {
+                      const productName = selectedNotif.product?.name || selectedNotif.log?.product?.name;
+                      setSelectedNotif(null);
+                      navigate('/products', { state: { search: productName } });
+                    }}
+                    className={`w-full py-3.5 rounded-2xl font-bold text-white shadow-lg shadow-opacity-50 active:scale-95 transition-all ${primaryBg} ${primaryBg.replace('bg-', 'shadow-')}`}
+                  >
+                    Kelola Produk Ini
+                  </button>
+
+                  {selectedNotif.type === 'history' && (
+                    <button
+                      onClick={() => handleDeleteHistory(selectedNotif.log.id)}
+                      className="w-full py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all"
+                    >
+                      Hapus Riwayat
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

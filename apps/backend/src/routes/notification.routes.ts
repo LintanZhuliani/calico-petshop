@@ -103,4 +103,15 @@ router.patch("/:id/read", async (req, res) => {
   }
 });
 
+// DELETE /notifications/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.delete(notificationLog).where(eq(notificationLog.id, id));
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete notification" });
+  }
+});
+
 export default router;
