@@ -348,21 +348,19 @@ function EditProductModal({ product, onClose, onSave }) {
     const finalCategory = showCustomCat ? customCat.trim() : form.category;
     if (!finalCategory) return;
 
-    // 1) Save changes (handleEditComplete handles stock override first, then product update)
-    await onSave(
-      product.id, 
-      {
-        name: form.name,
-        category: finalCategory,
-        buyPrice: Number(form.buyPrice) || 0,
-        price: Number(form.price),
-        barcode: form.barcode,
-        minStock: Number(form.minStock),
-        image: form.image || null,
-      },
-      product.totalStock || 0,
-      Number(form.stock) || 0
-    );
+      // 1) Save changes (product update)
+      await onSave(
+        product.id, 
+        {
+          name: form.name,
+          category: finalCategory,
+          buyPrice: Number(form.buyPrice) || 0,
+          price: Number(form.price),
+          barcode: form.barcode,
+          minStock: Number(form.minStock),
+          image: form.image || null,
+        }
+      );
   };
 
   return (
@@ -949,11 +947,8 @@ export default function ProductsPage() {
   };
 
   // Wrapper called from EditProductModal after all saves complete
-  const handleEditComplete = async (id, updates, oldStock, newStock) => {
+  const handleEditComplete = async (id, updates) => {
     try {
-      if (oldStock !== newStock) {
-        await handleOverrideStock(id, oldStock, newStock);
-      }
       await handleEditProduct(id, updates);
       showToast('Produk berhasil diperbarui!');
       fetchProducts();

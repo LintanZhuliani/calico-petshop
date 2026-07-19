@@ -24,7 +24,7 @@ export function initCronJobs() {
   });
 }
 
-async function checkAndSendExpiryAlerts() {
+export async function checkAndSendExpiryAlerts() {
   // 1. Get all batches with their product and branch info
   const allBatchesInfo = await db
     .select({
