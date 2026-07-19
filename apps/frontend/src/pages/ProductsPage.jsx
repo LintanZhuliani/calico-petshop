@@ -770,7 +770,7 @@ export default function ProductsPage() {
       return cached ? JSON.parse(cached) : [];
     } catch { return []; }
   });
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(location.state?.search || '');
   const [filterCat, setFilterCat] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [isLoading, setIsLoading] = useState(true);
