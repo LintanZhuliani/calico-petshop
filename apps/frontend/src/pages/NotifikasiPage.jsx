@@ -197,7 +197,7 @@ export default function NotifikasiPage() {
                             Tgl Kadaluarsa: {new Date(batch.expiredDate).toLocaleDateString('id-ID')}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> {sessionIndex !== 'N/A' && <span className="italic">(Sesi {sessionIndex})</span>}</p>
+                        <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> <span className="italic">(Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})})</span></p>
                       </div>
                       <div className="flex items-center text-slate-400">
                         <span className="material-symbols-outlined">chevron_right</span>
@@ -278,7 +278,7 @@ export default function NotifikasiPage() {
                             Kadaluarsa: <strong className="text-slate-900">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
                           </span>
                           <span className="text-slate-400">
-                            Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong> {sessionIndex !== 'N/A' && <span className="italic">(Sesi {sessionIndex})</span>}
+                            Jumlah Tersisa: <strong className="text-slate-900">{batch.qty} unit</strong> <span className="italic">(Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})})</span>
                           </span>
                         </div>
                       </div>
@@ -402,8 +402,8 @@ export default function NotifikasiPage() {
                         <strong className="text-slate-700">{selectedNotif.batch.qty} unit</strong>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Sesi/Rak</span>
-                        <strong className="text-slate-700">{selectedNotif.sessionIndex !== 'N/A' ? `Sesi ${selectedNotif.sessionIndex}` : 'N/A'}</strong>
+                        <span className="text-slate-500">Info Batch</span>
+                        <strong className="text-slate-700">Batch {new Date(selectedNotif.batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</strong>
                       </div>
                     </>
                   )}
@@ -439,12 +439,10 @@ export default function NotifikasiPage() {
                             <span className="text-slate-500">Sisa Stok</span>
                             <strong className="text-slate-700">{selectedNotif.log.batch.qty} unit</strong>
                           </div>
-                          {selectedNotif.log.sessionIndex !== undefined && (
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                              <span className="text-slate-500">Sesi/Rak</span>
-                              <strong className="text-slate-700">Sesi {selectedNotif.log.sessionIndex}</strong>
-                            </div>
-                          )}
+                          <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                            <span className="text-slate-500">Info Batch</span>
+                            <strong className="text-slate-700">Batch {new Date(selectedNotif.log.batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</strong>
+                          </div>
                         </>
                       )}
                       <div className="flex justify-between items-center">

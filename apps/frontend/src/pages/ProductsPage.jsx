@@ -188,7 +188,7 @@ function AddStockModal({ product, onClose, onSave }) {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="font-headline font-bold text-xl text-slate-900">Tambah Stok</h2>
-            <p className="text-sm text-slate-500">{product.name} — Sesi Pengisian Ke-{(product.batches?.length || 0) + 1}</p>
+            <p className="text-sm text-slate-500">{product.name} — Penambahan Batch Baru</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl bg-slate-100"><span className="material-symbols-outlined text-slate-500">close</span></button>
         </div>
@@ -242,7 +242,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
       <div className="p-3 rounded-xl border bg-orange-50 border-orange-200">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <span className="font-bold text-sm text-orange-800">Edit Sesi {index + 1}</span>
+            <span className="font-bold text-sm text-orange-800">Edit Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             <button onClick={() => setIsEditing(false)} className="text-[10px] font-bold text-orange-500 hover:text-orange-700 uppercase">Batal</button>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -256,7 +256,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
             </div>
           </div>
           <div className="flex gap-2 mt-1">
-            <button onClick={handleDelete} disabled={saving} className="flex-1 py-2 bg-red-100 text-red-600 rounded-lg text-[11px] font-bold hover:bg-red-200 active:scale-95 transition-all">HAPUS SESI</button>
+            <button onClick={handleDelete} disabled={saving} className="flex-1 py-2 bg-red-100 text-red-600 rounded-lg text-[11px] font-bold hover:bg-red-200 active:scale-95 transition-all">HAPUS BATCH</button>
             <button onClick={handleSave} disabled={saving} className="flex-1 py-2 bg-[#D35400] text-white rounded-lg text-[11px] font-bold hover:bg-[#b84800] active:scale-95 transition-all">{saving ? 'Menyimpan...' : 'SIMPAN'}</button>
           </div>
         </div>
@@ -268,8 +268,8 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
   return (
     <div className={`flex items-center justify-between p-3 rounded-xl border ${isExpired ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
       <div className="flex flex-col">
-        <span className="font-bold text-sm">Sesi {index + 1}</span>
-        <span className="text-[10px] opacity-80">Tgl Masuk: {new Date(batch.createdAt).toLocaleDateString('id-ID')}</span>
+        <span className="font-bold text-sm">Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+        <span className="text-[10px] opacity-80">Masuk: {new Date(batch.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex flex-col items-end text-right">
@@ -461,7 +461,7 @@ function EditProductModal({ product, onClose, onSave }) {
         {/* List of Batches / Sessions */}
         {localBatches && localBatches.length > 0 && (
           <div className="space-y-2 mt-4">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Riwayat Sesi Stok (FEFO)</label>
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Riwayat Batch Stok (FEFO)</label>
             <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
               {localBatches.map((b, i) => (
                 <BatchItemEditor 
