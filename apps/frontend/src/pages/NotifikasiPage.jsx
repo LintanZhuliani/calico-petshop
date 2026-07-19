@@ -174,12 +174,14 @@ export default function NotifikasiPage() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-slate-800 leading-tight mb-1">{product.name}</p>
-                        <div className="flex flex-col gap-1 text-xs">
-                          <span className="text-slate-500">
-                            Kadaluarsa: <strong className="text-orange-600">{new Date(batch.expiredDate).toLocaleDateString('id-ID')}</strong>
+                        <div className="flex flex-col gap-1 text-xs mt-1">
+                          <span className="text-slate-600 font-bold flex items-center gap-1 bg-orange-100 w-max px-2 py-1 rounded-md">
+                            <span className="material-symbols-outlined !text-[14px]">timer</span>
+                            Sisa waktu: {daysLeft} Hari Lagi
                           </span>
-                          <span className="text-orange-600 font-semibold">
-                            Sisa {daysLeft} hari lagi
+                          <span className="text-slate-400 flex items-center gap-1 mt-0.5">
+                            <span className="material-symbols-outlined !text-[12px]">calendar_today</span>
+                            Tgl Kadaluarsa: {new Date(batch.expiredDate).toLocaleDateString('id-ID')}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> {sessionIndex !== 'N/A' && <span className="italic">(Sesi {sessionIndex})</span>}</p>

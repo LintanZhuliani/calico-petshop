@@ -56,21 +56,13 @@ export async function checkAndSendExpiryAlerts() {
         daysLeft: days,
       });
 
-      // Prepare DB log
+      // Only log ACTUAL expiration to the DB (so it appears in the Riwayat tab)
+      // We don't log H-30, H-7, H-1 anymore to avoid cluttering the history since it's now tracked live in the Active tab
       let type = '';
       let message = '';
       if (days === 0) {
         type = 'expired';
         message = 'Telah Kadaluarsa Hari Ini';
-      } else if (days === 1) {
-        type = 'expiry_1';
-        message = 'Akan Kadaluarsa BESOK (1 Hari)';
-      } else if (days === 7) {
-        type = 'expiry_7';
-        message = 'Akan Kadaluarsa dalam 7 hari (1 Minggu)';
-      } else if (days === 30) {
-        type = 'expiry_30';
-        message = 'Akan Kadaluarsa dalam 30 hari (1 Bulan)';
       }
 
       if (type) {
