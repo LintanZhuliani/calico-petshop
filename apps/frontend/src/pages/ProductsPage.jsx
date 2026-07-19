@@ -1197,15 +1197,15 @@ export default function ProductsPage() {
                         </div>
                       )}
                       <div className="flex items-end justify-between mt-1.5 gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex flex-col gap-0.5">
                           <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
                           {isAdmin && (
-                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 w-fit">
                               Modal: {formatRupiah(p.buyPrice || 0)}
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-slate-500 font-medium shrink-0 mb-0.5">{total} unit layak jual</span>
+                        <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit layak jual</span>
                       </div>
                     </div>
                   </div>
