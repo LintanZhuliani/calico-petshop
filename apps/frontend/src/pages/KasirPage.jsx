@@ -554,7 +554,7 @@ export default function KasirPage() {
                   className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-100'}`}
                   onClick={() => handleAddToCart(p)}
                 >
-                  <div className="flex gap-3 p-4">
+                  <div className="flex items-center gap-3 p-4">
                     <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${primaryLight}`}>
                       {p.image ? (
                         <img src={getOptimizedImageUrl(p.image)} className="w-full h-full object-cover" alt={p.name} />
@@ -566,7 +566,7 @@ export default function KasirPage() {
                         <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-semibold text-slate-900 text-sm md:text-base leading-tight truncate">{p.name}</p>
                         <StockBadge total={total} min={p.minStock} />
@@ -577,7 +577,7 @@ export default function KasirPage() {
                           {p.expiredStock} kadaluarsa (Tidak bisa dijual)
                         </div>
                       )}
-                      <div className="flex items-baseline justify-between gap-2 mt-auto">
+                      <div className="flex items-baseline justify-between gap-2 mt-1">
                         <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
                         <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit layak jual</span>
                       </div>
