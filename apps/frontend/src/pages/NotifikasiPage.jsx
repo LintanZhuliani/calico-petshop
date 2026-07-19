@@ -433,6 +433,20 @@ export default function NotifikasiPage() {
                         <span className="text-slate-500">Pesan</span>
                         <strong className="text-slate-700 text-right max-w-[60%]">{selectedNotif.log.message}</strong>
                       </div>
+                      {selectedNotif.log.batch && (
+                        <>
+                          <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                            <span className="text-slate-500">Sisa Stok</span>
+                            <strong className="text-slate-700">{selectedNotif.log.batch.qty} unit</strong>
+                          </div>
+                          {selectedNotif.log.sessionIndex !== undefined && (
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                              <span className="text-slate-500">Sesi/Rak</span>
+                              <strong className="text-slate-700">Sesi {selectedNotif.log.sessionIndex}</strong>
+                            </div>
+                          )}
+                        </>
+                      )}
                       <div className="flex justify-between items-center">
                         <span className="text-slate-500">Waktu Kejadian</span>
                         <strong className="text-slate-700 text-right">{new Date(selectedNotif.log.createdAt).toLocaleString('id-ID')}</strong>

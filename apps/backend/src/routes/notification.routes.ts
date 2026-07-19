@@ -85,6 +85,41 @@ router.get("/", async (req, res) => {
       .orderBy(desc(notificationLog.createdAt))
       .limit(100);
 
+    // Compute session index for each log that has a batch
+    const productIds = Array.from(new Set(logs.map(l => l.product?.id).filter(Boolean)));
+    if (productIds.length > 0) {
+      const { branchStock } = await import('../db/schema/branch-stock.js');
+      const { inArray } = await import('drizzle-orm');
+      
+      const allBatches = await db.select({
+        id: batch.id,
+        productId: branchStock.productId,
+        createdAt: batch.createdAt
+      })
+      .from(batch)
+      .innerJoin(branchStock, eq(batch.branchStockId, branchStock.id))
+      .where(inArray(branchStock.productId, productIds as string[]));
+
+      const productBatches: Record<string, any[]> = {};
+      allBatches.forEach(b => {
+        if (!productBatches[b.productId]) productBatches[b.productId] = [];
+        productBatches[b.productId].push(b);
+      });
+
+      for (const log of logs) {
+        if (log.batch && log.product) {
+          const pBatches = productBatches[log.product.id];
+          if (pBatches) {
+            pBatches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            const idx = pBatches.findIndex(b => b.id === log.batch?.id);
+            if (idx !== -1) {
+              (log as any).sessionIndex = idx + 1;
+            }
+          }
+        }
+      }
+    }
+
     res.json(logs);
   } catch (error) {
     console.error("Fetch notifications error:", error);
