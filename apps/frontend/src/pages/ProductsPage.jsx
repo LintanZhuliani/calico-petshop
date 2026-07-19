@@ -1195,7 +1195,7 @@ export default function ProductsPage() {
                           {p.expiredStock} kadaluarsa (Tidak bisa dijual)
                         </div>
                       )}
-                      <div className="flex items-end justify-between mt-1.5 gap-2">
+                      <div className="flex items-end justify-between mt-0.5 gap-2">
                         <div className="flex flex-col gap-0.5">
                           <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
                           {isAdmin && (
