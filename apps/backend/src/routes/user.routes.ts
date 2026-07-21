@@ -100,4 +100,38 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   }
 });
 
+// PUT /api/users/profile - Update own profile (name, email)
+router.put("/profile", requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const { name, email } = req.body;
+    
+    if (!name || !email) {
+      res.status(400).json({ error: "Name and email are required" });
+      return;
+    }
+
+    // Check if email is already taken by another user
+    const { eq } = await import("drizzle-orm");
+    const existing = await db.select().from(user).where(eq(user.email, email.toLowerCase()));
+    if (existing.length > 0 && existing[0].id !== userId) {
+      res.status(400).json({ error: "Email is already in use by another account" });
+      return;
+    }
+
+    const updatedUser = await db.update(user)
+      .set({ 
+        name: name,
+        email: email.toLowerCase(),
+        updatedAt: new Date()
+      })
+      .where(eq(user.id, userId))
+      .returning();
+
+    res.json({ message: "Profile updated successfully", user: updatedUser[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

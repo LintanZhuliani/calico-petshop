@@ -25,6 +25,12 @@ export default function ProfilePage() {
   const [passSuccess, setPassSuccess] = useState("");
   const [showOldPass, setShowOldPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
+  
+  const [editProfileName, setEditProfileName] = useState("");
+  const [editProfileEmail, setEditProfileEmail] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
   const [notifState, setNotifState] = useState(() => {
     const saved = localStorage.getItem('calico_notif_prefs');
     return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
@@ -45,10 +51,12 @@ export default function ProfilePage() {
       const { data } = await authClient.getSession();
       if (data?.user) {
         setCurrentEmail(data.user.email);
+        setEditProfileName(data.user.name || userName);
+        setEditProfileEmail(data.user.email);
       }
     };
     fetchSession();
-  }, []);
+  }, [userName]);
 
   useEffect(() => {
     if (activeModal === 'users') {
@@ -132,6 +140,39 @@ export default function ProfilePage() {
     }
   };
 
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    setProfileError("");
+    setProfileSuccess("");
+    setSavingProfile(true);
+
+    try {
+      const { apiFetch } = await import('../lib/api.js');
+      const res = await apiFetch('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ name: editProfileName, email: editProfileEmail })
+      });
+      
+      setProfileSuccess("Profil berhasil diperbarui!");
+      setCurrentEmail(editProfileEmail);
+      
+      // Update local session
+      const currentSession = JSON.parse(localStorage.getItem('calico_session')) || {};
+      const newSession = { ...currentSession, userName: editProfileName };
+      localStorage.setItem('calico_session', JSON.stringify(newSession));
+      
+      setTimeout(() => {
+        setActiveModal(null);
+        setProfileSuccess(""); setProfileError("");
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      setProfileError(err.message || "Gagal memperbarui profil.");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   // We removed mock data. To get accurate counts, it requires a separate API call.
   // For now, we'll keep the menu simple and direct to the Penjualan page.
   const [todayTxCount, setTodayTxCount] = useState(0);
@@ -153,6 +194,7 @@ export default function ProfilePage() {
     ...(isAdmin ? [
       { id: 'users', icon: 'manage_accounts', label: 'Kelola Karyawan', desc: 'Tambah, edit, atau nonaktifkan akun', color: primaryText },
     ] : []),
+    { id: 'edit_profile', icon: 'person_edit', label: 'Edit Profil', desc: 'Ubah nama pengguna & email', color: primaryText },
     { id: 'branches', icon: 'store', label: isAdmin ? 'Kelola Cabang' : 'Ganti Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
@@ -275,8 +317,60 @@ export default function ProfilePage() {
           })}
         </div>
 
+        {/* Edit Profil Modal */}
+        {activeModal === 'edit_profile' && (
+          <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center px-4" onClick={(e) => { if(e.target === e.currentTarget) setActiveModal(null); }}>
+            <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
+              <button onClick={() => setActiveModal(null)} className="absolute top-5 right-5 p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200">
+                <span className="material-symbols-outlined !text-[20px]">close</span>
+              </button>
+              
+              <div className="flex items-center gap-4 mb-6">
+                <div className={`w-12 h-12 rounded-2xl ${primaryLight} flex items-center justify-center shrink-0`}>
+                  <span className={`material-symbols-outlined ${primaryText} !text-[24px]`}>person_edit</span>
+                </div>
+                <div>
+                  <h3 className="font-headline font-bold text-lg text-slate-900 leading-tight">Edit Profil</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Ubah detail akun Anda</p>
+                </div>
+              </div>
+
+              {profileError && (
+                <div className="mb-4 p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl flex items-start gap-2 border border-red-100">
+                  <span className="material-symbols-outlined !text-[16px]">error</span>
+                  <p className="leading-snug">{profileError}</p>
+                </div>
+              )}
+              {profileSuccess && (
+                <div className="mb-4 p-3 bg-green-50 text-green-700 text-xs font-bold rounded-xl flex items-center gap-2 border border-green-100">
+                  <span className="material-symbols-outlined !text-[16px]">check_circle</span>
+                  {profileSuccess}
+                </div>
+              )}
+
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Nama Lengkap</label>
+                  <input type="text" required value={editProfileName} onChange={e => setEditProfileName(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-300 rounded-xl text-sm font-semibold outline-none transition-all" />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Email Baru</label>
+                  <input type="email" required value={editProfileEmail} onChange={e => setEditProfileEmail(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-300 rounded-xl text-sm font-semibold outline-none transition-all" />
+                </div>
+                
+                <button disabled={savingProfile} type="submit" className={`w-full py-3.5 mt-2 ${primaryBg} text-white font-bold rounded-2xl active:scale-95 transition-all text-sm flex justify-center items-center gap-2 disabled:opacity-50`}>
+                  {savingProfile ? 'Menyimpan...' : 'Simpan Profil'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Dynamic Modals */}
-        {activeModal && activeModal !== 'logout' && (
+        {activeModal && activeModal !== 'logout' && activeModal !== 'edit_profile' && (
           <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
             <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pb-24 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
               <div className="flex justify-between items-center mb-5 shrink-0">
