@@ -197,6 +197,7 @@ export default function ProfilePage() {
     { id: 'edit_profile', icon: 'person_edit', label: 'Edit Profil', desc: 'Ubah nama pengguna & email', color: primaryText },
     { id: 'branches', icon: 'store', label: isAdmin ? 'Kelola Cabang' : 'Ganti Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
+    { id: 'riwayat_notifikasi', icon: 'history', label: 'Riwayat Notifikasi', desc: 'Log hapus barang & kadaluarsa', color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
     { id: 'notif', icon: 'notifications', label: 'Preferensi Notifikasi', desc: 'Atur alert stok & expired', color: primaryText },
     { id: 'help', icon: 'help', label: 'Bantuan & Panduan', desc: 'Cara pakai aplikasi', color: primaryText },
@@ -298,11 +299,11 @@ export default function ProfilePage() {
                 <span className="material-symbols-outlined text-slate-300 !text-[20px]">chevron_right</span>
               </>
             );
-            if (isLaporan) {
+            if (isLaporan || item.id === 'riwayat_notifikasi') {
               return (
                 <Link
                   key={i}
-                  to="/riwayat"
+                  to={isLaporan ? "/riwayat" : "/riwayat-notifikasi"}
                   className="w-full flex items-center gap-3.5 px-5 py-4 text-left active:bg-slate-50 transition-colors"
                 >
                   {inner}

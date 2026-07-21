@@ -16,9 +16,6 @@ export default function NotifikasiPage() {
   const [expiring, setExpiring] = useState(location.state?.expiring || []);
   const [loading, setLoading] = useState(!(location.state?.lowStock && location.state?.expiring));
   
-  const [activeTab, setActiveTab] = useState('aktif');
-  const [historyLogs, setHistoryLogs] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
 
   useEffect(() => {
@@ -44,62 +41,6 @@ export default function NotifikasiPage() {
     fetchData();
   }, [branchId, location.state]);
 
-  // Fetch History Logs
-  useEffect(() => {
-    if (activeTab === 'riwayat') {
-      setLoadingHistory(true);
-      apiFetch(`/notifications?branchId=${branchId}`)
-        .then(data => setHistoryLogs(data || []))
-        .catch(err => console.error("Failed to fetch history:", err))
-        .finally(() => setLoadingHistory(false));
-    }
-  }, [activeTab, branchId]);
-
-  const [isSelectMode, setIsSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
-
-  const toggleSelection = (id) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
-  const handleSelectAll = () => {
-    if (selectedIds.length === historyLogs.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(historyLogs.map(l => l.id));
-    }
-  };
-  const handleBulkDelete = async () => {
-    if (selectedIds.length === 0) return;
-    if (!window.confirm(`Hapus ${selectedIds.length} riwayat notifikasi secara permanen?`)) return;
-    setIsDeletingBulk(true);
-    try {
-      await apiFetch(`/notifications/bulk-delete`, {
-        method: 'POST',
-        body: JSON.stringify({ ids: selectedIds })
-      });
-      setHistoryLogs(prev => prev.filter(l => !selectedIds.includes(l.id)));
-      setIsSelectMode(false);
-      setSelectedIds([]);
-    } catch (err) {
-      alert("Gagal menghapus riwayat: " + err.message);
-    } finally {
-      setIsDeletingBulk(false);
-    }
-  };
-
-  const handleDeleteHistory = async (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus riwayat ini?")) return;
-    try {
-      await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
-      setHistoryLogs(prev => prev.filter(log => log.id !== id));
-      setSelectedNotif(null);
-    } catch (error) {
-      console.error("Failed to delete notification", error);
-      alert("Gagal menghapus riwayat notifikasi");
-    }
-  };
-
   const [notifPrefs] = useState(() => {
     const saved = localStorage.getItem('calico_notif_prefs');
     return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
@@ -113,7 +54,6 @@ export default function NotifikasiPage() {
   // Separate Low Stock into Out of Stock and Critical Stock
   const validLowStock = notifPrefs.stok ? lowStock : [];
   const outOfStockItems = validLowStock.filter(item => (item.totalStock || 0) <= 0);
-  const criticalStockItems = validLowStock.filter(item => (item.totalStock || 0) > 0);
 
   return (
     <div className="bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
@@ -133,24 +73,6 @@ export default function NotifikasiPage() {
         </div>
         <div className="w-10"></div> {/* Spacer to keep flex balance */}
       </header>
-
-      {/* TABS */}
-      <div className="px-5 mt-4">
-        <div className="flex p-1 bg-slate-200/60 rounded-xl">
-          <button 
-            onClick={() => setActiveTab('aktif')}
-            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'aktif' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            Peringatan Aktif
-          </button>
-          <button 
-            onClick={() => setActiveTab('riwayat')}
-            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'riwayat' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            Buku Riwayat
-          </button>
-        </div>
-      </div>
 
       <main className="px-5 py-6 w-full space-y-6">
         
@@ -176,24 +98,21 @@ export default function NotifikasiPage() {
           </div>
         </section>
 
-        {/* TAB: AKTIF */}
-        {activeTab === 'aktif' && (
-          <>
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                <span className="material-symbols-outlined animate-spin !text-[40px] mb-4">autorenew</span>
-                <p className="font-semibold text-sm">Memeriksa data stok...</p>
-              </div>
-            ) : validLowStock.length === 0 && validExpiring.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center">
-                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined !text-[40px] text-emerald-500">check_circle</span>
-                </div>
-                <h2 className="text-lg font-bold text-slate-800 mb-1">Semua Aman! 🎉</h2>
-                <p className="text-sm">Tidak ada peringatan stok menipis atau barang hampir kadaluarsa yang aktif.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <span className="material-symbols-outlined animate-spin !text-[40px] mb-4">autorenew</span>
+            <p className="font-semibold text-sm">Memeriksa data stok...</p>
+          </div>
+        ) : validLowStock.length === 0 && validExpiring.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center">
+            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined !text-[40px] text-emerald-500">check_circle</span>
+            </div>
+            <h2 className="text-lg font-bold text-slate-800 mb-1">Semua Aman! 🎉</h2>
+            <p className="text-sm">Tidak ada peringatan stok menipis atau barang hampir kadaluarsa yang aktif.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
             
             {/* EXPIRING SOON ALERTS (ORANGE) */}
             {expiringSoonItems.length > 0 && (
@@ -323,90 +242,6 @@ export default function NotifikasiPage() {
                 </div>
               </section>
             )}
-
-          </div>
-        )}
-        </>
-        )}
-
-        {/* TAB: RIWAYAT */}
-        {activeTab === 'riwayat' && (
-          <div className="space-y-4">
-            
-            {/* Header Riwayat (Tombol Pilih) */}
-            <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-              <span className="text-sm font-bold text-slate-700 pl-2">Riwayat Notifikasi</span>
-              <button
-                onClick={() => {
-                  setIsSelectMode(!isSelectMode);
-                  if (isSelectMode) setSelectedIds([]);
-                }}
-                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${isSelectMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-              >
-                {isSelectMode ? 'Batal' : 'Pilih'}
-              </button>
-            </div>
-
-            {loadingHistory ? (
-              <div className="flex justify-center py-20"><span className="material-symbols-outlined animate-spin text-slate-400 !text-[40px]">autorenew</span></div>
-            ) : historyLogs.length === 0 ? (
-              <div className="text-center py-20 text-slate-400">
-                <span className="material-symbols-outlined !text-[48px] mb-4 text-slate-300">history</span>
-                <p>Belum ada riwayat peringatan tersimpan.</p>
-              </div>
-            ) : (
-              [...historyLogs].sort((a, b) => {
-                const getWeight = (type) => {
-                  if (type?.includes('expiry')) return 1;
-                  if (type === 'oos') return 2;
-                  if (type === 'expired') return 3;
-                  return 4;
-                };
-                const weightDiff = getWeight(a.type) - getWeight(b.type);
-                if (weightDiff !== 0) return weightDiff;
-                return new Date(b.createdAt) - new Date(a.createdAt);
-              }).map((log) => (
-                <div 
-                  key={log.id} 
-                  onClick={() => {
-                    if (isSelectMode) {
-                      toggleSelection(log.id);
-                    } else if (log.product) {
-                      setSelectedNotif({ type: 'history', log });
-                    }
-                  }}
-                  className={`bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-pointer transition-all ${isSelectMode && selectedIds.includes(log.id) ? 'ring-2 ring-orange-400 bg-orange-50' : 'hover:bg-slate-50'}`}
-                >
-                  {isSelectMode && (
-                    <div className="flex items-center justify-center shrink-0 pr-1">
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${selectedIds.includes(log.id) ? 'bg-orange-500 border-orange-500' : 'border-slate-300'}`}>
-                        {selectedIds.includes(log.id) && <span className="material-symbols-outlined text-white !text-[14px]">check</span>}
-                      </div>
-                    </div>
-                  )}
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-                    log.type === 'expired' ? 'bg-slate-900 text-white' :
-                    log.type === 'oos' ? 'bg-red-600 text-white' :
-                    'bg-orange-50 text-orange-500'
-                  }`}>
-                    <span className="material-symbols-outlined !text-[24px]">
-                      {log.type === 'expired' ? 'dangerous' : log.type === 'oos' ? 'warning' : 'history_toggle_off'}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-slate-800 leading-tight mb-1">{log.product?.name || 'Produk Dihapus'}</p>
-                    <p className="text-xs text-slate-500 font-medium mb-1">{log.message}</p>
-                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                      <span className="material-symbols-outlined !text-[12px]">schedule</span>
-                      {new Date(log.createdAt).toLocaleString('id-ID')}
-                    </p>
-                  </div>
-                  <div className="flex items-center text-slate-400">
-                    <span className="material-symbols-outlined">chevron_right</span>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         )}
       </main>
@@ -428,21 +263,21 @@ export default function NotifikasiPage() {
 
               <div className="flex flex-col items-center text-center mt-2">
                 <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 shadow-sm ${
-                  selectedNotif.type === 'expired' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'expired') ? 'bg-slate-900 text-white' :
-                  selectedNotif.type === 'outOfStock' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'oos') ? 'bg-red-600 text-white' :
-                  selectedNotif.type === 'expiringSoon' || (selectedNotif.type === 'history' && selectedNotif.log.type?.includes('expiry')) ? 'bg-orange-100 text-orange-600' :
+                  selectedNotif.type === 'expired' ? 'bg-slate-900 text-white' :
+                  selectedNotif.type === 'outOfStock' ? 'bg-red-600 text-white' :
+                  selectedNotif.type === 'expiringSoon' ? 'bg-orange-100 text-orange-600' :
                   'bg-yellow-100 text-yellow-600'
                 }`}>
                   <span className="material-symbols-outlined !text-[32px]">
-                    {selectedNotif.type === 'expired' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'expired') ? 'block' :
-                     selectedNotif.type === 'outOfStock' || (selectedNotif.type === 'history' && selectedNotif.log.type === 'oos') ? 'remove_shopping_cart' :
-                     selectedNotif.type === 'expiringSoon' || (selectedNotif.type === 'history' && selectedNotif.log.type?.includes('expiry')) ? 'event_busy' :
+                    {selectedNotif.type === 'expired' ? 'block' :
+                     selectedNotif.type === 'outOfStock' ? 'remove_shopping_cart' :
+                     selectedNotif.type === 'expiringSoon' ? 'event_busy' :
                      'warning'}
                   </span>
                 </div>
 
                 <h3 className="text-xl font-bold text-slate-800 leading-tight mb-2">
-                  {selectedNotif.product?.name || selectedNotif.log?.product?.name}
+                  {selectedNotif.product?.name}
                 </h3>
 
                 <div className="w-full bg-slate-50 rounded-2xl p-4 text-left text-sm text-slate-600 space-y-3 mb-6">
@@ -469,13 +304,11 @@ export default function NotifikasiPage() {
                     </>
                   )}
 
-                  {(selectedNotif.type === 'outOfStock' || selectedNotif.type === 'criticalStock') && (
+                  {(selectedNotif.type === 'outOfStock') && (
                     <>
                       <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                         <span className="text-slate-500">Status</span>
-                        <strong className={selectedNotif.type === 'outOfStock' ? 'text-red-600' : 'text-yellow-600'}>
-                          {selectedNotif.type === 'outOfStock' ? 'Stok Habis' : 'Stok Menipis'}
-                        </strong>
+                        <strong className='text-red-600'>Stok Habis</strong>
                       </div>
                       <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                         <span className="text-slate-500">Stok Saat Ini</span>
@@ -487,37 +320,12 @@ export default function NotifikasiPage() {
                       </div>
                     </>
                   )}
-
-                  {selectedNotif.type === 'history' && (
-                    <>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                        <span className="text-slate-500">Pesan</span>
-                        <strong className="text-slate-700 text-right max-w-[60%]">{selectedNotif.log.message}</strong>
-                      </div>
-                      {selectedNotif.log.batch && (
-                        <>
-                          <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                            <span className="text-slate-500">Sisa Stok</span>
-                            <strong className="text-slate-700">{selectedNotif.log.batch.qty} unit</strong>
-                          </div>
-                          <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                            <span className="text-slate-500">Info Batch</span>
-                            <strong className="text-slate-700">Batch {new Date(selectedNotif.log.batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</strong>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Waktu Kejadian</span>
-                        <strong className="text-slate-700 text-right">{new Date(selectedNotif.log.createdAt).toLocaleString('id-ID')}</strong>
-                      </div>
-                    </>
-                  )}
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
                   <button
                     onClick={() => {
-                      const productName = selectedNotif.product?.name || selectedNotif.log?.product?.name;
+                      const productName = selectedNotif.product?.name;
                       setSelectedNotif(null);
                       navigate('/products', { state: { search: productName } });
                     }}
@@ -525,38 +333,10 @@ export default function NotifikasiPage() {
                   >
                     Kelola Produk Ini
                   </button>
-
-                  {selectedNotif.type === 'history' && (
-                    <button
-                      onClick={() => handleDeleteHistory(selectedNotif.log.id)}
-                      className="w-full py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all"
-                    >
-                      Hapus Riwayat
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      {/* Floating Bulk Action Bar */}
-      {activeTab === 'riwayat' && isSelectMode && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 px-5 py-4 flex items-center justify-between shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] transition-all">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-slate-700">{selectedIds.length} Terpilih</span>
-            <button onClick={handleSelectAll} className="text-xs font-bold text-orange-600 px-2 py-1 bg-orange-50 rounded-lg active:scale-95 transition-all">
-              {selectedIds.length === historyLogs.length && historyLogs.length > 0 ? 'Batal Semua' : 'Pilih Semua'}
-            </button>
-          </div>
-          <button
-            disabled={selectedIds.length === 0 || isDeletingBulk}
-            onClick={handleBulkDelete}
-            className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95"
-          >
-            <span className="material-symbols-outlined !text-[18px]">delete</span>
-            {isDeletingBulk ? 'Menghapus...' : 'Hapus'}
-          </button>
         </div>
       )}
     </div>

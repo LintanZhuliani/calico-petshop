@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import PenjualanPage from "./pages/PenjualanPage";
 import KasirPage from "./pages/KasirPage";
 import RiwayatPage from "./pages/RiwayatPage";
+import RiwayatNotifikasiPage from "./pages/RiwayatNotifikasiPage";
 
 import RekapHarianPage from "./pages/RekapHarianPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/notifikasi" element={<NotifikasiPage />} />
+        <Route path="/riwayat-notifikasi" element={<RiwayatNotifikasiPage />} />
         <Route path="/rekap" element={<RekapHarianPage />} />
       </Routes>
     </BrowserRouter>
