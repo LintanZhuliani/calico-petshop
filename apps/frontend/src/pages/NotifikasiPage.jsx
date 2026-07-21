@@ -365,9 +365,22 @@ export default function NotifikasiPage() {
               }).map((log) => (
                 <div 
                   key={log.id} 
-                  onClick={() => log.product ? setSelectedNotif({ type: 'history', log }) : null}
-                  className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                  onClick={() => {
+                    if (isSelectMode) {
+                      toggleSelection(log.id);
+                    } else if (log.product) {
+                      setSelectedNotif({ type: 'history', log });
+                    }
+                  }}
+                  className={`bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-pointer transition-all ${isSelectMode && selectedIds.includes(log.id) ? 'ring-2 ring-orange-400 bg-orange-50' : 'hover:bg-slate-50'}`}
                 >
+                  {isSelectMode && (
+                    <div className="flex items-center justify-center shrink-0 pr-1">
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${selectedIds.includes(log.id) ? 'bg-orange-500 border-orange-500' : 'border-slate-300'}`}>
+                        {selectedIds.includes(log.id) && <span className="material-symbols-outlined text-white !text-[14px]">check</span>}
+                      </div>
+                    </div>
+                  )}
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
                     log.type === 'expired' ? 'bg-slate-900 text-white' :
                     log.type === 'oos' ? 'bg-red-600 text-white' :
