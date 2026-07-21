@@ -343,7 +343,7 @@ export default function NotifikasiPage() {
                 }}
                 className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${isSelectMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                {isSelectMode ? 'Batal Pilih' : 'Pilih Banyak'}
+                {isSelectMode ? 'Batal' : 'Pilih'}
               </button>
             </div>
 
