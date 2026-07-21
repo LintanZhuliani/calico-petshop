@@ -439,7 +439,7 @@ export const productService = {
       
       pBatches.forEach((row, index) => {
         const days = daysUntilExpiry(row.batch.expiredDate);
-        if (days <= withinDays && days >= 0) {
+        if (days <= withinDays && days > 0) {
           alerts.push({
             product: row.product,
             batch: row.batch,
