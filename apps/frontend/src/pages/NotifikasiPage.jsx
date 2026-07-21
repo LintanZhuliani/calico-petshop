@@ -131,19 +131,7 @@ export default function NotifikasiPage() {
           </h1>
           <p className="text-xs text-slate-400">Peringatan Stok & Kadaluarsa</p>
         </div>
-        {activeTab === 'riwayat' ? (
-          <button
-            onClick={() => {
-              setIsSelectMode(!isSelectMode);
-              if (isSelectMode) setSelectedIds([]);
-            }}
-            className={`px-3 py-1.5 rounded-lg font-bold text-sm transition-all relative z-10 ${isSelectMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            {isSelectMode ? 'Batal' : 'Pilih'}
-          </button>
-        ) : (
-          <div className="w-16"></div>
-        )}
+        <div className="w-10"></div> {/* Spacer to keep flex balance */}
       </header>
 
       {/* TABS */}
@@ -344,6 +332,21 @@ export default function NotifikasiPage() {
         {/* TAB: RIWAYAT */}
         {activeTab === 'riwayat' && (
           <div className="space-y-4">
+            
+            {/* Header Riwayat (Tombol Pilih) */}
+            <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+              <span className="text-sm font-bold text-slate-700 pl-2">Riwayat Notifikasi</span>
+              <button
+                onClick={() => {
+                  setIsSelectMode(!isSelectMode);
+                  if (isSelectMode) setSelectedIds([]);
+                }}
+                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${isSelectMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                {isSelectMode ? 'Batal Pilih' : 'Pilih Banyak'}
+              </button>
+            </div>
+
             {loadingHistory ? (
               <div className="flex justify-center py-20"><span className="material-symbols-outlined animate-spin text-slate-400 !text-[40px]">autorenew</span></div>
             ) : historyLogs.length === 0 ? (
