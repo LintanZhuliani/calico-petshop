@@ -55,6 +55,39 @@ export default function NotifikasiPage() {
     }
   }, [activeTab, branchId]);
 
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+
+  const toggleSelection = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+  const handleSelectAll = () => {
+    if (selectedIds.length === historyLogs.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(historyLogs.map(l => l.id));
+    }
+  };
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`Hapus ${selectedIds.length} riwayat notifikasi secara permanen?`)) return;
+    setIsDeletingBulk(true);
+    try {
+      await apiFetch(`/notifications/bulk-delete`, {
+        method: 'POST',
+        body: JSON.stringify({ ids: selectedIds })
+      });
+      setHistoryLogs(prev => prev.filter(l => !selectedIds.includes(l.id)));
+      setIsSelectMode(false);
+      setSelectedIds([]);
+    } catch (err) {
+      alert("Gagal menghapus riwayat: " + err.message);
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   const handleDeleteHistory = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus riwayat ini?")) return;
     try {
@@ -98,7 +131,19 @@ export default function NotifikasiPage() {
           </h1>
           <p className="text-xs text-slate-400">Peringatan Stok & Kadaluarsa</p>
         </div>
-        <div className="w-10"></div> {/* Spacer to keep flex balance */}
+        {activeTab === 'riwayat' ? (
+          <button
+            onClick={() => {
+              setIsSelectMode(!isSelectMode);
+              if (isSelectMode) setSelectedIds([]);
+            }}
+            className={`px-3 py-1.5 rounded-lg font-bold text-sm transition-all relative z-10 ${isSelectMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          >
+            {isSelectMode ? 'Batal' : 'Pilih'}
+          </button>
+        ) : (
+          <div className="w-16"></div>
+        )}
       </header>
 
       {/* TABS */}
@@ -477,6 +522,25 @@ export default function NotifikasiPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {/* Floating Bulk Action Bar */}
+      {activeTab === 'riwayat' && isSelectMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 px-5 py-4 flex items-center justify-between shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] transition-all">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-slate-700">{selectedIds.length} Terpilih</span>
+            <button onClick={handleSelectAll} className="text-xs font-bold text-orange-600 px-2 py-1 bg-orange-50 rounded-lg active:scale-95 transition-all">
+              {selectedIds.length === historyLogs.length && historyLogs.length > 0 ? 'Batal Semua' : 'Pilih Semua'}
+            </button>
+          </div>
+          <button
+            disabled={selectedIds.length === 0 || isDeletingBulk}
+            onClick={handleBulkDelete}
+            className="px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <span className="material-symbols-outlined !text-[18px]">delete</span>
+            {isDeletingBulk ? 'Menghapus...' : 'Hapus'}
+          </button>
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@ import { notificationLog } from "../db/schema/notification-log.js";
 import { branchStock } from "../db/schema/branch-stock.js";
 import { batch } from "../db/schema/batch.js";
 import { product } from "../db/schema/product.js";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { daysUntilExpiry } from "../lib/utils.js";
 
 const router = Router();
@@ -100,6 +100,21 @@ router.patch("/:id/read", async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to update notification" });
+  }
+});
+
+// POST /notifications/bulk-delete
+router.post("/bulk-delete", async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "No IDs provided" });
+    }
+    
+    await db.delete(notificationLog).where(inArray(notificationLog.id, ids));
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete notifications" });
   }
 });
 
