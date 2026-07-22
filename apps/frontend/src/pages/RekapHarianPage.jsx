@@ -79,6 +79,8 @@ export default function RekapHarianPage() {
     let penginapanCash = 0;
     let penginapanNonCash = 0;
 
+    let grandProfit = 0;
+
     transactions.forEach(tx => {
       const method = tx.paymentMethod || 'Tunai';
       
@@ -117,6 +119,9 @@ export default function RekapHarianPage() {
 
       tx.items.forEach(item => {
         const lineTotal = item.qty * item.price;
+        const lineProfit = item.qty * (item.price - (item.buyPrice || 0));
+        grandProfit += lineProfit;
+
         const cat = item.category || 'Lainnya';
         
         const isCash = method === 'Tunai' || (method.startsWith('Campuran') && txCash >= lineTotal);
@@ -140,7 +145,7 @@ export default function RekapHarianPage() {
     const totalPenginapan = penginapanCash + penginapanNonCash;
 
     return {
-      grandCash, grandQR, grandTransfer, grandEDC, grandTotal,
+      grandCash, grandQR, grandTransfer, grandEDC, grandTotal, grandProfit,
       groomingCash, groomingNonCash, totalGrooming,
       ongkirCash, ongkirNonCash, totalOngkir,
       penginapanCash, penginapanNonCash, totalPenginapan
@@ -257,15 +262,21 @@ export default function RekapHarianPage() {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700">
+          <div className={`grid ${role === 'admin' ? 'grid-cols-3' : 'grid-cols-2'} gap-3 pt-3 border-t border-slate-700`}>
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Cash Bersih (Disetor)</p>
-              <p className="font-bold text-emerald-400">{formatRupiah(stats.grandCash - totalPengeluaran)}</p>
+              <p className="text-xs text-slate-400 mb-0.5">Cash Bersih</p>
+              <p className="font-bold text-emerald-400 text-sm">{formatRupiah(stats.grandCash - totalPengeluaran)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Total Non-Tunai</p>
-              <p className="font-bold text-sky-400">{formatRupiah(stats.grandQR + stats.grandTransfer + stats.grandEDC)}</p>
+              <p className="text-xs text-slate-400 mb-0.5">Non-Tunai</p>
+              <p className="font-bold text-sky-400 text-sm">{formatRupiah(stats.grandQR + stats.grandTransfer + stats.grandEDC)}</p>
             </div>
+            {role === 'admin' && (
+              <div>
+                <p className="text-xs text-slate-400 mb-0.5 flex items-center gap-1">Keuntungan <span className="material-symbols-outlined !text-[12px] text-yellow-400" title="Informasi rahasia hanya untuk Admin">lock</span></p>
+                <p className="font-bold text-yellow-400 text-sm">{formatRupiah(stats.grandProfit)}</p>
+              </div>
+            )}
           </div>
         </section>
 
