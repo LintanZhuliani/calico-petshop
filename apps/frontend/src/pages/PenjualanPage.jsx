@@ -170,8 +170,8 @@ export default function PenjualanPage() {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Laporan Penjualan');
 
-    // Kolom
-    worksheet.columns = [
+    // Kolom Dasar
+    const baseColumns = [
       { header: 'No', key: 'no', width: 5 },
       { header: 'Tanggal', key: 'tanggal', width: 12 },
       { header: 'Waktu', key: 'waktu', width: 10 },
@@ -179,11 +179,21 @@ export default function PenjualanPage() {
       { header: 'Cabang', key: 'cabang', width: 15 },
       { header: 'Produk', key: 'produk', width: 25 },
       { header: 'Jumlah', key: 'jumlah', width: 10 },
-      { header: 'Harga Satuan', key: 'harga', width: 15 },
-      { header: 'Subtotal', key: 'subtotal', width: 15 },
-      { header: 'Total Struk', key: 'total_struk', width: 15 },
-      { header: 'Metode Bayar', key: 'metode_bayar', width: 15 },
+      { header: 'Harga Jual', key: 'harga', width: 15 },
+      { header: 'Subtotal Jual', key: 'subtotal', width: 15 },
     ];
+    
+    if (isAdmin) {
+      baseColumns.push({ header: 'Harga Modal', key: 'modal', width: 15 });
+      baseColumns.push({ header: 'Laba Kotor', key: 'laba', width: 15 });
+    }
+    
+    baseColumns.push(
+      { header: 'Total Struk', key: 'total_struk', width: 15 },
+      { header: 'Metode Bayar', key: 'metode_bayar', width: 15 }
+    );
+    
+    worksheet.columns = baseColumns;
 
     // Format Header (Baris 1)
     worksheet.getRow(1).eachCell((cell) => {
@@ -211,7 +221,7 @@ export default function PenjualanPage() {
       const branchLabel = BRANCHES.find(b => b.id === tx.branchId)?.name || tx.branchId;
 
       tx.items?.forEach((item, itemIdx) => {
-        const row = worksheet.addRow({
+        const rowData = {
           no: itemIdx === 0 ? rowNum : '',
           tanggal: itemIdx === 0 ? tgl : '',
           waktu: itemIdx === 0 ? waktu : '',
@@ -223,11 +233,22 @@ export default function PenjualanPage() {
           subtotal: item.qty * item.price,
           total_struk: itemIdx === 0 ? tx.total : '',
           metode_bayar: itemIdx === 0 ? (tx.paymentMethod || 'Tunai') : ''
-        });
+        };
+        
+        if (isAdmin) {
+          rowData.modal = item.buyPrice || 0;
+          rowData.laba = item.qty * (item.price - (item.buyPrice || 0));
+        }
 
-        // Format Uang pada kolom Harga (H), Subtotal (I), dan Total Struk (J)
+        const row = worksheet.addRow(rowData);
+
+        // Format Uang pada kolom nominal
         row.getCell('harga').numFmt = '"Rp "#,##0';
         row.getCell('subtotal').numFmt = '"Rp "#,##0';
+        if (isAdmin) {
+          row.getCell('modal').numFmt = '"Rp "#,##0';
+          row.getCell('laba').numFmt = '"Rp "#,##0';
+        }
         if (itemIdx === 0) row.getCell('total_struk').numFmt = '"Rp "#,##0';
 
         // Border tiap cell data
@@ -248,21 +269,33 @@ export default function PenjualanPage() {
     worksheet.addRow([]);
 
     // Baris Total
+    const totalRows = [];
     const totalPendapatanRow = worksheet.addRow({ subtotal: 'TOTAL PENDAPATAN', total_struk: totalPendapatan });
     totalPendapatanRow.getCell('subtotal').font = { bold: true };
     totalPendapatanRow.getCell('total_struk').font = { bold: true };
     totalPendapatanRow.getCell('total_struk').numFmt = '"Rp "#,##0';
+    totalRows.push(totalPendapatanRow);
 
     const totalTransaksiRow = worksheet.addRow({ subtotal: 'TOTAL TRANSAKSI', total_struk: totalTransaksi });
     totalTransaksiRow.getCell('subtotal').font = { bold: true };
     totalTransaksiRow.getCell('total_struk').font = { bold: true };
+    totalRows.push(totalTransaksiRow);
 
     const totalItemRow = worksheet.addRow({ subtotal: 'TOTAL ITEM', total_struk: totalItem });
     totalItemRow.getCell('subtotal').font = { bold: true };
     totalItemRow.getCell('total_struk').font = { bold: true };
+    totalRows.push(totalItemRow);
+    
+    if (isAdmin) {
+      const totalKeuntunganRow = worksheet.addRow({ subtotal: 'TOTAL LABA KOTOR', total_struk: totalKeuntungan });
+      totalKeuntunganRow.getCell('subtotal').font = { bold: true, color: { argb: 'FF9A6100' } };
+      totalKeuntunganRow.getCell('total_struk').font = { bold: true, color: { argb: 'FF9A6100' } };
+      totalKeuntunganRow.getCell('total_struk').numFmt = '"Rp "#,##0';
+      totalRows.push(totalKeuntunganRow);
+    }
 
     // Format border untuk area total
-    [totalPendapatanRow, totalTransaksiRow, totalItemRow].forEach(row => {
+    totalRows.forEach(row => {
       row.getCell('subtotal').border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
       row.getCell('total_struk').border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
     });
@@ -345,7 +378,7 @@ export default function PenjualanPage() {
           <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
               <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1 flex items-center gap-1">
-                Laba Bersih <span className="material-symbols-outlined !text-[14px] text-yellow-600">lock</span>
+                Laba Kotor <span className="material-symbols-outlined !text-[14px] text-yellow-600">lock</span>
               </p>
               <p className="font-extrabold font-headline text-2xl md:text-3xl text-slate-800 leading-none">{formatRupiah(totalKeuntungan)}</p>
             </div>
