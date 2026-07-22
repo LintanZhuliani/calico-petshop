@@ -71,22 +71,38 @@ export default function RiwayatNotifikasiPage() {
     }
   };
 
+  // Track sidebar toggle state dynamically
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calico_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    const handleSidebarToggle = () => {
+      const saved = localStorage.getItem('calico_sidebar_open');
+      setSidebarOpen(saved !== null ? JSON.parse(saved) : true);
+    };
+    window.addEventListener('sidebar-toggle', handleSidebarToggle);
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
+  }, []);
+
   return (
-    <div className="bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between relative">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-xl bg-slate-50 border border-slate-100 active:scale-95 transition-all relative z-10"
-        >
-          <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
-        </button>
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <h1 className={`font-headline font-extrabold text-xl leading-tight ${primaryText}`}>
-            Riwayat Notifikasi
-          </h1>
-          <p className="text-xs text-slate-400">Log Peringatan Sistem</p>
+    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
+      sidebarOpen ? 'md:pl-64' : 'md:pl-16'
+    }`}>
+      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+            className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined !text-[24px]">menu</span>
+          </button>
+          <div>
+            <h1 className={`font-headline font-extrabold text-xl leading-tight ${primaryText}`}>Riwayat Notifikasi</h1>
+            <p className="text-sm text-slate-400">Log Peringatan Sistem</p>
+          </div>
         </div>
-        <div className="w-10"></div>
       </header>
 
       <main className="px-5 py-6 w-full space-y-6">
