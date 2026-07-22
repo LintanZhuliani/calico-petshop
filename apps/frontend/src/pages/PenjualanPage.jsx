@@ -341,51 +341,19 @@ export default function PenjualanPage() {
         </div>
 
         {/* Ringkasan Angka */}
-        <div className={`grid ${isAdmin ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'} gap-4`}>
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${primaryLight}`}>
-              <span className={`material-symbols-outlined !text-[24px] ${primaryText}`}>payments</span>
-            </div>
+        {isAdmin && (
+          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1">Pendapatan</p>
-              <p className="font-extrabold font-headline text-lg md:text-xl text-slate-800 leading-none">{formatRupiah(totalPendapatan)}</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1 flex items-center gap-1">
+                Laba Bersih <span className="material-symbols-outlined !text-[14px] text-yellow-600">lock</span>
+              </p>
+              <p className="font-extrabold font-headline text-2xl md:text-3xl text-slate-800 leading-none">{formatRupiah(totalKeuntungan)}</p>
+            </div>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-yellow-50">
+              <span className="material-symbols-outlined !text-[28px] text-yellow-600">account_balance_wallet</span>
             </div>
           </div>
-          
-          {isAdmin && (
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-yellow-50">
-                <span className="material-symbols-outlined !text-[24px] text-yellow-600">account_balance_wallet</span>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1 flex items-center gap-1">
-                  Laba Bersih <span className="material-symbols-outlined !text-[14px] text-yellow-600" title="Informasi rahasia hanya untuk Admin">lock</span>
-                </p>
-                <p className="font-extrabold font-headline text-lg md:text-xl text-slate-800 leading-none">{formatRupiah(totalKeuntungan)}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-50">
-              <span className="material-symbols-outlined !text-[24px] text-blue-600">receipt_long</span>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1">Transaksi</p>
-              <p className="font-extrabold font-headline text-lg md:text-xl text-slate-800 leading-none">{totalTransaksi}</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-emerald-50">
-              <span className="material-symbols-outlined !text-[24px] text-emerald-600">inventory_2</span>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1">Item Terjual</p>
-              <p className="font-extrabold font-headline text-lg md:text-xl text-slate-800 leading-none">{totalItem}</p>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Tombol Unduh */}
         {isAdmin && (
