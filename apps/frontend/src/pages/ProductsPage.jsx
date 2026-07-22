@@ -473,9 +473,9 @@ function EditProductModal({ product, onClose, onSave, onRefresh }) {
 
         {form.buyPrice && form.price && Number(form.price) > 0 && (
           <div className="bg-green-50 border border-green-100 rounded-2xl p-3 flex justify-between items-center">
-            <span className="text-sm font-semibold text-green-700">Estimasi Margin</span>
+            <span className="text-sm font-semibold text-green-700">Estimasi Markup</span>
             <span className="font-bold text-green-700">
-              {Math.round(((Number(form.price) - Number(form.buyPrice)) / Number(form.price)) * 100)}%
+              {Math.round(((Number(form.price) - Number(form.buyPrice)) / Number(form.buyPrice)) * 100)}%
               &nbsp;·&nbsp;
               {formatRupiah(Number(form.price) - Number(form.buyPrice))}
             </span>
