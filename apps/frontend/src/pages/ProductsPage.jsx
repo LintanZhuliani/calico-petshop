@@ -280,16 +280,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <div>
-              <label className="text-[10px] font-bold text-slate-500">Modal Baru</label>
-              <input type="number" value={buyPrice} onChange={e => setBuyPrice(e.target.value)} placeholder="Opsional" className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold text-slate-500">Jual Baru</label>
-              <input type="number" value={sellPrice} onChange={e => setSellPrice(e.target.value)} placeholder="Opsional" className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
-            </div>
-          </div>
+
           <div className="flex gap-2 mt-1">
             <button onClick={handleDelete} disabled={saving} className="flex-1 py-2 bg-red-100 text-red-600 rounded-lg text-[11px] font-bold hover:bg-red-200 active:scale-95 transition-all">HAPUS BATCH</button>
             <button onClick={handleSave} disabled={saving} className="flex-1 py-2 bg-[#D35400] text-white rounded-lg text-[11px] font-bold hover:bg-[#b84800] active:scale-95 transition-all">{saving ? 'Menyimpan...' : 'SIMPAN'}</button>
