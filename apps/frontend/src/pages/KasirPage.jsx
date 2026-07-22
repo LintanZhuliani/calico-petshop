@@ -579,9 +579,11 @@ export default function KasirPage() {
                           {p.expiredStock} kadaluarsa (Tidak bisa dijual)
                         </div>
                       )}
-                      <div className="flex items-baseline justify-between gap-2 mt-1">
-                        <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
-                        <span className="text-xs text-slate-500 font-medium shrink-0">{total} unit layak jual</span>
+                      <div className="flex items-end justify-between gap-2 mt-1">
+                        <span className={`font-bold text-sm md:text-base ${primaryText}`}>
+                          {formatRupiah(p.fefoSellPrice !== undefined ? p.fefoSellPrice : p.price)}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-slate-500 font-medium shrink-0">{total} unit</span>
                       </div>
                     </div>
                   </div>

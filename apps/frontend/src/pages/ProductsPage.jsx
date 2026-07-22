@@ -1223,10 +1223,12 @@ export default function ProductsPage() {
                       )}
                       <div className="flex items-end justify-between gap-2 mt-1">
                         <div className="flex flex-col gap-0.5">
-                          <span className={`font-bold text-sm md:text-base ${primaryText}`}>{formatRupiah(p.price)}</span>
+                          <span className={`font-bold text-sm md:text-base ${primaryText}`}>
+                            {formatRupiah(p.fefoSellPrice !== undefined ? p.fefoSellPrice : p.price)}
+                          </span>
                           {isAdmin && (
                             <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 w-fit">
-                              Modal: {formatRupiah(p.buyPrice || 0)}
+                              Modal: {formatRupiah(p.fefoBuyPrice !== undefined ? p.fefoBuyPrice : (p.buyPrice || 0))}
                             </span>
                           )}
                         </div>
