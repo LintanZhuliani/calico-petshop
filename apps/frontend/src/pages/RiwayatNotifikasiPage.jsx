@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import { useSession } from '../lib/useSession';
+import BottomNav from '../components/BottomNav';
 
 export default function RiwayatNotifikasiPage() {
   const navigate = useNavigate();
@@ -282,6 +283,8 @@ export default function RiwayatNotifikasiPage() {
           </button>
         </div>
       )}
+
+      <BottomNav />
     </div>
   );
 }
