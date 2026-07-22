@@ -234,12 +234,14 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [qty, setQty] = useState(batch.qty);
   const [date, setDate] = useState(batch.expiredDate ? new Date(batch.expiredDate).toISOString().split('T')[0] : '');
+  const [buyPrice, setBuyPrice] = useState(batch.buyPrice || '');
+  const [sellPrice, setSellPrice] = useState(batch.sellPrice || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onUpdate(batch.id, Number(qty), date || null);
+      await onUpdate(batch.id, Number(qty), date || null, buyPrice ? Number(buyPrice) : null, sellPrice ? Number(sellPrice) : null);
       setIsEditing(false);
     } catch (e) {
       alert("Gagal update sesi: " + e.message);
@@ -278,6 +280,16 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div>
+              <label className="text-[10px] font-bold text-slate-500">Modal Baru</label>
+              <input type="number" value={buyPrice} onChange={e => setBuyPrice(e.target.value)} placeholder="Opsional" className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-slate-500">Jual Baru</label>
+              <input type="number" value={sellPrice} onChange={e => setSellPrice(e.target.value)} placeholder="Opsional" className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none focus:border-orange-400" />
+            </div>
+          </div>
           <div className="flex gap-2 mt-1">
             <button onClick={handleDelete} disabled={saving} className="flex-1 py-2 bg-red-100 text-red-600 rounded-lg text-[11px] font-bold hover:bg-red-200 active:scale-95 transition-all">HAPUS BATCH</button>
             <button onClick={handleSave} disabled={saving} className="flex-1 py-2 bg-[#D35400] text-white rounded-lg text-[11px] font-bold hover:bg-[#b84800] active:scale-95 transition-all">{saving ? 'Menyimpan...' : 'SIMPAN'}</button>
@@ -293,16 +305,22 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
       <div className="flex flex-col">
         <span className="font-bold text-sm">Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
         <span className="text-[10px] opacity-80">Masuk: {new Date(batch.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+        {(batch.buyPrice != null || batch.sellPrice != null) && (
+          <span className="text-[10px] mt-0.5 text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded inline-block w-fit">
+            Harga Khusus
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-3">
         <div className="flex flex-col items-end text-right">
           <span className="font-bold">{batch.qty} unit</span>
           {batch.expiredDate ? (
-            <span className={`text-[10px] font-semibold ${isExpired ? 'line-through opacity-80' : 'text-orange-500'}`}>
-              Exp: {new Date(batch.expiredDate).toLocaleDateString('id-ID')}
+            <span className={`text-[10px] flex items-center gap-0.5 mt-0.5 ${isExpired ? 'line-through opacity-80' : 'text-orange-500'}`}>
+              <span className="material-symbols-outlined !text-[12px]">calendar_today</span>
+              Exp: {new Date(batch.expiredDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
             </span>
           ) : (
-            <span className="text-[10px] text-slate-400">Tanpa Exp</span>
+            <span className="text-[10px] opacity-60">Tanpa Exp</span>
           )}
         </div>
         <button onClick={() => setIsEditing(true)} className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-slate-400">
@@ -330,12 +348,12 @@ function EditProductModal({ product, onClose, onSave }) {
   const [showCustomCat, setShowCustomCat] = useState(false);
   const handle = (k, v) => setForm(f => ({ ...f, [k]: v }));
   
-  const handleBatchUpdate = async (batchId, qty, expiredDate) => {
+  const handleBatchUpdate = async (batchId, qty, expiredDate, buyPrice, sellPrice) => {
     await apiFetch(`/products/${product.id}/stock/${batchId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ qty, expiredDate })
+      body: JSON.stringify({ qty, expiredDate, buyPrice, sellPrice })
     });
-    setLocalBatches(prev => prev.map(b => b.id === batchId ? { ...b, qty, expiredDate } : b));
+    setLocalBatches(prev => prev.map(b => b.id === batchId ? { ...b, qty, expiredDate, buyPrice, sellPrice } : b));
     // Update local form stock to reflect changes
     const newTotal = localBatches.map(b => b.id === batchId ? qty : b.qty).reduce((a, b) => a + b, 0);
     handle('stock', newTotal);

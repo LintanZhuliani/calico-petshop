@@ -197,14 +197,16 @@ router.post("/:id/stock/deduct", requireAuth, requireAdmin, async (req, res, nex
 // PATCH /api/products/:id/stock/:batchId — Update batch qty/expiry (Admin only, per-branch correction)
 router.patch("/:id/stock/:batchId", requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const { qty, expiredDate } = req.body;
-    if (qty === undefined && expiredDate === undefined) {
-      res.status(400).json({ error: "qty or expiredDate is required" });
+    const { qty, expiredDate, buyPrice, sellPrice } = req.body;
+    if (qty === undefined && expiredDate === undefined && buyPrice === undefined && sellPrice === undefined) {
+      res.status(400).json({ error: "No fields to update" });
       return;
     }
     const updates: any = {};
     if (qty !== undefined) updates.qty = Number(qty);
     if (expiredDate !== undefined) updates.expiredDate = expiredDate;
+    if (buyPrice !== undefined) updates.buyPrice = buyPrice ? Number(buyPrice) : null;
+    if (sellPrice !== undefined) updates.sellPrice = sellPrice ? Number(sellPrice) : null;
 
     const result = await productService.updateBatch(
       req.params.batchId as string,

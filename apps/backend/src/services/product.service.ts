@@ -329,10 +329,10 @@ export const productService = {
   },
 
   /**
-   * Update a batch's quantity and/or expiration date (admin stock correction).
+   * Update a batch's quantity, expiration date, and prices (admin stock correction).
    * Only affects the specific batch at a specific branch.
    */
-  async updateBatch(batchId: string, updates: { qty?: number; expiredDate?: string | null }) {
+  async updateBatch(batchId: string, updates: { qty?: number; expiredDate?: string | null; buyPrice?: number | null; sellPrice?: number | null }) {
     if (updates.qty !== undefined && updates.qty <= 0) {
       // If qty is 0 or negative, delete the batch
       return this.deleteBatch(batchId);
