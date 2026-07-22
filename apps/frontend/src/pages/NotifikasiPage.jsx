@@ -76,27 +76,6 @@ export default function NotifikasiPage() {
 
       <main className="px-5 py-6 w-full space-y-6">
         
-        {/* Note / Legenda Informasi */}
-        <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <h2 className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-blue-500 !text-[20px]">info</span>
-            Note
-          </h2>
-          <div className="flex flex-col gap-3 text-[11px] font-medium text-slate-600">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-slate-900"></div>
-              <span>Hitam = Sudah Kadaluarsa</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-600"></div>
-              <span>Merah = Stok Barang Habis</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-              <span>Oranye = Hampir Kadaluarsa</span>
-            </div>
-          </div>
-        </section>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
