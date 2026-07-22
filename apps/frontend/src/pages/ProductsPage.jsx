@@ -178,13 +178,22 @@ function AddProductModal({ onClose, onSave }) {
 function AddStockModal({ product, onClose, onSave }) {
   const [qty, setQty] = useState('');
   const [expiredDate, setExpiredDate] = useState('');
+  const [buyPrice, setBuyPrice] = useState('');
+  const [sellPrice, setSellPrice] = useState('');
   const handleSave = () => {
     if (!qty || Number(qty) <= 0) return;
-    onSave({ batchId: generateId('b'), qty: Number(qty), expiredDate: expiredDate || null, receivedDate: new Date().toISOString().split('T')[0] });
+    onSave({
+      batchId: generateId('b'),
+      qty: Number(qty),
+      expiredDate: expiredDate || null,
+      receivedDate: new Date().toISOString().split('T')[0],
+      buyPrice: buyPrice ? Number(buyPrice) : null,
+      sellPrice: sellPrice ? Number(sellPrice) : null,
+    });
   };
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white w-full rounded-t-3xl p-6 pb-10 space-y-4">
+      <div className="bg-white w-full rounded-t-3xl p-6 pb-10 space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="font-headline font-bold text-xl text-slate-900">Tambah Stok</h2>
@@ -198,6 +207,20 @@ function AddStockModal({ product, onClose, onSave }) {
         </div>
         <InputField label="Jumlah Masuk*" type="number" value={qty} onChange={setQty} placeholder="0" />
         <InputField label="Tanggal Expired (kosongkan jika tidak ada)" type="date" value={expiredDate} onChange={setExpiredDate} />
+        
+        {/* Per-Batch Pricing */}
+        <div className="bg-blue-50 rounded-2xl p-4 space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-blue-500 !text-[18px]">info</span>
+            <span className="text-xs font-semibold text-blue-700">Harga Batch (Opsional)</span>
+          </div>
+          <p className="text-[11px] text-blue-600 leading-relaxed">
+            Kosongkan jika harga masih sama. Isi jika harga modal atau harga jual berubah untuk stok batch ini.
+          </p>
+        </div>
+        <InputField label={`Harga Modal Baru (saat ini: Rp ${(product.buyPrice || 0).toLocaleString('id-ID')})`} type="number" value={buyPrice} onChange={setBuyPrice} placeholder={`${product.buyPrice || 0}`} />
+        <InputField label={`Harga Jual Baru (saat ini: Rp ${(product.price || 0).toLocaleString('id-ID')})`} type="number" value={sellPrice} onChange={setSellPrice} placeholder={`${product.price || 0}`} />
+
         <button onClick={handleSave} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all">
           + Tambah Stok
         </button>
@@ -900,7 +923,9 @@ export default function ProductsPage() {
         body: {
           branchId: branchId,
           qty: batch.qty,
-          expiredDate: batch.expiredDate
+          expiredDate: batch.expiredDate,
+          buyPrice: batch.buyPrice,
+          sellPrice: batch.sellPrice,
         }
       });
       showToast('Stok berhasil ditambahkan!');

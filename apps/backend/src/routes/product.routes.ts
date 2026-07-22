@@ -156,7 +156,7 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
 // POST /api/products/:id/stock — Add stock to branch (Admin only)
 router.post("/:id/stock", requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const { branchId, qty, expiredDate } = req.body;
+    const { branchId, qty, expiredDate, buyPrice, sellPrice } = req.body;
     if (!branchId || !qty) {
       res.status(400).json({ error: "branchId and qty are required" });
       return;
@@ -166,6 +166,8 @@ router.post("/:id/stock", requireAuth, requireAdmin, async (req, res, next) => {
       branchId,
       qty: Number(qty),
       expiredDate,
+      buyPrice: buyPrice != null ? Number(buyPrice) : null,
+      sellPrice: sellPrice != null ? Number(sellPrice) : null,
     });
     res.status(201).json(batch);
   } catch (err) {

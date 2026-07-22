@@ -103,31 +103,8 @@ export const transactionService = {
       })
       .returning();
 
-    // Step 2: Create transaction items (with buyPrice snapshot)
-    const txItems = await Promise.all(
-      data.items.map(async (item) => {
-        let buyPrice = item.buyPrice ?? 0;
-        if (!buyPrice) {
-          const prod = await db.select().from(product).where(eq(product.id, item.productId));
-          buyPrice = prod[0]?.buyPrice ?? 0;
-        }
-        const result = await db
-          .insert(transactionItem)
-          .values({
-            id: generateId("ti"),
-            transactionId: txId,
-            productId: item.productId,
-            productName: item.productName,
-            qty: item.qty,
-            price: item.price,
-            buyPrice,
-          })
-          .returning();
-        return result[0];
-      })
-    );
-
-    // Step 3: Deduct stock FEFO — only AFTER transaction is saved
+    // Step 2: Deduct stock FEFO first to get accurate batch costs
+    const deductionResults: { productId: string; totalCost: number; qty: number }[] = [];
     try {
       for (const item of data.items) {
         const result = await productService.deductStockFEFO(
@@ -143,6 +120,11 @@ export const transactionService = {
             { statusCode: 400 }
           );
         }
+        deductionResults.push({
+          productId: item.productId,
+          totalCost: result.totalCost,
+          qty: item.qty,
+        });
       }
     } catch (err) {
       // Rollback: hapus transaksi yang sudah dibuat jika stok gagal
@@ -150,6 +132,30 @@ export const transactionService = {
       await db.delete(transaction).where(eq(transaction.id, txId));
       throw err;
     }
+
+    // Step 3: Create transaction items with accurate buyPrice from FEFO batches
+    const txItems = await Promise.all(
+      data.items.map(async (item) => {
+        const deduction = deductionResults.find(d => d.productId === item.productId);
+        // Use weighted average buyPrice from the actual batches that were deducted
+        const buyPrice = deduction && deduction.qty > 0
+          ? Math.round(deduction.totalCost / deduction.qty)
+          : (item.buyPrice ?? 0);
+        const result = await db
+          .insert(transactionItem)
+          .values({
+            id: generateId("ti"),
+            transactionId: txId,
+            productId: item.productId,
+            productName: item.productName,
+            qty: item.qty,
+            price: item.price,
+            buyPrice,
+          })
+          .returning();
+        return result[0];
+      })
+    );
 
     return { ...txResult[0], items: txItems };
   },

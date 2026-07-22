@@ -14,6 +14,8 @@ export const batch = pgTable("batch", {
     .notNull()
     .references(() => branchStock.id, { onDelete: "cascade" }),
   qty: integer("qty").notNull(),
+  buyPrice: integer("buy_price"),
+  sellPrice: integer("sell_price"),
   expiredDate: date("expired_date"),
   receivedDate: date("received_date").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),

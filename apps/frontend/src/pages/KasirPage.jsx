@@ -395,13 +395,15 @@ export default function KasirPage() {
   const handleAddToCart = (product) => {
     const total = product.totalStock || 0;
     if (total === 0) { showToast('Stok habis!'); return; }
+    // Use FEFO sell price (Opsi A: harga dari batch paling lama)
+    const price = product.fefoSellPrice || product.price;
     setCart(prev => {
       const existing = prev.find(i => i.id === product.id);
       if (existing) {
         if (existing.qty >= total) { showToast('Stok tidak cukup!'); return prev; }
-        return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+        return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1, price } : i);
       }
-      return [...prev, { id: product.id, name: product.name, price: product.price, qty: 1 }];
+      return [...prev, { id: product.id, name: product.name, price, qty: 1 }];
     });
     showToast(`${product.name} ditambahkan`);
   };

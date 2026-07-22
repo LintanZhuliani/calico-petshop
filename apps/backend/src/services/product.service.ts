@@ -54,8 +54,23 @@ export const productService = {
         const stock = stockData.find((s) => s.productId === p.id);
         let totalQty = 0;
         let expiredQty = 0;
+        let fefoSellPrice: number | null = null;
+        let fefoBuyPrice: number | null = null;
         if (stock) {
           stock.batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          // Find FEFO sell price (oldest non-expired batch with sellPrice)
+          const fefoBatches = [...stock.batches].sort((a, b) => {
+            if (!a.expiredDate) return 1;
+            if (!b.expiredDate) return -1;
+            return new Date(a.expiredDate).getTime() - new Date(b.expiredDate).getTime();
+          });
+          for (const fb of fefoBatches) {
+            if (fb.expiredDate && daysUntilExpiry(fb.expiredDate) <= 0) continue;
+            if (fb.qty <= 0) continue;
+            if (fb.sellPrice != null) fefoSellPrice = fb.sellPrice;
+            if (fb.buyPrice != null) fefoBuyPrice = fb.buyPrice;
+            break;
+          }
           stock.batches.forEach(b => {
              if (b.expiredDate && daysUntilExpiry(b.expiredDate) <= 0) {
                  expiredQty += b.qty;
@@ -64,7 +79,14 @@ export const productService = {
              }
           });
         }
-        return { ...p, totalStock: totalQty, expiredStock: expiredQty, batches: stock?.batches || [] };
+        return {
+          ...p,
+          totalStock: totalQty,
+          expiredStock: expiredQty,
+          batches: stock?.batches || [],
+          fefoSellPrice: fefoSellPrice ?? p.price,
+          fefoBuyPrice: fefoBuyPrice ?? p.buyPrice,
+        };
       });
 
       // Apply stock status filters
@@ -259,6 +281,8 @@ export const productService = {
     branchId: string;
     qty: number;
     expiredDate?: string | null;
+    buyPrice?: number | null;
+    sellPrice?: number | null;
   }) {
     // Find or create branch_stock
     let bs = await db
@@ -286,13 +310,15 @@ export const productService = {
       branchStockId = bs[0].id;
     }
 
-    // Add batch
+    // Add batch with per-batch pricing
     const newBatch = await db
       .insert(batch)
       .values({
         id: generateId("b"),
         branchStockId,
         qty: data.qty,
+        buyPrice: data.buyPrice ?? null,
+        sellPrice: data.sellPrice ?? null,
         expiredDate: data.expiredDate || null,
         receivedDate: new Date().toISOString().split("T")[0],
       })
@@ -341,7 +367,7 @@ export const productService = {
     productId: string,
     branchId: string,
     qtyToDeduct: number
-  ): Promise<{ success: boolean; deducted: number }> {
+  ): Promise<{ success: boolean; deducted: number; totalCost: number; totalRevenue: number }> {
     // Get branch_stock
     const bsResult = await db
       .select()
@@ -354,10 +380,15 @@ export const productService = {
       );
 
     if (bsResult.length === 0) {
-      return { success: false, deducted: 0 };
+      return { success: false, deducted: 0, totalCost: 0, totalRevenue: 0 };
     }
 
     const branchStockId = bsResult[0].id;
+
+    // Get product for fallback prices
+    const prod = await db.select().from(product).where(eq(product.id, productId));
+    const fallbackBuyPrice = prod[0]?.buyPrice ?? 0;
+    const fallbackSellPrice = prod[0]?.price ?? 0;
 
     // Get all batches, sorted FEFO
     const batches = await db
@@ -375,6 +406,8 @@ export const productService = {
     });
 
     let remaining = qtyToDeduct;
+    let totalCost = 0;
+    let totalRevenue = 0;
     for (const b of batches) {
       if (remaining <= 0) break;
       // Skip expired batches in FEFO, cannot sell expired items!
@@ -382,6 +415,13 @@ export const productService = {
 
       const deduct = Math.min(b.qty, remaining);
       remaining -= deduct;
+
+      // Track cost per batch
+      const batchBuyPrice = b.buyPrice ?? fallbackBuyPrice;
+      const batchSellPrice = b.sellPrice ?? fallbackSellPrice;
+      totalCost += deduct * batchBuyPrice;
+      totalRevenue += deduct * batchSellPrice;
+
       const newQty = b.qty - deduct;
 
       if (newQty <= 0) {
@@ -396,7 +436,7 @@ export const productService = {
     }
 
     getIo()?.emit("DATA_UPDATED");
-    return { success: remaining <= 0, deducted: qtyToDeduct - remaining };
+    return { success: remaining <= 0, deducted: qtyToDeduct - remaining, totalCost, totalRevenue };
   },
 
   /** Get low-stock products at a branch */
