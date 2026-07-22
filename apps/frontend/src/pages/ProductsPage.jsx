@@ -327,14 +327,13 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
   );
 }
 
-// ── Modal Edit Produk (Admin) ──
 function EditProductModal({ product, onClose, onSave, onRefresh }) {
   const [localBatches, setLocalBatches] = useState(product.batches || []);
   const [form, setForm] = useState({
     name: product.name || '',
     category: product.category || CATEGORIES[0],
-    buyPrice: product.buyPrice || '',
-    price: product.price || '',
+    buyPrice: product.fefoBuyPrice !== undefined ? product.fefoBuyPrice : (product.buyPrice || ''),
+    price: product.fefoSellPrice !== undefined ? product.fefoSellPrice : (product.price || ''),
     barcode: product.barcode || '',
     minStock: product.minStock || 5,
     image: product.image || '',
