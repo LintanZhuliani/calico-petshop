@@ -328,7 +328,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
 }
 
 // ── Modal Edit Produk (Admin) ──
-function EditProductModal({ product, onClose, onSave }) {
+function EditProductModal({ product, onClose, onSave, onRefresh }) {
   const [localBatches, setLocalBatches] = useState(product.batches || []);
   const [form, setForm] = useState({
     name: product.name || '',
@@ -352,13 +352,15 @@ function EditProductModal({ product, onClose, onSave }) {
     setLocalBatches(prev => prev.map(b => b.id === batchId ? { ...b, qty, expiredDate, buyPrice, sellPrice } : b));
     const newTotal = localBatches.map(b => b.id === batchId ? qty : b.qty).reduce((a, b) => a + b, 0);
     handle('stock', newTotal);
+    if (onRefresh) onRefresh();
   };
 
   const handleBatchDelete = async (batchId) => {
     await apiFetch(`/products/${product.id}/stock/${batchId}`, { method: 'DELETE' });
     setLocalBatches(prev => prev.filter(b => b.id !== batchId));
-    const newTotal = localBatches.filter(b => b.id !== batchId).reduce((a, b) => a + b, 0);
+    const newTotal = localBatches.filter(b => b.id !== batchId).reduce((a, b) => a + (b.qty || 0), 0);
     handle('stock', newTotal);
+    if (onRefresh) onRefresh();
   };
 
   const handleCategoryChange = (val) => {
@@ -1350,7 +1352,7 @@ export default function ProductsPage() {
       {/* ── Modals ── */}
       {addProductOpen && <AddProductModal onClose={() => setAddProductOpen(false)} onSave={handleSaveProduct} />}
       {addStockTarget && <AddStockModal product={addStockTarget} onClose={() => setAddStockTarget(null)} onSave={handleAddStock} />}
-      {editTarget && <EditProductModal product={editTarget} onClose={() => setEditTarget(null)} onSave={handleEditComplete} />}
+      {editTarget && <EditProductModal product={editTarget} onClose={() => setEditTarget(null)} onSave={handleEditComplete} onRefresh={fetchProducts} />}
       {checkoutOpen && <CheckoutModal cart={cart} onClose={() => setCheckoutOpen(false)} onConfirm={handleConfirmCheckout} />}
 
       <BottomNav />
