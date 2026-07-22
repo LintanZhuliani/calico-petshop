@@ -214,7 +214,11 @@ export default function PenjualanPage() {
 
     // Isi Baris Data
     let rowNum = 1;
-    filteredData.forEach((tx, txIdx) => {
+    
+    // Urutkan data berdasarkan tanggal secara menaik (terlama -> terbaru) khusus untuk laporan Excel
+    const sortedDataForExcel = [...filteredData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    sortedDataForExcel.forEach((tx, txIdx) => {
       const txDate = new Date(tx.date);
       const tgl = txDate.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
       const waktu = txDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.'); // format jam pakai titik (misal: 09.30)
