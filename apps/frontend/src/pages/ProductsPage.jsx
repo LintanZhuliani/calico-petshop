@@ -230,7 +230,7 @@ function AddStockModal({ product, onClose, onSave }) {
 }
 
 // ── Komponen Editor Sesi ──
-function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
+function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
   const [isEditing, setIsEditing] = useState(false);
   const [qty, setQty] = useState(batch.qty);
   const [date, setDate] = useState(batch.expiredDate ? new Date(batch.expiredDate).toISOString().split('T')[0] : '');
@@ -301,7 +301,10 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
 
   const isExpired = batch.expiredDate && new Date(batch.expiredDate).getTime() < Date.now();
   return (
-    <div className={`flex items-center justify-between p-3 rounded-xl border ${isExpired ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+    <div 
+      onClick={() => onSelect && onSelect(batch)}
+      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer hover:shadow-md transition-all ${isExpired ? 'bg-red-50 border-red-200 text-red-600' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}
+    >
       <div className="flex flex-col">
         <span className="font-bold text-sm">Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
         <span className="text-[10px] opacity-80">Masuk: {new Date(batch.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -323,7 +326,10 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete }) {
             <span className="text-[10px] opacity-60">Tanpa Exp</span>
           )}
         </div>
-        <button onClick={() => setIsEditing(true)} className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-slate-400">
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} 
+          className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-all text-slate-400"
+        >
           <span className="material-symbols-outlined !text-[16px]">edit</span>
         </button>
       </div>
@@ -510,7 +516,11 @@ function EditProductModal({ product, onClose, onSave }) {
                   batch={b} 
                   index={i} 
                   onUpdate={handleBatchUpdate} 
-                  onDelete={handleBatchDelete} 
+                  onDelete={handleBatchDelete}
+                  onSelect={(selectedBatch) => {
+                    handle('buyPrice', selectedBatch.buyPrice || product.buyPrice || '');
+                    handle('price', selectedBatch.sellPrice || product.price || '');
+                  }}
                 />
               ))}
             </div>
