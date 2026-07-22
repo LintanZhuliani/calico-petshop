@@ -60,6 +60,7 @@ export const productService = {
           stock.batches.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
           // Find FEFO sell price (oldest non-expired batch with sellPrice)
           const fefoBatches = [...stock.batches].sort((a, b) => {
+            if (!a.expiredDate && !b.expiredDate) return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
             if (!a.expiredDate) return 1;
             if (!b.expiredDate) return -1;
             return new Date(a.expiredDate).getTime() - new Date(b.expiredDate).getTime();
@@ -396,8 +397,9 @@ export const productService = {
       .from(batch)
       .where(eq(batch.branchStockId, branchStockId));
 
-    // Sort: earliest expiry first, null expiry last
+    // Sort: earliest expiry first, null expiry last (fallback to FIFO)
     batches.sort((a, b) => {
+      if (!a.expiredDate && !b.expiredDate) return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       if (!a.expiredDate) return 1;
       if (!b.expiredDate) return -1;
       return (
