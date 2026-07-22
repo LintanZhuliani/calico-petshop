@@ -91,6 +91,9 @@ export default function PenjualanPage() {
   const totalPendapatan = filteredData.reduce((s, tx) => s + tx.total, 0);
   const totalTransaksi = filteredData.length;
   const totalItem = filteredData.reduce((s, tx) => s + (tx.items?.reduce((si, it) => si + it.qty, 0) || 0), 0);
+  const totalKeuntungan = filteredData.reduce((s, tx) => 
+    s + (tx.items?.reduce((si, item) => si + (item.qty * (item.price - (item.buyPrice || 0))), 0) || 0)
+  , 0);
 
   // Data Chart
   const chartData = useMemo(() => {
@@ -338,17 +341,23 @@ export default function PenjualanPage() {
         </div>
 
         {/* Ringkasan Angka */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className={`${primaryLight} rounded-2xl p-3 text-center`}>
-            <p className={`font-extrabold font-headline text-lg ${primaryText}`}>{formatRupiah(totalPendapatan)}</p>
+        <div className={`grid ${isAdmin ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'} gap-3`}>
+          <div className={`${primaryLight} rounded-2xl p-3 text-center flex flex-col justify-center`}>
+            <p className={`font-extrabold font-headline text-lg md:text-xl ${primaryText}`}>{formatRupiah(totalPendapatan)}</p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide mt-1">Pendapatan</p>
           </div>
+          {isAdmin && (
+            <div className="bg-yellow-50 rounded-2xl p-3 text-center flex flex-col justify-center">
+              <p className="font-extrabold font-headline text-lg md:text-xl text-yellow-600">{formatRupiah(totalKeuntungan)}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide mt-1 flex items-center justify-center gap-1">Laba <span className="material-symbols-outlined !text-[12px] text-yellow-600" title="Informasi rahasia hanya untuk Admin">lock</span></p>
+            </div>
+          )}
           <div className="bg-blue-50 rounded-2xl p-3 text-center flex flex-col justify-center">
-            <p className="font-extrabold font-headline text-lg text-blue-600">{totalTransaksi}</p>
+            <p className="font-extrabold font-headline text-lg md:text-xl text-blue-600">{totalTransaksi}</p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide mt-1">Transaksi</p>
           </div>
           <div className="bg-emerald-50 rounded-2xl p-3 text-center flex flex-col justify-center">
-            <p className="font-extrabold font-headline text-lg text-emerald-600">{totalItem}</p>
+            <p className="font-extrabold font-headline text-lg md:text-xl text-emerald-600">{totalItem}</p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide mt-1">Item Terjual</p>
           </div>
         </div>
