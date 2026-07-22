@@ -18,6 +18,7 @@ export default function RiwayatPage() {
 
   const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
   const primaryBg = isAdmin ? 'bg-[#D35400]' : 'bg-[#C0392B]';
+  const primaryLight = isAdmin ? 'bg-[#D35400]/10' : 'bg-[#C0392B]/10';
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -414,11 +415,11 @@ export default function RiwayatPage() {
                   <button onClick={() => setSelectedItemDetail(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 transition-colors">
                     <span className="material-symbols-outlined !text-[20px]">close</span>
                   </button>
-                  <div className="p-6">
-                    <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center mb-4 text-blue-500 shadow-sm">
+                  <div className="p-6 flex flex-col items-center text-center">
+                    <div className={`w-16 h-16 rounded-3xl ${primaryLight} flex items-center justify-center mb-4 ${primaryText} shadow-sm`}>
                       <span className="material-symbols-outlined !text-[32px]">shopping_bag</span>
                     </div>
-                    <h3 className="font-bold text-slate-800 text-xl mb-4 pr-4 leading-tight">{selectedItemDetail.productName}</h3>
+                    <h3 className="font-bold text-slate-800 text-xl mb-4 leading-tight w-full">{selectedItemDetail.productName}</h3>
                     <div className="space-y-4 bg-slate-50 rounded-2xl p-4">
                       <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
                         <span className="text-slate-500 font-medium">Harga Jual</span>

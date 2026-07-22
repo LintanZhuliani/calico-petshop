@@ -273,36 +273,35 @@ export default function PenjualanPage() {
     worksheet.addRow([]);
 
     // Baris Total
-    const totalRows = [];
-    const totalPendapatanRow = worksheet.addRow({ subtotal: 'TOTAL PENDAPATAN', total_struk: totalPendapatan });
-    totalPendapatanRow.getCell('subtotal').font = { bold: true };
-    totalPendapatanRow.getCell('total_struk').font = { bold: true };
-    totalPendapatanRow.getCell('total_struk').numFmt = '"Rp "#,##0';
-    totalRows.push(totalPendapatanRow);
-
-    const totalTransaksiRow = worksheet.addRow({ subtotal: 'TOTAL TRANSAKSI', total_struk: totalTransaksi });
-    totalTransaksiRow.getCell('subtotal').font = { bold: true };
-    totalTransaksiRow.getCell('total_struk').font = { bold: true };
-    totalRows.push(totalTransaksiRow);
-
-    const totalItemRow = worksheet.addRow({ subtotal: 'TOTAL ITEM', total_struk: totalItem });
-    totalItemRow.getCell('subtotal').font = { bold: true };
-    totalItemRow.getCell('total_struk').font = { bold: true };
-    totalRows.push(totalItemRow);
+    const colBeforeTotal = isAdmin ? 11 : 9;
     
-    if (isAdmin) {
-      const totalKeuntunganRow = worksheet.addRow({ subtotal: 'TOTAL LABA KOTOR', total_struk: totalKeuntungan });
-      totalKeuntunganRow.getCell('subtotal').font = { bold: true, color: { argb: 'FF9A6100' } };
-      totalKeuntunganRow.getCell('total_struk').font = { bold: true, color: { argb: 'FF9A6100' } };
-      totalKeuntunganRow.getCell('total_struk').numFmt = '"Rp "#,##0';
-      totalRows.push(totalKeuntunganRow);
-    }
+    const addTotalRow = (label, value, isMoney = false, customColor = null) => {
+       const row = worksheet.addRow({});
+       row.getCell(1).value = label;
+       row.getCell('total_struk').value = value;
+       
+       const cellLabel = row.getCell(1);
+       const cellValue = row.getCell('total_struk');
 
-    // Format border untuk area total
-    totalRows.forEach(row => {
-      row.getCell('subtotal').border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-      row.getCell('total_struk').border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-    });
+       cellLabel.font = { bold: true, color: customColor || { argb: 'FF000000' } };
+       cellLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+       cellValue.font = { bold: true, color: customColor || { argb: 'FF000000' } };
+       if (isMoney) cellValue.numFmt = '"Rp "#,##0';
+       
+       // Merge dari kolom 1 sampai 1 kolom sebelum 'total_struk'
+       worksheet.mergeCells(row.number, 1, row.number, colBeforeTotal);
+       
+       // Beri border
+       cellLabel.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+       cellValue.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+    };
+
+    addTotalRow('TOTAL PENDAPATAN', totalPendapatan, true);
+    addTotalRow('TOTAL TRANSAKSI', totalTransaksi, false);
+    addTotalRow('TOTAL ITEM', totalItem, false);
+    if (isAdmin) {
+      addTotalRow('TOTAL LABA KOTOR', totalKeuntungan, true, { argb: 'FF9A6100' });
+    }
 
     // Buat Blob dan Download
     const buffer = await workbook.xlsx.writeBuffer();
