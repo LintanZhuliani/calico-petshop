@@ -98,9 +98,9 @@ function AddProductModal({ onClose, onSave }) {
       id: generateId('p'),
       name: form.name,
       category: finalCategory,
-      buyPrice: Number(form.buyPrice),
-      price: Number(form.price),
-      barcode: form.barcode || generateId('BAR'),
+      buyPrice: form.buyPrice ? Number(String(form.buyPrice).replace(/\./g, '')) : 0,
+      price: form.price ? Number(String(form.price).replace(/\./g, '')) : 0,
+      barcode: form.barcode || generateId('bc'),
       image: form.image,
       minStock: Number(form.minStock),
       batches: form.qty
@@ -154,8 +154,8 @@ function AddProductModal({ onClose, onSave }) {
           )}
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <InputField label="Harga Beli (Rp)" type="number" value={form.buyPrice} onChange={v => handle('buyPrice', v)} placeholder="20000" />
-          <InputField label="Harga Jual (Rp)*" type="number" value={form.price} onChange={v => handle('price', v)} placeholder="28000" />
+          <InputField label="Harga Beli (Rp)" type="text" value={form.buyPrice} onChange={v => handle('buyPrice', v)} placeholder="20000" />
+          <InputField label="Harga Jual (Rp)*" type="text" value={form.price} onChange={v => handle('price', v)} placeholder="28000" />
         </div>
         <InputField label="Barcode" value={form.barcode} onChange={v => handle('barcode', v)} placeholder="8888888001" />
         <InputField label="Stok Minimum (Alert)" type="number" value={form.minStock} onChange={v => handle('minStock', v)} placeholder="10" />
@@ -187,8 +187,8 @@ function AddStockModal({ product, onClose, onSave }) {
       qty: Number(qty),
       expiredDate: expiredDate || null,
       receivedDate: new Date().toISOString().split('T')[0],
-      buyPrice: buyPrice ? Number(buyPrice) : null,
-      sellPrice: sellPrice ? Number(sellPrice) : null,
+      buyPrice: buyPrice ? Number(String(buyPrice).replace(/\./g, '')) : null,
+      sellPrice: sellPrice ? Number(String(sellPrice).replace(/\./g, '')) : null,
     });
   };
   return (
@@ -208,7 +208,6 @@ function AddStockModal({ product, onClose, onSave }) {
         <InputField label="Jumlah Masuk*" type="number" value={qty} onChange={setQty} placeholder="0" />
         <InputField label="Tanggal Expired (kosongkan jika tidak ada)" type="date" value={expiredDate} onChange={setExpiredDate} />
         
-        {/* Per-Batch Pricing */}
         <div className="bg-blue-50 rounded-2xl p-4 space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-blue-500 !text-[18px]">info</span>
@@ -218,8 +217,8 @@ function AddStockModal({ product, onClose, onSave }) {
             Kosongkan jika harga masih sama. Isi jika harga modal atau harga jual berubah untuk stok batch ini.
           </p>
         </div>
-        <InputField label={`Harga Modal Baru (saat ini: Rp ${(product.buyPrice || 0).toLocaleString('id-ID')})`} type="number" value={buyPrice} onChange={setBuyPrice} placeholder={`${product.buyPrice || 0}`} />
-        <InputField label={`Harga Jual Baru (saat ini: Rp ${(product.price || 0).toLocaleString('id-ID')})`} type="number" value={sellPrice} onChange={setSellPrice} placeholder={`${product.price || 0}`} />
+        <InputField label={`Harga Modal Baru (saat ini: Rp ${(product.buyPrice || 0).toLocaleString('id-ID')})`} type="text" value={buyPrice} onChange={setBuyPrice} placeholder={`${product.buyPrice || 0}`} />
+        <InputField label={`Harga Jual Baru (saat ini: Rp ${(product.price || 0).toLocaleString('id-ID')})`} type="text" value={sellPrice} onChange={setSellPrice} placeholder={`${product.price || 0}`} />
 
         <button onClick={handleSave} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all">
           + Tambah Stok
@@ -241,7 +240,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onUpdate(batch.id, Number(qty), date || null, buyPrice ? Number(buyPrice) : null, sellPrice ? Number(sellPrice) : null);
+      await onUpdate(batch.id, Number(qty), date || null, buyPrice ? Number(String(buyPrice).replace(/\./g, '')) : null, sellPrice ? Number(String(sellPrice).replace(/\./g, '')) : null);
       setIsEditing(false);
     } catch (e) {
       alert("Gagal update sesi: " + e.message);
@@ -351,7 +350,6 @@ function EditProductModal({ product, onClose, onSave }) {
       body: JSON.stringify({ qty, expiredDate, buyPrice, sellPrice })
     });
     setLocalBatches(prev => prev.map(b => b.id === batchId ? { ...b, qty, expiredDate, buyPrice, sellPrice } : b));
-    // Update local form stock to reflect changes
     const newTotal = localBatches.map(b => b.id === batchId ? qty : b.qty).reduce((a, b) => a + b, 0);
     handle('stock', newTotal);
   };
@@ -383,22 +381,24 @@ function EditProductModal({ product, onClose, onSave }) {
 
   const handleSave = async () => {
     if (!form.name || !form.price) return;
-    const finalCategory = showCustomCat ? customCat.trim() : form.category;
-    if (!finalCategory) return;
-
-      // 1) Save changes (product update)
+    try {
+      const finalCategory = showCustomCat ? customCat.trim() : form.category;
+      if (!finalCategory) return;
       await onSave(
         product.id, 
         {
           name: form.name,
           category: finalCategory,
-          buyPrice: Number(form.buyPrice) || 0,
-          price: Number(form.price),
+          buyPrice: form.buyPrice ? Number(String(form.buyPrice).replace(/\./g, '')) : 0,
+          price: form.price ? Number(String(form.price).replace(/\./g, '')) : 0,
           barcode: form.barcode,
           minStock: Number(form.minStock),
           image: form.image || null,
         }
       );
+    } catch (e) {
+      alert("Gagal menyimpan produk: " + e.message);
+    }
   };
 
   return (
