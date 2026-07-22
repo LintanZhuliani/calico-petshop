@@ -28,6 +28,7 @@ export default function RiwayatPage() {
   // States for Transaction Detail Modal
   const [selectedTx, setSelectedTx] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedItemDetail, setSelectedItemDetail] = useState(null);
 
   const fetchTransactions = () => {
     setLoading(true);
@@ -338,9 +339,13 @@ export default function RiwayatPage() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
               <h2 className="font-extrabold text-slate-800 text-lg mb-4">Pesanan</h2>
               
-              <div className="space-y-4 mb-4 mt-2">
+              <div className="space-y-2 mb-4 mt-2">
                 {(selectedTx.items || []).map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-start text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                  <div 
+                    key={idx} 
+                    onClick={() => setSelectedItemDetail(item)}
+                    className="flex justify-between items-start text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors rounded-xl p-2 -mx-2"
+                  >
                     <div className="flex-1 pr-4 min-w-0">
                       <p className="font-semibold text-slate-800 leading-tight">{item.productName}</p>
                       <p className="text-xs text-slate-500 mt-1.5">{item.qty} x {formatRupiah(item.price)}</p>
@@ -399,6 +404,38 @@ export default function RiwayatPage() {
                   >
                     Hapus
                   </button>
+                </div>
+              </div>
+            )}
+            {/* Pop up detail produk */}
+            {selectedItemDetail && (
+              <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedItemDetail(null)}>
+                <div className="bg-white rounded-[32px] w-full max-w-xs overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 relative" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => setSelectedItemDetail(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 transition-colors">
+                    <span className="material-symbols-outlined !text-[20px]">close</span>
+                  </button>
+                  <div className="p-6">
+                    <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center mb-4 text-blue-500 shadow-sm">
+                      <span className="material-symbols-outlined !text-[32px]">shopping_bag</span>
+                    </div>
+                    <h3 className="font-bold text-slate-800 text-xl mb-4 pr-4 leading-tight">{selectedItemDetail.productName}</h3>
+                    <div className="space-y-4 bg-slate-50 rounded-2xl p-4">
+                      <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
+                        <span className="text-slate-500 font-medium">Harga Jual</span>
+                        <span className="font-extrabold text-slate-800">{formatRupiah(selectedItemDetail.price)}</span>
+                      </div>
+                      {isAdmin && (
+                        <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
+                          <span className="text-slate-500 font-medium flex items-center gap-1">Harga Modal <span className="material-symbols-outlined !text-[14px] text-yellow-600" title="Informasi rahasia Admin">lock</span></span>
+                          <span className="font-extrabold text-yellow-600">{formatRupiah(selectedItemDetail.buyPrice || 0)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-500 font-medium">Jumlah Beli</span>
+                        <span className="font-bold text-slate-800">{selectedItemDetail.qty} Item</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
