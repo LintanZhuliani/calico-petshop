@@ -346,12 +346,16 @@ export default function PenjualanPage() {
         </div>
         
         {isAdmin && (
-          <div className="flex bg-slate-100 p-1 rounded-2xl">
+          <div className="flex bg-slate-100 pt-2 px-2 gap-1 rounded-t-2xl rounded-b-lg border-b border-slate-200">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `bg-white ${primaryText} shadow-sm` : `text-slate-500 hover:${primaryLight} hover:${primaryText}`}`}
+                className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-all rounded-t-xl rounded-b-none ${
+                  reportType === type 
+                    ? `bg-white ${primaryText} shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]` 
+                    : `text-slate-500 hover:${primaryLight} hover:${primaryText}`
+                }`}
               >
                 {type}
               </button>
