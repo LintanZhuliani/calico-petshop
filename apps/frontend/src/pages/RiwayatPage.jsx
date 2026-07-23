@@ -216,15 +216,15 @@ export default function RiwayatPage() {
         </div>
 
         {isAdmin && (
-          <div className="flex bg-slate-100/80 p-1.5 gap-1.5 rounded-2xl border border-slate-200/60 mx-auto w-full mt-2">
+          <div className="flex gap-2 mt-2 px-1 pb-1 overflow-x-auto hide-scrollbar">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 ${
+                className={`px-4 py-1.5 text-sm font-semibold capitalize rounded-full transition-all duration-200 whitespace-nowrap ${
                   reportType === type 
-                    ? `bg-white ${primaryText} shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-slate-900/5 scale-[1.02]` 
-                    : `text-slate-500 hover:bg-orange-50 hover:${primaryText}`
+                    ? `${primaryLight} ${primaryText} border border-transparent` 
+                    : `bg-white border border-slate-200 text-slate-500 hover:bg-slate-50`
                 }`}
               >
                 {type}
