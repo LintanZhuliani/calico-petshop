@@ -628,7 +628,7 @@ export default function ProfilePage() {
 
                   <div className="bg-blue-50 p-4 rounded-xl text-blue-800 border border-blue-100">
                     <p className="font-bold mb-1 flex items-center gap-2"><span className="material-symbols-outlined !text-[18px]">support_agent</span>Butuh Bantuan IT?</p>
-                    <p className="text-xs mt-1">Hubungi IT Support di extension 101 atau kirim email ke <strong>support@calico.com</strong></p>
+                    <p className="text-xs mt-1">Hubungi IT Support dengan kirim email ke <strong>lintanzhuliani840@gmail.com</strong></p>
                   </div>
                 </div>
               )}
