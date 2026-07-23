@@ -550,11 +550,11 @@ export default function ProfilePage() {
                       <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
                         <p className="font-bold text-orange-800 mb-2 flex items-center gap-2"><span className="material-symbols-outlined !text-[16px]">admin_panel_settings</span>Panduan Admin</p>
                         <ul className="list-disc pl-5 space-y-1.5 text-orange-700 text-xs">
-                          <li><strong>Dasbor:</strong> Pantau ringkasan pendapatan, stok kritis, dan peringatan barang kedaluwarsa dari seluruh cabang.</li>
-                          <li><strong>Produk:</strong> Tambah, edit, atau hapus produk. Atur harga jual, barcode, dan gambar produk.</li>
-                          <li><strong>Penjualan:</strong> Lihat grafik penjualan harian, perbandingan antar cabang, dan unduh laporan ke Excel (.csv).</li>
-                          <li><strong>Transfer:</strong> Kirim stok barang dari pusat ke cabang. Pantau status pengiriman (di jalan / selesai / ada selisih).</li>
-                          <li><strong>Profil:</strong> Kelola karyawan, atur preferensi notifikasi, dan ganti password keamanan.</li>
+                          <li><strong>Dasbor:</strong> Memantau ringkasan pendapatan harian, informasi stok kritis, dan notifikasi kedaluwarsa secara aktual (*real-time*).</li>
+                          <li><strong>Kelola Produk:</strong> Mengelola inventaris secara menyeluruh, termasuk fungsi menambah, mengedit, dan menghapus produk. Fitur ini juga digunakan untuk menyesuaikan harga modal, harga jual, *barcode*, serta mengedit kuantitas stok.</li>
+                          <li><strong>Checkout:</strong> Berfungsi khusus sebagai modul *Point of Sale* (POS) untuk memproses dan mencatat transaksi penjualan pelanggan.</li>
+                          <li><strong>Riwayat & Analitik:</strong> Meninjau daftar transaksi yang telah berlangsung, mengunduh laporan penjualan bulanan, mencetak ulang struk, serta melakukan pembatalan transaksi (*Refund*).</li>
+                          <li><strong>Profil:</strong> Pusat pengaturan akun untuk mengubah kata sandi, menyesuaikan preferensi notifikasi, dan mengakses bantuan sistem.</li>
                         </ul>
                       </div>
                     </>
@@ -563,11 +563,11 @@ export default function ProfilePage() {
                       <div className="bg-red-50 p-4 rounded-xl border border-red-100">
                         <p className="font-bold text-red-800 mb-2 flex items-center gap-2"><span className="material-symbols-outlined !text-[16px]">support_agent</span>Panduan Kasir</p>
                         <ul className="list-disc pl-5 space-y-1.5 text-red-700 text-xs">
-                          <li><strong>Dasbor:</strong> Lihat ringkasan penjualan cabang Anda hari ini dan peringatan stok.</li>
-                          <li><strong>Produk (POS):</strong> Gunakan keranjang belanja interaktif. Masukkan jumlah uang pelanggan, dan sistem otomatis menghitung kembalian.</li>
-                          <li><strong>Scan:</strong> Arahkan kamera ke barcode produk untuk langsung menemukan barang tanpa mengetik manual.</li>
-                          <li><strong>Transfer:</strong> Terima kiriman barang dari pusat. Cek fisik barang lalu konfirmasi jumlah yang diterima.</li>
-                          <li><strong>Profil:</strong> Ganti password dan atur preferensi notifikasi pribadi.</li>
+                          <li><strong>Dasbor:</strong> Menampilkan ringkasan pendapatan operasional *shift* berjalan serta memfasilitasi pembuatan Laporan Tutup Kasir (Rekap Kasir) via WhatsApp.</li>
+                          <li><strong>Checkout:</strong> Menu utama yang digunakan untuk melayani transaksi pelanggan. Mendukung penggunaan pemindai *barcode* maupun pencarian manual.</li>
+                          <li><strong>Kelola Produk:</strong> Memberikan akses hanya untuk melihat daftar inventaris yang tersedia (tanpa hak akses untuk memodifikasi data harga maupun jumlah stok).</li>
+                          <li><strong>Notifikasi:</strong> Menyajikan peringatan sistematis terkait barang yang kehabisan stok atau akan segera memasuki masa kedaluwarsa.</li>
+                          <li><strong>Profil:</strong> Halaman khusus untuk memperbarui kata sandi keamanan Anda dan membaca instruksi teknis penggunaan sistem.</li>
                         </ul>
                       </div>
                     </>
