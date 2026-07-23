@@ -10,7 +10,7 @@ export const dashboardService = {
   /**
    * Get dashboard summary (Total products, total stock, today's revenue, today's transactions)
    */
-  async getSummary(branchId?: string) {
+  async getSummary(branchId?: string, cashierId?: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -41,7 +41,8 @@ export const dashboardService = {
     .where(and(
       gte(transaction.date, today),
       lt(transaction.date, tomorrow),
-      branchId ? eq(transaction.branchId, branchId) : undefined
+      branchId ? eq(transaction.branchId, branchId) : undefined,
+      cashierId ? eq(transaction.cashierId, cashierId) : undefined
     ));
 
     const todayResult = await todayQuery;

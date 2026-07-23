@@ -163,7 +163,7 @@ export const transactionService = {
   /**
    * Daily summary — total transactions, revenue, breakdown per payment method.
    */
-  async getSummary(filters: { date?: string; branchId?: string }) {
+  async getSummary(filters: { date?: string; branchId?: string; cashierId?: string }) {
     const txs = await this.getAll(filters);
 
     const total = txs.reduce((s, tx) => s + tx.total, 0);

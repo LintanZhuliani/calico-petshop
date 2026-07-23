@@ -14,6 +14,7 @@ router.get("/summary", requireAuth, async (req, res, next) => {
     const summary = await transactionService.getSummary({
       date: req.query.date as string,
       branchId: (req.query.branchId as string) || req.user!.branchId || undefined,
+      cashierId: req.user!.role === 'admin' ? (req.query.cashierId as string) : req.user!.id,
     });
     res.json(summary);
   } catch (err) {
@@ -45,7 +46,7 @@ router.get("/", requireAuth, async (req, res, next) => {
     const txs = await transactionService.getAll({
       date: req.query.date as string,
       branchId: (req.query.branchId as string) || req.user!.branchId || undefined,
-      cashierId: req.query.cashierId as string,
+      cashierId: req.user!.role === 'admin' ? (req.query.cashierId as string) : req.user!.id,
     });
     res.json(txs);
   } catch (err) {
