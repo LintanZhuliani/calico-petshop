@@ -563,11 +563,13 @@ export default function ProfilePage() {
                       <div className="bg-red-50 p-4 rounded-xl border border-red-100">
                         <p className="font-bold text-red-800 mb-2 flex items-center gap-2"><span className="material-symbols-outlined !text-[16px]">support_agent</span>Panduan Kasir</p>
                         <ul className="list-disc pl-5 space-y-1.5 text-red-700 text-xs">
-                          <li><strong>Dasbor:</strong> Menampilkan ringkasan pendapatan operasional shift berjalan serta memfasilitasi pembuatan Laporan Tutup Kasir (Rekap Kasir) via WhatsApp.</li>
-                          <li><strong>Checkout:</strong> Menu utama yang digunakan untuk melayani transaksi pelanggan. Mendukung penggunaan pemindai barcode maupun pencarian manual.</li>
-                          <li><strong>Kelola Produk:</strong> Memberikan akses hanya untuk melihat daftar inventaris yang tersedia (tanpa hak akses untuk memodifikasi data harga maupun jumlah stok).</li>
-                          <li><strong>Notifikasi:</strong> Menyajikan peringatan sistematis terkait barang yang kehabisan stok atau akan segera memasuki masa kedaluwarsa.</li>
-                          <li><strong>Profil:</strong> Halaman khusus untuk memperbarui kata sandi keamanan Anda dan membaca instruksi teknis penggunaan sistem.</li>
+                          <li><strong>Dasbor:</strong> Menampilkan ringkasan pendapatan operasional shift berjalan.</li>
+                          <li><strong>Penjualan:</strong> Menu utama yang digunakan untuk melayani transaksi pelanggan. Mendukung penggunaan pemindai barcode maupun pencarian manual.</li>
+                          <li><strong>Produk:</strong> Memberikan akses hanya untuk melihat daftar inventaris yang tersedia (tanpa hak akses untuk memodifikasi data harga maupun jumlah stok).</li>
+                          <li><strong>Tutup Kasir:</strong> Memfasilitasi pembuatan Laporan Tutup Kasir (Rekap Kasir) harian via WhatsApp.</li>
+                          <li><strong>Transfer:</strong> Menu untuk memproses pemindahan barang antar cabang.</li>
+                          <li><strong>Riwayat:</strong> Meninjau daftar riwayat transaksi penjualan dan riwayat peringatan stok (Notifikasi).</li>
+                          <li><strong>Profil:</strong> Halaman khusus untuk memperbarui kata sandi keamanan Anda dan membaca instruksi teknis sistem.</li>
                         </ul>
                       </div>
                     </>
@@ -598,31 +600,39 @@ export default function ProfilePage() {
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara menginput barang dengan harga modal baru?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Jika terdapat penambahan barang, baik dengan harga modal yang baru maupun tanpa harga modal baru, proses tersebut dapat dilakukan melalui fitur "+ Stok".</p>
                           </details>
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa fungsi dari menu Checkout dan Kelola Produk?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Menu Checkout digunakan secara khusus untuk memproses transaksi penjualan kepada pelanggan. Sementara itu, menu Kelola Produk diperuntukkan bagi pengelolaan data produk pada sistem.</p>
+                          </details>
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana sistem notifikasi beroperasi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Sistem akan memunculkan notifikasi apabila terdapat barang yang hampir kedaluwarsa. Apabila barang telah melewati batas kedaluwarsa, notifikasi tersebut akan dipindahkan ke Riwayat Notifikasi. Barang dengan status stok habis juga akan masuk ke dalam notifikasi, dan notifikasi tersebut baru akan dihilangkan setelah data stok diperbarui.</p>
+                          </details>
                         </>
                       ) : (
                         <>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mencari produk di Kasir?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat menggunakan kolom pencarian, memindai barcode, atau menekan tombol filter kategori yang berada di bagian atas layar.</p>
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mencari produk di menu Penjualan?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat menggunakan kolom pencarian, memindai barcode, atau menekan tombol filter kategori yang berada di bagian atas layar Penjualan.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana prosedur penutupan shift harian?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Silakan buka Dasbor, lalu pilih "Rekap Kasir". Masukkan nominal uang fisik yang terdapat di laci. Sistem akan secara otomatis memformat laporan lengkap untuk dikirimkan melalui WhatsApp kepada Admin.</p>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Silakan buka menu Tutup Kasir. Masukkan nominal uang fisik yang terdapat di laci. Sistem akan secara otomatis memformat laporan lengkap untuk dikirimkan melalui WhatsApp kepada Admin.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Mengapa saya tidak diizinkan membatalkan transaksi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Fitur pembatalan (Refund) dan modifikasi data merupakan fitur yang bersifat sensitif, sehingga kewenangan tersebut dibatasi hanya untuk pemilik toko (Admin).</p>
                           </details>
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa fungsi dari menu Penjualan dan Produk?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Menu Penjualan digunakan khusus untuk memproses transaksi dengan pelanggan. Sementara menu Produk hanya untuk melihat daftar barang yang tersedia tanpa bisa diubah.</p>
+                          </details>
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mengecek notifikasi stok?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Peringatan barang kehabisan stok atau hampir kedaluwarsa dapat dipantau melalui menu Riwayat Notifikasi agar Anda dapat segera menginformasikannya ke Admin.</p>
+                          </details>
                         </>
                       )}
-                      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa fungsi dari menu Checkout dan Kelola Produk?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                        <p className="px-3 pb-3 text-xs text-slate-500">Menu Checkout digunakan secara khusus untuk memproses transaksi penjualan kepada pelanggan. Sementara itu, menu Kelola Produk diperuntukkan bagi pengelolaan data produk pada sistem.</p>
-                      </details>
-                      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana sistem notifikasi beroperasi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                        <p className="px-3 pb-3 text-xs text-slate-500">Sistem akan memunculkan notifikasi apabila terdapat barang yang hampir kedaluwarsa. Apabila barang telah melewati batas kedaluwarsa, notifikasi tersebut akan dipindahkan ke Riwayat Notifikasi. Barang dengan status stok habis juga akan masuk ke dalam notifikasi, dan notifikasi tersebut baru akan dihilangkan setelah data stok diperbarui.</p>
-                      </details>
                     </div>
                   </div>
 
