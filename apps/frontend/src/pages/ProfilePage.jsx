@@ -550,10 +550,10 @@ export default function ProfilePage() {
                       <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
                         <p className="font-bold text-orange-800 mb-2 flex items-center gap-2"><span className="material-symbols-outlined !text-[16px]">admin_panel_settings</span>Panduan Admin</p>
                         <ul className="list-disc pl-5 space-y-1.5 text-orange-700 text-xs">
-                          <li><strong>Dasbor:</strong> Memantau ringkasan pendapatan harian, informasi stok kritis, dan notifikasi kedaluwarsa secara aktual (*real-time*).</li>
-                          <li><strong>Kelola Produk:</strong> Mengelola inventaris secara menyeluruh, termasuk fungsi menambah, mengedit, dan menghapus produk. Fitur ini juga digunakan untuk menyesuaikan harga modal, harga jual, *barcode*, serta mengedit kuantitas stok.</li>
-                          <li><strong>Checkout:</strong> Berfungsi khusus sebagai modul *Point of Sale* (POS) untuk memproses dan mencatat transaksi penjualan pelanggan.</li>
-                          <li><strong>Riwayat & Analitik:</strong> Meninjau daftar transaksi yang telah berlangsung, mengunduh laporan penjualan bulanan, mencetak ulang struk, serta melakukan pembatalan transaksi (*Refund*).</li>
+                          <li><strong>Dasbor:</strong> Memantau ringkasan pendapatan harian, informasi stok kritis, dan notifikasi kedaluwarsa secara aktual (real-time).</li>
+                          <li><strong>Kelola Produk:</strong> Mengelola inventaris secara menyeluruh, termasuk fungsi menambah, mengedit, dan menghapus produk. Fitur ini juga digunakan untuk menyesuaikan harga modal, harga jual, barcode, serta mengedit kuantitas stok.</li>
+                          <li><strong>Checkout:</strong> Berfungsi khusus sebagai modul Point of Sale (POS) untuk memproses dan mencatat transaksi penjualan pelanggan.</li>
+                          <li><strong>Riwayat & Analitik:</strong> Meninjau daftar transaksi yang telah berlangsung, mengunduh laporan penjualan bulanan, mencetak ulang struk, serta melakukan pembatalan transaksi (Refund).</li>
                           <li><strong>Profil:</strong> Pusat pengaturan akun untuk mengubah kata sandi, menyesuaikan preferensi notifikasi, dan mengakses bantuan sistem.</li>
                         </ul>
                       </div>
@@ -563,8 +563,8 @@ export default function ProfilePage() {
                       <div className="bg-red-50 p-4 rounded-xl border border-red-100">
                         <p className="font-bold text-red-800 mb-2 flex items-center gap-2"><span className="material-symbols-outlined !text-[16px]">support_agent</span>Panduan Kasir</p>
                         <ul className="list-disc pl-5 space-y-1.5 text-red-700 text-xs">
-                          <li><strong>Dasbor:</strong> Menampilkan ringkasan pendapatan operasional *shift* berjalan serta memfasilitasi pembuatan Laporan Tutup Kasir (Rekap Kasir) via WhatsApp.</li>
-                          <li><strong>Checkout:</strong> Menu utama yang digunakan untuk melayani transaksi pelanggan. Mendukung penggunaan pemindai *barcode* maupun pencarian manual.</li>
+                          <li><strong>Dasbor:</strong> Menampilkan ringkasan pendapatan operasional shift berjalan serta memfasilitasi pembuatan Laporan Tutup Kasir (Rekap Kasir) via WhatsApp.</li>
+                          <li><strong>Checkout:</strong> Menu utama yang digunakan untuk melayani transaksi pelanggan. Mendukung penggunaan pemindai barcode maupun pencarian manual.</li>
                           <li><strong>Kelola Produk:</strong> Memberikan akses hanya untuk melihat daftar inventaris yang tersedia (tanpa hak akses untuk memodifikasi data harga maupun jumlah stok).</li>
                           <li><strong>Notifikasi:</strong> Menyajikan peringatan sistematis terkait barang yang kehabisan stok atau akan segera memasuki masa kedaluwarsa.</li>
                           <li><strong>Profil:</strong> Halaman khusus untuk memperbarui kata sandi keamanan Anda dan membaca instruksi teknis penggunaan sistem.</li>
@@ -603,7 +603,7 @@ export default function ProfilePage() {
                         <>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mencari produk di Kasir?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat menggunakan kolom pencarian, memindai *barcode*, atau menekan tombol filter kategori yang berada di bagian atas layar.</p>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat menggunakan kolom pencarian, memindai barcode, atau menekan tombol filter kategori yang berada di bagian atas layar.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana prosedur penutupan shift harian?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
@@ -611,7 +611,7 @@ export default function ProfilePage() {
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Mengapa saya tidak diizinkan membatalkan transaksi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Fitur pembatalan (*Refund*) dan modifikasi data merupakan fitur yang bersifat sensitif, sehingga kewenangan tersebut dibatasi hanya untuk pemilik toko (Admin).</p>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Fitur pembatalan (Refund) dan modifikasi data merupakan fitur yang bersifat sensitif, sehingga kewenangan tersebut dibatasi hanya untuk pemilik toko (Admin).</p>
                           </details>
                         </>
                       )}
