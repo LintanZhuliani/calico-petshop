@@ -334,8 +334,8 @@ export default function PenjualanPage() {
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
-        <div className="flex items-center gap-3">
+      <header className="bg-white pt-4 sticky top-0 z-40 flex flex-col">
+        <div className="flex items-center gap-3 px-5 mb-3">
           <button 
             onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
             className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
@@ -345,22 +345,24 @@ export default function PenjualanPage() {
           <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan & Analitik</h1>
         </div>
         
-        {isAdmin && (
-          <div className="flex gap-2 mt-2 px-1 pb-1 overflow-x-auto hide-scrollbar">
+        {isAdmin ? (
+          <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`px-4 py-1.5 text-sm font-semibold capitalize rounded-full transition-all duration-200 whitespace-nowrap ${
+                className={`px-6 py-2 text-sm font-semibold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
                   reportType === type 
-                    ? `${primaryLight} ${primaryText} border border-transparent` 
-                    : `bg-white border border-slate-200 text-slate-500 hover:bg-slate-50`
+                    ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
+                    : `border-transparent text-slate-500 hover:bg-slate-50`
                 }`}
               >
                 {type}
               </button>
             ))}
           </div>
+        ) : (
+          <div className="border-b border-slate-100 w-full" />
         )}
       </header>
 
