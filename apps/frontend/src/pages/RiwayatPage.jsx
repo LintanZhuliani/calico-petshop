@@ -216,12 +216,12 @@ export default function RiwayatPage() {
         </div>
 
         {isAdmin && (
-          <div className="flex gap-2">
+          <div className="flex bg-slate-100 p-1 rounded-2xl">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}
+                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `${primaryBg} text-white shadow-md` : 'text-slate-500 hover:text-slate-700'}`}
               >
                 {type}
               </button>
