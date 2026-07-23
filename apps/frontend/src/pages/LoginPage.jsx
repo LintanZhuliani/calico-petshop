@@ -265,7 +265,7 @@ export default function LoginPage() {
 
         {/* Footer info */}
         <p className="text-slate-400 text-xs font-medium text-center z-10 relative">
-          Sistem POS Khusus Karyawan<br/>© 2026 Calico's Pet Care
+          Sistem POS Khusus Karyawan<br/>© {new Date().getFullYear()} Calico's Pet Care
         </p>
       </main>
 
