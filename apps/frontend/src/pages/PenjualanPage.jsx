@@ -345,24 +345,22 @@ export default function PenjualanPage() {
           <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan & Analitik</h1>
         </div>
         
-        {isAdmin ? (
-          <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
+        {isAdmin && (
+          <div className="flex gap-3 px-5 pb-4 overflow-x-auto hide-scrollbar border-b border-slate-100">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`px-6 py-2 text-sm font-semibold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
+                className={`px-5 py-2 text-sm font-medium capitalize transition-all duration-200 rounded-lg border ${
                   reportType === type 
-                    ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
-                    : `border-transparent text-slate-500 hover:bg-slate-50`
+                    ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` 
+                    : `bg-white border-slate-300 text-slate-600 hover:bg-slate-50`
                 }`}
               >
                 {type}
               </button>
             ))}
           </div>
-        ) : (
-          <div className="border-b border-slate-100 w-full" />
         )}
       </header>
 
