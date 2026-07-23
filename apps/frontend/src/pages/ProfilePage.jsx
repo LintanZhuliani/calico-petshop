@@ -374,11 +374,11 @@ export default function ProfilePage() {
         {activeModal && activeModal !== 'logout' && activeModal !== 'edit_profile' && (
           <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
             <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pb-24 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
-              <div className="flex justify-between items-center mb-5 shrink-0">
-                <h3 className="font-headline font-bold text-slate-900 text-lg">
+              <div className="flex items-center relative mb-5 shrink-0">
+                <h3 className="font-headline font-bold text-slate-900 text-lg text-center w-full">
                   {MENU_ITEMS.find(m => m.id === activeModal)?.label || 'Modal'}
                 </h3>
-                <button onClick={() => {setActiveModal(null); setPassError(""); setPassSuccess(""); setShowAddForm(false);}} className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full">
+                <button onClick={() => {setActiveModal(null); setPassError(""); setPassSuccess(""); setShowAddForm(false);}} className="absolute right-0 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full flex items-center justify-center">
                   <span className="material-symbols-outlined !text-[20px]">close</span>
                 </button>
               </div>
@@ -626,9 +626,9 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="bg-blue-50 p-4 rounded-xl text-blue-800 border border-blue-100">
-                    <p className="font-bold mb-1 flex items-center gap-2"><span className="material-symbols-outlined !text-[18px]">support_agent</span>Butuh Bantuan IT?</p>
-                    <p className="text-xs mt-1">Hubungi IT Support dengan kirim email ke <strong>lintanzhuliani840@gmail.com</strong></p>
+                  <div className="bg-blue-50 p-4 rounded-xl text-blue-800 border border-blue-100 text-center flex flex-col items-center">
+                    <p className="font-bold mb-1 flex items-center justify-center gap-2"><span className="material-symbols-outlined !text-[18px]">support_agent</span>Butuh Bantuan IT?</p>
+                    <p className="text-xs mt-1">Hubungi IT Support dengan kirim email ke <strong className="block mt-0.5">lintanzhuliani840@gmail.com</strong></p>
                   </div>
                 </div>
               )}
