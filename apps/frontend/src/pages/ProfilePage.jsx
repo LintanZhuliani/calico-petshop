@@ -580,40 +580,52 @@ export default function ProfilePage() {
                         <>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara melihat Margin Profit?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Saat Anda menambah atau mengedit produk di menu Inventaris, masukkan Harga Modal dan Harga Jual. Sistem akan otomatis menghitung dan menampilkan persentase margin profit Anda.</p>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Saat Anda menambah atau mengedit produk di menu Inventaris, masukkan Harga Modal dan Harga Jual. Sistem akan secara otomatis menghitung dan menampilkan persentase margin profit Anda.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara membatalkan transaksi (Refund)?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Buka menu Riwayat Transaksi. Temukan transaksi yang salah, klik struknya, lalu tekan tombol merah "Batalkan Transaksi". Stok produk akan otomatis dikembalikan ke inventaris.</p>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Silakan buka menu Riwayat Transaksi. Temukan transaksi yang keliru, tekan ikon titik tiga pada transaksi tersebut, kemudian pilih opsi hapus. Stok produk akan dikembalikan ke inventaris secara otomatis.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apakah Kasir bisa melihat harga modal?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Tidak. Akun Kasir memiliki hak akses terbatas. Mereka tidak bisa melihat harga modal, margin profit, menu Manajemen Pengguna, atau membatalkan transaksi di masa lalu.</p>
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apakah Kasir dapat mengakses informasi harga modal?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Tidak. Akun Kasir memiliki hak akses yang terbatas. Mereka tidak memiliki izin untuk melihat harga modal, margin profit, menu Manajemen Pengguna, maupun membatalkan transaksi.</p>
+                          </details>
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana jika terjadi kesalahan saat menginput stok atau kedaluwarsa?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Apabila Anda salah memasukkan jumlah stok atau tanggal kedaluwarsa, Anda dapat mengubahnya dengan menekan ikon pensil yang terdapat pada fitur Edit Stok.</p>
+                          </details>
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara menginput barang dengan harga modal baru?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Jika terdapat penambahan barang, baik dengan harga modal yang baru maupun tanpa harga modal baru, proses tersebut dapat dilakukan melalui fitur "+ Stok".</p>
                           </details>
                         </>
                       ) : (
                         <>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mencari produk di Kasir?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat menggunakan kolom pencarian, memindai Barcode, atau menekan tombol filter kategori berbentuk kapsul (pill) di bagian atas layar.</p>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat menggunakan kolom pencarian, memindai *barcode*, atau menekan tombol filter kategori yang berada di bagian atas layar.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara tutup shift harian?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Buka Dasbor, klik "Rekap Kasir". Masukkan nominal uang fisik yang ada di laci. Sistem akan langsung memformat laporan lengkap untuk dikirim ke WhatsApp Admin.</p>
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana prosedur penutupan shift harian?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Silakan buka Dasbor, lalu pilih "Rekap Kasir". Masukkan nominal uang fisik yang terdapat di laci. Sistem akan secara otomatis memformat laporan lengkap untuk dikirimkan melalui WhatsApp kepada Admin.</p>
                           </details>
                           <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Mengapa saya tidak bisa membatalkan transaksi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                            <p className="px-3 pb-3 text-xs text-slate-500">Fitur pembatalan (Refund) dan penghapusan data bersifat sensitif sehingga hanya dapat dilakukan oleh pemilik toko (Admin).</p>
+                            <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Mengapa saya tidak diizinkan membatalkan transaksi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                            <p className="px-3 pb-3 text-xs text-slate-500">Fitur pembatalan (*Refund*) dan modifikasi data merupakan fitur yang bersifat sensitif, sehingga kewenangan tersebut dibatasi hanya untuk pemilik toko (Admin).</p>
                           </details>
                         </>
                       )}
                       <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Mengapa tampilan aplikasi berubah lebih terang?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                        <p className="px-3 pb-3 text-xs text-slate-500">Kami baru saja melakukan pembaruan desain! Seluruh latar belakang kini berwarna putih bersih (Full White) dengan tab ala browser untuk memberikan nuansa premium, lega, dan modern layaknya desain aplikasi populer saat ini.</p>
+                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa fungsi dari menu Checkout dan Kelola Produk?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                        <p className="px-3 pb-3 text-xs text-slate-500">Menu Checkout digunakan secara khusus untuk memproses transaksi penjualan kepada pelanggan. Sementara itu, menu Kelola Produk diperuntukkan bagi pengelolaan data produk pada sistem.</p>
                       </details>
                       <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa arti warna di Halaman Notifikasi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                        <p className="px-3 pb-3 text-xs text-slate-500">Warna Hitam = Sudah Kadaluarsa, Warna Merah = Stok Barang Habis (0), Warna Oranye = Hampir Kadaluarsa. Kotak produk yang kosong juga akan tampil sedikit memudar.</p>
+                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mengunduh aplikasi ini?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                        <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat mengunduh dan memasang aplikasi ini secara langsung dengan memilih opsi "Instal Aplikasi" atau "Tambahkan ke Layar Utama" (Add to Home Screen) pada pengaturan peramban (*browser*) Anda.</p>
+                      </details>
+                      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana sistem notifikasi beroperasi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
+                        <p className="px-3 pb-3 text-xs text-slate-500">Sistem akan memunculkan notifikasi apabila terdapat barang yang hampir kedaluwarsa. Apabila barang telah melewati batas kedaluwarsa, notifikasi tersebut akan dipindahkan ke Riwayat Notifikasi. Barang dengan status stok habis juga akan masuk ke dalam notifikasi, dan notifikasi tersebut baru akan dihilangkan setelah data stok diperbarui.</p>
                       </details>
                     </div>
                   </div>
