@@ -620,10 +620,6 @@ export default function ProfilePage() {
                         <p className="px-3 pb-3 text-xs text-slate-500">Menu Checkout digunakan secara khusus untuk memproses transaksi penjualan kepada pelanggan. Sementara itu, menu Kelola Produk diperuntukkan bagi pengelolaan data produk pada sistem.</p>
                       </details>
                       <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-                        <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mengunduh aplikasi ini?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
-                        <p className="px-3 pb-3 text-xs text-slate-500">Anda dapat mengunduh dan memasang aplikasi ini secara langsung dengan memilih opsi "Instal Aplikasi" atau "Tambahkan ke Layar Utama" (Add to Home Screen) pada pengaturan peramban (*browser*) Anda.</p>
-                      </details>
-                      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                         <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana sistem notifikasi beroperasi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                         <p className="px-3 pb-3 text-xs text-slate-500">Sistem akan memunculkan notifikasi apabila terdapat barang yang hampir kedaluwarsa. Apabila barang telah melewati batas kedaluwarsa, notifikasi tersebut akan dipindahkan ke Riwayat Notifikasi. Barang dengan status stok habis juga akan masuk ke dalam notifikasi, dan notifikasi tersebut baru akan dihilangkan setelah data stok diperbarui.</p>
                       </details>
