@@ -197,7 +197,7 @@ export default function DashboardPage() {
   const badgeCount = notifLowStockCount + expiringCount;
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
+    <div className={`bg-white min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Header ── */}

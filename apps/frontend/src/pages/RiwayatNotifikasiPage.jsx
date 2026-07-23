@@ -88,7 +88,7 @@ export default function RiwayatNotifikasiPage() {
   }, []);
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
+    <div className={`bg-white min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">

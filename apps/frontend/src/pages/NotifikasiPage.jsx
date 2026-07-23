@@ -56,7 +56,7 @@ export default function NotifikasiPage() {
   const outOfStockItems = validLowStock.filter(item => (item.totalStock || 0) <= 0);
 
   return (
-    <div className="bg-slate-100 min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
+    <div className="bg-white min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
       {/* Header */}
       <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between relative">
         <button

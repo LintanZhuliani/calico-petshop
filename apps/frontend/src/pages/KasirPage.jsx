@@ -465,7 +465,7 @@ export default function KasirPage() {
   const uniqueCats = ['Semua', ...new Set(products.map(p => p.category).filter(c => c && c.toLowerCase() !== 'semua'))];
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-0 md:pb-0 transition-all duration-300 ${
+    <div className={`bg-white min-h-screen flex flex-col font-body pb-0 md:pb-0 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Toast ── */}
@@ -526,8 +526,8 @@ export default function KasirPage() {
             <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
               {uniqueCats.map(c => (
                 <button key={c} onClick={() => setFilterCat(c)}
-                  className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}>
-                  {c === 'Semua' ? 'SEMUA' : c}
+                  className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterCat === c ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                  {c === 'Semua' ? 'Semua' : c}
                 </button>
               ))}
             </div>

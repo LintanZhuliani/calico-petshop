@@ -1090,7 +1090,7 @@ export default function ProductsPage() {
   const uniqueCats = ['Semua', ...new Set(products.map(p => p.category).filter(c => c && c.toLowerCase() !== 'semua'))];
 
   return (
-    <div className={`bg-slate-100 min-h-screen flex flex-col font-body pb-0 md:pb-0 transition-all duration-300 ${
+    <div className={`bg-white min-h-screen flex flex-col font-body pb-0 md:pb-0 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Toast ── */}
@@ -1162,17 +1162,24 @@ export default function ProductsPage() {
             <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
               <button 
                 onClick={() => { setFilterStatus('Semua'); setFilterCat('Semua'); }}
-                className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterStatus === 'Semua' && filterCat === 'Semua' ? `${primaryBg} text-white` : 'bg-slate-100 text-slate-500'}`}
+                className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterStatus === 'Semua' && filterCat === 'Semua' ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}
               >
-                SEMUA
+                Semua
               </button>
               <div className="w-px bg-slate-200 my-1" />
               {uniqueCats.filter(c => c !== 'Semua').map(c => (
                 <button key={c} onClick={() => setFilterCat(filterCat === c ? 'Semua' : c)}
-                  className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg transition-all ${filterCat === c ? `${primaryBg} text-white shadow-md` : 'bg-slate-100 text-slate-500'}`}>
+                  className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterCat === c ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
                   {c}
                 </button>
               ))}
+              <div className="w-px bg-slate-200 my-1" />
+              <button 
+                onClick={() => { setFilterStatus('hampir'); setFilterCat('Semua'); }}
+                className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterStatus === 'hampir' ? `bg-red-50 text-red-600 border-red-500 shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-red-500 hover:bg-slate-50'}`}
+              >
+                Hampir Expired
+              </button>
             </div>
           </header>
 
