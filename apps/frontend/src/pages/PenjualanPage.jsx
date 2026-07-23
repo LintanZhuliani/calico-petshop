@@ -345,29 +345,31 @@ export default function PenjualanPage() {
           <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan & Analitik</h1>
         </div>
         
-        {isAdmin && (
-          <div className="flex gap-3 px-5 pb-4 overflow-x-auto hide-scrollbar border-b border-slate-100">
+        {isAdmin ? (
+          <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`px-5 py-2 text-sm font-medium capitalize transition-all duration-200 rounded-lg border ${
+                className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
                   reportType === type 
-                    ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` 
-                    : `bg-white border-slate-300 text-slate-600 hover:bg-slate-50`
+                    ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
+                    : `border-transparent text-slate-500 hover:bg-slate-50`
                 }`}
               >
                 {type}
               </button>
             ))}
           </div>
+        ) : (
+          <div className="border-b-2 border-slate-200 w-full" />
         )}
       </header>
 
       <main className="px-5 py-4 space-y-4 w-full">
 
         {/* Navigasi Tanggal/Bulan/Tahun */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center justify-between">
           <button onClick={handlePrev} className="p-2 bg-slate-100 rounded-xl active:scale-90 transition-transform">
             <span className="material-symbols-outlined !text-[20px] text-slate-600">chevron_left</span>
           </button>
@@ -382,7 +384,7 @@ export default function PenjualanPage() {
 
         {/* Ringkasan Angka */}
         {isAdmin && (
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
               <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1 flex items-center gap-1">
                 Laba Kotor <span className="material-symbols-outlined !text-[14px] text-yellow-600">lock</span>
@@ -407,7 +409,7 @@ export default function PenjualanPage() {
         )}
 
         {/* Grafik Penjualan */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
           <p className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
             <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>monitoring</span>
             Tren Penjualan {reportType.charAt(0).toUpperCase() + reportType.slice(1)}
@@ -448,7 +450,7 @@ export default function PenjualanPage() {
 
         {/* Penjualan Per Cabang */}
         {filterBranch === 'semua' && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <p className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
               <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>store</span>
               Perbandingan Cabang
@@ -474,7 +476,7 @@ export default function PenjualanPage() {
         )}
 
         {/* Produk Terlaris */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
           <p className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
             <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>emoji_events</span>
             Produk Terlaris
@@ -484,7 +486,7 @@ export default function PenjualanPage() {
           ) : (
             <div className="space-y-2.5 mt-2">
               {topProducts.map((p, i) => (
-                <div key={i} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100/50">
+                <div key={i} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/50">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm ${
                     i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-200 text-slate-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-500'
                   }`}>{i + 1}</div>

@@ -171,7 +171,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
                 {NON_TUNAI_OPTS.map(opt => (
                   <button key={opt.key} onClick={() => setNonTunaiType(opt.key)}
                     className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border-2 font-bold text-sm transition-all active:scale-95
-                      ${nonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
+                      ${nonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
                     <span className="material-symbols-outlined !text-[28px]" style={{ fontVariationSettings: nonTunaiType === opt.key ? "'FILL' 1" : "'FILL' 0" }}>{opt.icon}</span>
                     {opt.label}
                   </button>
@@ -202,7 +202,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
                 {NON_TUNAI_OPTS.map(opt => (
                   <button key={opt.key} onClick={() => setSplitNonTunaiType(opt.key)}
                     className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 font-bold text-xs transition-all active:scale-95
-                      ${splitNonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-100 bg-slate-50 text-slate-400'}`}>
+                      ${splitNonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>
                     <span className="material-symbols-outlined !text-[22px]" style={{ fontVariationSettings: splitNonTunaiType === opt.key ? "'FILL' 1" : "'FILL' 0" }}>{opt.icon}</span>
                     {opt.label}
                   </button>
@@ -248,7 +248,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
         </div>
 
         {/* Footer: tombol konfirmasi */}
-        <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-100">
+        <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-200">
           <button
             onClick={handleConfirm}
             disabled={
@@ -478,7 +478,7 @@ export default function KasirPage() {
       <div className="flex flex-col flex-1 w-full min-h-screen">
         <div className="flex-1 flex flex-col shrink-0 w-full">
           {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-3 flex flex-col gap-3">
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 py-3 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <button 
@@ -553,7 +553,7 @@ export default function KasirPage() {
               return (
                 <div
                   key={p.id}
-                  className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-100'}`}
+                  className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-200'}`}
                   onClick={() => handleAddToCart(p)}
                 >
                   <div className="flex items-center gap-3 p-4">
@@ -648,7 +648,7 @@ export default function KasirPage() {
 
             {/* ── Footer ── */}
             {cart.length > 0 && (
-              <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-100 space-y-3">
+              <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-200 space-y-3">
                 <div className="flex justify-between font-bold text-slate-900">
                   <span>Total</span>
                   <span className={`${primaryText} text-lg`}>{formatRupiah(cartTotal)}</span>

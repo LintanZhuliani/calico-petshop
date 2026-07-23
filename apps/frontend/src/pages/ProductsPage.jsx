@@ -159,7 +159,7 @@ function AddProductModal({ onClose, onSave }) {
         </div>
         <InputField label="Barcode" value={form.barcode} onChange={v => handle('barcode', v)} placeholder="8888888001" />
         <InputField label="Stok Minimum (Alert)" type="number" value={form.minStock} onChange={v => handle('minStock', v)} placeholder="10" />
-        <div className="border-t border-slate-100 pt-3">
+        <div className="border-t border-slate-200 pt-3">
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-3">Stok Awal (Opsional)</p>
           <div className="grid grid-cols-2 gap-3">
             <InputField label="Jumlah" type="number" value={form.qty} onChange={v => handle('qty', v)} placeholder="0" />
@@ -676,7 +676,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
                 {NON_TUNAI_OPTS.map(opt => (
                   <button key={opt.key} onClick={() => setNonTunaiType(opt.key)}
                     className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border-2 font-bold text-sm transition-all active:scale-95
-                      ${nonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
+                      ${nonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
                     <span className="material-symbols-outlined !text-[28px]" style={{ fontVariationSettings: nonTunaiType === opt.key ? "'FILL' 1" : "'FILL' 0" }}>{opt.icon}</span>
                     {opt.label}
                   </button>
@@ -707,7 +707,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
                 {NON_TUNAI_OPTS.map(opt => (
                   <button key={opt.key} onClick={() => setSplitNonTunaiType(opt.key)}
                     className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 font-bold text-xs transition-all active:scale-95
-                      ${splitNonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-100 bg-slate-50 text-slate-400'}`}>
+                      ${splitNonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>
                     <span className="material-symbols-outlined !text-[22px]" style={{ fontVariationSettings: splitNonTunaiType === opt.key ? "'FILL' 1" : "'FILL' 0" }}>{opt.icon}</span>
                     {opt.label}
                   </button>
@@ -753,7 +753,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
         </div>
 
         {/* Footer: tombol konfirmasi */}
-        <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-100">
+        <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-200">
           <button
             onClick={handleConfirm}
             disabled={
@@ -1106,7 +1106,7 @@ export default function ProductsPage() {
         {/* Full-width container: Search, Filters, Product Grid */}
         <div className="flex-1 flex flex-col shrink-0 w-full">
           {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3 flex flex-col gap-3">
+          <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 pt-4 pb-3 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <button 
@@ -1203,7 +1203,7 @@ export default function ProductsPage() {
               return (
                 <div
                   key={p.id}
-                  className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-100'}`}
+                  className={`bg-white rounded-2xl border shadow-sm transition-all active:scale-[0.99] flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-200'}`}
                   onClick={() => !isAdmin && handleAddToCart(p)}
                 >
                   <div className="flex items-center gap-3 p-4">
@@ -1246,7 +1246,7 @@ export default function ProductsPage() {
                   </div>
                   {/* Admin Actions */}
                   {isAdmin && (
-                    <div className="border-t border-slate-100 flex">
+                    <div className="border-t border-slate-200 flex">
                       <button onClick={(e) => { e.stopPropagation(); setEditTarget(p); }}
                         className="flex-1 py-2.5 flex items-center justify-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors rounded-bl-2xl">
                         <span className="material-symbols-outlined !text-[16px]">edit</span> Edit
@@ -1327,7 +1327,7 @@ export default function ProductsPage() {
 
             {/* ── Footer ── */}
             {cart.length > 0 && (
-              <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-100 space-y-3">
+              <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-200 space-y-3">
                 <div className="flex justify-between font-bold text-slate-900">
                   <span>Total</span>
                   <span className="text-[#C0392B] text-lg">{formatRupiah(cartTotal)}</span>

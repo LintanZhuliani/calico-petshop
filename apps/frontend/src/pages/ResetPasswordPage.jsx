@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-body">
-      <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl border border-slate-100">
+      <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl border border-slate-200">
         <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <span className="material-symbols-outlined text-orange-500 !text-[32px]">lock_reset</span>
         </div>

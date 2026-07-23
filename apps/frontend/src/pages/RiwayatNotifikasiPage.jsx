@@ -91,7 +91,7 @@ export default function RiwayatNotifikasiPage() {
     <div className={`bg-white min-h-screen flex flex-col font-body pb-20 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
-      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
+      <header className="bg-white border-b border-slate-200 px-5 pb-4 pt-4 sticky top-0 z-40 flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
@@ -108,7 +108,7 @@ export default function RiwayatNotifikasiPage() {
 
       <main className="px-5 py-6 w-full space-y-6">
         <div className="space-y-4">
-          <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
             <span className="text-sm font-bold text-slate-700 pl-2">Riwayat Notifikasi</span>
             <button
               onClick={() => {
@@ -149,7 +149,7 @@ export default function RiwayatNotifikasiPage() {
                     setSelectedNotif({ type: 'history', log });
                   }
                 }}
-                className={`bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 cursor-pointer transition-all ${isSelectMode && selectedIds.includes(log.id) ? 'ring-2 ring-orange-400 bg-orange-50' : 'hover:bg-slate-50'}`}
+                className={`bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex gap-4 cursor-pointer transition-all ${isSelectMode && selectedIds.includes(log.id) ? 'ring-2 ring-orange-400 bg-orange-50' : 'hover:bg-slate-50'}`}
               >
                 {isSelectMode && (
                   <div className="flex items-center justify-center shrink-0 pr-1">
@@ -218,17 +218,17 @@ export default function RiwayatNotifikasiPage() {
                 </h3>
 
                 <div className="w-full bg-slate-50 rounded-2xl p-4 text-left text-sm text-slate-600 space-y-3 mb-6">
-                  <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                     <span className="text-slate-500">Pesan</span>
                     <strong className="text-slate-700 text-right max-w-[60%]">{selectedNotif.log.message}</strong>
                   </div>
                   {selectedNotif.log.batch && (
                     <>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Sisa Stok</span>
                         <strong className="text-slate-700">{selectedNotif.log.batch.qty} unit</strong>
                       </div>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Info Batch</span>
                         <strong className="text-slate-700">Batch {new Date(selectedNotif.log.batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</strong>
                       </div>

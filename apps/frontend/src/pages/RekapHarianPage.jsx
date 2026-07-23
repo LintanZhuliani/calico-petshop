@@ -230,7 +230,7 @@ export default function RekapHarianPage() {
     <div className={`bg-white min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
-      <header className="bg-white border-b border-slate-100 px-5 py-4 sticky top-0 z-40 flex items-center gap-3">
+      <header className="bg-white border-b border-slate-200 px-5 py-4 sticky top-0 z-40 flex items-center gap-3">
         <button 
           onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
           className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
@@ -238,7 +238,7 @@ export default function RekapHarianPage() {
           <span className="material-symbols-outlined !text-[24px]">menu</span>
         </button>
 
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-50 border border-slate-100 active:scale-95 transition-all">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-50 border border-slate-200 active:scale-95 transition-all">
           <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
         </button>
         <div>
@@ -282,7 +282,7 @@ export default function RekapHarianPage() {
 
         {/* STEP 2: Laci Kasir */}
         <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 mb-2 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2 mb-2 border-b border-slate-200 pb-3">
             <span className="material-symbols-outlined text-orange-500 !text-[22px]">payments</span>
             <h2 className="font-bold text-slate-800">2. Hitung Laci Kasir</h2>
           </div>
@@ -318,7 +318,7 @@ export default function RekapHarianPage() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-slate-200">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">
                 PIC / Nama Kasir
               </label>
@@ -336,7 +336,7 @@ export default function RekapHarianPage() {
 
         {/* STEP 3: Pengeluaran & Lainnya */}
         <section className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2 mb-4 border-b border-slate-200 pb-3">
             <span className="material-symbols-outlined text-red-500 !text-[22px]">receipt_long</span>
             <h2 className="font-bold text-slate-800">3. Pengeluaran & Lainnya</h2>
           </div>
@@ -365,7 +365,7 @@ export default function RekapHarianPage() {
             {pengeluaran.length > 0 && (
               <div className="space-y-2 mb-3">
                 {pengeluaran.map((p, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg text-sm border border-slate-100">
+                  <div key={idx} className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg text-sm border border-slate-200">
                     <span className="font-medium text-slate-700">{p.name}</span>
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-slate-800">{formatRupiah(p.amount)}</span>

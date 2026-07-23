@@ -247,7 +247,7 @@ export default function ProfilePage() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 px-5 pb-4 pt-4 sticky top-0 z-40 flex items-center gap-3">
+      <header className="bg-white border-b border-slate-200 px-5 pb-4 pt-4 sticky top-0 z-40 flex items-center gap-3">
         <button 
           onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
           className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
@@ -259,7 +259,7 @@ export default function ProfilePage() {
 
       <main className="px-5 py-6 space-y-4 w-full">
         {/* Profile Card */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Hero */}
           <div className={`${primaryBg} px-5 py-6 flex items-center gap-4`}>
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -282,7 +282,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Menu Items */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm divide-y divide-slate-50">
           {MENU_ITEMS.map((item, i) => {
             // "Riwayat Transaksi" diarahkan ke halaman Laporan
             const isLaporan = item.label === 'Riwayat Transaksi';
@@ -423,7 +423,7 @@ export default function ProfilePage() {
                       <p className="text-center text-sm text-slate-400 py-6">Belum ada kasir terdaftar</p>
                     ) : (
                       dbEmployees.filter(emp => emp.role !== 'admin').map((emp, i) => (
-                        <div key={emp.id || i} className={`p-4 rounded-2xl flex items-center gap-4 border ${emp.email === currentEmail ? `${primaryLight} border-orange-200` : 'bg-slate-50 border-slate-100'}`}>
+                        <div key={emp.id || i} className={`p-4 rounded-2xl flex items-center gap-4 border ${emp.email === currentEmail ? `${primaryLight} border-orange-200` : 'bg-slate-50 border-slate-200'}`}>
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center ${emp.role === 'admin' ? 'bg-orange-100' : 'bg-red-100'}`}>
                             <span className={`material-symbols-outlined ${emp.role === 'admin' ? 'text-orange-600' : 'text-red-600'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                               {emp.role === 'admin' ? 'admin_panel_settings' : 'support_agent'}
@@ -503,7 +503,7 @@ export default function ProfilePage() {
                     <div 
                       key={b.id} 
                       onClick={() => handleSwitchBranch(b.id)}
-                      className={`cursor-pointer bg-slate-50 p-4 rounded-2xl flex items-center gap-4 border ${b.id === branchId ? `border-${primaryLightText.split('-')[1]}-400 shadow-sm bg-${primaryLightText.split('-')[1]}-50/30` : 'border-slate-100 hover:border-slate-300'} transition-all active:scale-95`}
+                      className={`cursor-pointer bg-slate-50 p-4 rounded-2xl flex items-center gap-4 border ${b.id === branchId ? `border-${primaryLightText.split('-')[1]}-400 shadow-sm bg-${primaryLightText.split('-')[1]}-50/30` : 'border-slate-200 hover:border-slate-300'} transition-all active:scale-95`}
                     >
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${b.id === branchId ? primaryBg : 'bg-slate-200'}`}>
                         <span className={`material-symbols-outlined text-white`}>store</span>
@@ -518,7 +518,7 @@ export default function ProfilePage() {
               {activeModal === 'notif' && (
                 <div className="space-y-3 pr-1">
                   <p className="text-xs text-slate-400 mb-1">Pengaturan ini akan tersimpan otomatis di perangkatmu.</p>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 shrink-0">
                     <div>
                       <p className="font-bold text-slate-800">Peringatan Stok Tipis</p>
                       <p className="text-xs text-slate-500 mt-0.5">Notifikasi saat stok di bawah batas minimum</p>
@@ -528,7 +528,7 @@ export default function ProfilePage() {
                       <div className="w-11 h-6 bg-slate-200 peer-checked:bg-orange-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 shrink-0">
                     <div>
                       <p className="font-bold text-slate-800">Barang Hampir Kedaluwarsa</p>
                       <p className="text-xs text-slate-500 mt-0.5">Notifikasi 30 hari sebelum produk rusak</p>
@@ -573,45 +573,45 @@ export default function ProfilePage() {
                     </>
                   )}
 
-                  <div className="border-t border-slate-100 pt-4">
+                  <div className="border-t border-slate-200 pt-4">
                     <p className="font-bold text-slate-800 mb-3 flex items-center gap-2"><span className="material-symbols-outlined !text-[16px]">quiz</span>Pertanyaan Umum (FAQ)</p>
                     <div className="space-y-2.5">
                       {isAdmin ? (
                         <>
-                          <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara menambah produk baru?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Buka menu Inventaris, lalu klik tombol "+" di pojok kanan atas. Isi nama, harga, kategori, dan barcode lalu simpan.</p>
                           </details>
-                          <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara mengirim stok barang ke cabang?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Buka menu Transfer, pilih Buat Transfer Baru. Tentukan cabang tujuan dan masukkan daftar barang beserta jumlahnya.</p>
                           </details>
-                          <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara melihat laporan cabang lain?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Buka Dasbor lalu klik "Laporan Transaksi". Anda bisa memfilter data transaksi berdasarkan cabang atau tanggal tertentu.</p>
                           </details>
                         </>
                       ) : (
                         <>
-                          <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara melakukan checkout (POS)?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Buka menu Kasir (POS). Anda bisa memindai barcode atau mencari barang manual. Tambahkan ke keranjang, lalu klik Bayar.</p>
                           </details>
-                          <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Bagaimana cara tutup shift harian?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Buka Dasbor, klik tombol "Rekap Kasir". Masukkan modal awal dan hitung uang fisik di laci. Sistem akan mencocokkan secara otomatis.</p>
                           </details>
-                          <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                          <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                             <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa yang terjadi jika selisih uang fisik?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                             <p className="px-3 pb-3 text-xs text-slate-500">Jika uang di laci tidak sesuai dengan sistem, akan tercatat sebagai "Uang Lebih" atau "Uang Kurang" pada format laporan WhatsApp.</p>
                           </details>
                         </>
                       )}
-                      <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                         <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Data saya disimpan di mana?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                         <p className="px-3 pb-3 text-xs text-slate-500">Data aplikasi kini disimpan dengan aman secara *real-time* di Database Pusat (PostgreSQL). Tidak perlu khawatir hilang jika berganti perangkat.</p>
                       </details>
-                      <details className="bg-slate-50 rounded-xl border border-slate-100 group">
+                      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
                         <summary className="p-3 cursor-pointer font-semibold text-slate-700 text-xs flex items-center justify-between">Apa arti warna di Halaman Notifikasi?<span className="material-symbols-outlined !text-[16px] text-slate-400 group-open:rotate-180 transition-transform">expand_more</span></summary>
                         <p className="px-3 pb-3 text-xs text-slate-500">Warna Hitam = Sudah Kadaluarsa, Warna Merah = Stok Barang Habis, Warna Oranye = Hampir Kadaluarsa.</p>
                       </details>

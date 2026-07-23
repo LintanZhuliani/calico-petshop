@@ -201,7 +201,7 @@ export default function DashboardPage() {
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex justify-between items-center">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
@@ -255,7 +255,7 @@ export default function DashboardPage() {
         {/* ── Stat Cards ── */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Card 1 */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02]">
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02]">
             <span className={`material-symbols-outlined ${primaryText} !text-[28px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
               {isAdmin ? 'payments' : 'receipt_long'}
             </span>
@@ -267,7 +267,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 2 */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02]">
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02]">
             <span className={`material-symbols-outlined ${primaryText} !text-[28px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
               sell
             </span>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 3 — Stok Kritis */}
-          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${lowStock.length > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-100'}`}>
+          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${lowStock.length > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-200'}`}>
             <span className={`material-symbols-outlined !text-[28px] ${lowStock.length > 0 ? 'text-red-500' : 'text-slate-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
               warning
             </span>
@@ -289,7 +289,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 4 — Transfer Transit */}
-          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${inTransitCount > 0 ? 'bg-blue-50 border-blue-100' : 'bg-white border-slate-100'}`}>
+          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${inTransitCount > 0 ? 'bg-blue-50 border-blue-100' : 'bg-white border-slate-200'}`}>
             <span className={`material-symbols-outlined !text-[28px] ${inTransitCount > 0 ? 'text-blue-500' : 'text-slate-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
               local_shipping
             </span>
@@ -303,7 +303,7 @@ export default function DashboardPage() {
         </section>
 
         {/* ── Mini Chart ── */}
-        <section className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm md:p-8">
+        <section className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm md:p-8">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
               <span className={`material-symbols-outlined ${primaryText} !text-[22px]`}>monitoring</span>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
           </div>
           
           {/* Chart Graphic Dynamic */}
-          <div className="flex items-end justify-between h-32 md:h-48 mt-6 gap-2 border-b border-slate-100 pb-2 relative">
+          <div className="flex items-end justify-between h-32 md:h-48 mt-6 gap-2 border-b border-slate-200 pb-2 relative">
             {chartHeights.map((h, i) => (
               <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 relative h-full group">
                 {/* Tooltip value */}

@@ -58,10 +58,10 @@ export default function NotifikasiPage() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between relative">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 py-4 flex items-center justify-between relative">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-xl bg-slate-50 border border-slate-100 active:scale-95 transition-all relative z-10"
+          className="p-2 rounded-xl bg-slate-50 border border-slate-200 active:scale-95 transition-all relative z-10"
         >
           <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
         </button>
@@ -106,7 +106,7 @@ export default function NotifikasiPage() {
                   </span>
                 </div>
                 
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {expiringSoonItems.map(({ product, batch, daysLeft, sessionIndex }, i) => (
                     <div 
                       key={`exp-${i}`} 
@@ -152,7 +152,7 @@ export default function NotifikasiPage() {
                   </span>
                 </div>
                 
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {outOfStockItems.map((p, i) => (
                     <div 
                       key={`oos-${i}`} 
@@ -192,7 +192,7 @@ export default function NotifikasiPage() {
                   </span>
                 </div>
                 
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-50">
                   {expiredItems.map(({ product, batch, sessionIndex }, i) => (
                     <div 
                       key={`expd-${i}`} 
@@ -262,17 +262,17 @@ export default function NotifikasiPage() {
                 <div className="w-full bg-slate-50 rounded-2xl p-4 text-left text-sm text-slate-600 space-y-3 mb-6">
                   {(selectedNotif.type === 'expiringSoon' || selectedNotif.type === 'expired') && (
                     <>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Status</span>
                         <strong className={selectedNotif.type === 'expired' ? 'text-slate-900' : 'text-orange-600'}>
                           {selectedNotif.type === 'expired' ? 'Sudah Kadaluarsa' : `Sisa ${selectedNotif.daysLeft} Hari Lagi`}
                         </strong>
                       </div>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Tgl Kadaluarsa</span>
                         <strong className="text-slate-700">{new Date(selectedNotif.batch.expiredDate).toLocaleDateString('id-ID')}</strong>
                       </div>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Stok Batch Ini</span>
                         <strong className="text-slate-700">{selectedNotif.batch.qty} unit</strong>
                       </div>
@@ -285,11 +285,11 @@ export default function NotifikasiPage() {
 
                   {(selectedNotif.type === 'outOfStock') && (
                     <>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Status</span>
                         <strong className='text-red-600'>Stok Habis</strong>
                       </div>
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Stok Saat Ini</span>
                         <strong className="text-slate-700">{selectedNotif.product.totalStock || 0} unit</strong>
                       </div>

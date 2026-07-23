@@ -226,7 +226,7 @@ export default function ScanPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 py-4 flex items-center justify-between text-left">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 py-4 flex items-center justify-between text-left">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
@@ -323,11 +323,11 @@ export default function ScanPage() {
 
         {/* Scan Result Card */}
         {scanResult && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             {/* Product Header */}
             <div className={`${primaryLight} px-5 py-4 flex items-center gap-4`}>
               {scanResult.image ? (
-                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden flex items-center justify-center shrink-0">
                   <img src={scanResult.image} alt={scanResult.name} className="w-full h-full object-cover" />
                 </div>
               ) : scanResult.imageEmoji ? (
@@ -346,12 +346,12 @@ export default function ScanPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 border-b border-slate-100">
-              <div className="py-4 px-4 text-center border-r border-slate-100">
+            <div className="grid grid-cols-3 border-b border-slate-200">
+              <div className="py-4 px-4 text-center border-r border-slate-200">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Harga</p>
                 <p className={`font-extrabold text-base font-headline ${primaryText}`}>{formatRupiah(scanResult.price)}</p>
               </div>
-              <div className="py-4 px-4 text-center border-r border-slate-100">
+              <div className="py-4 px-4 text-center border-r border-slate-200">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Stok</p>
                 <p className={`font-extrabold text-base font-headline ${totalStock === 0 ? 'text-red-600' : totalStock <= scanResult.minStock ? 'text-amber-600' : 'text-green-600'}`}>
                   {totalStock} unit
@@ -427,7 +427,7 @@ export default function ScanPage() {
 
         {/* Tips */}
         {!scanResult && !notFound && !scanning && (
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-2">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Tips Penggunaan</p>
             <div className="space-y-1.5">
               {[

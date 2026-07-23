@@ -215,28 +215,30 @@ export default function RiwayatPage() {
           </div>
         </div>
 
-        {isAdmin && (
-          <div className="flex gap-3 px-5 pb-4 overflow-x-auto hide-scrollbar border-b border-slate-100">
+        {isAdmin ? (
+          <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
             {['harian', 'bulanan', 'tahunan'].map(type => (
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`px-5 py-2 text-sm font-medium capitalize transition-all duration-200 rounded-lg border ${
+                className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
                   reportType === type 
-                    ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` 
-                    : `bg-white border-slate-300 text-slate-600 hover:bg-slate-50`
+                    ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
+                    : `border-transparent text-slate-500 hover:bg-slate-50`
                 }`}
               >
                 {type}
               </button>
             ))}
           </div>
+        ) : (
+          <div className="border-b-2 border-slate-200 w-full" />
         )}
       </header>
 
       <main className="px-5 py-6 w-full space-y-4">
         {/* Navigasi Tanggal/Bulan/Tahun */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center justify-between">
           <button onClick={handlePrev} className="p-2 bg-slate-100 rounded-xl active:scale-90 transition-transform">
             <span className="material-symbols-outlined !text-[20px] text-slate-600">chevron_left</span>
           </button>
@@ -255,7 +257,7 @@ export default function RiwayatPage() {
             <div className={`w-10 h-10 border-4 border-slate-200 border-t-[#D35400] rounded-full animate-spin`}></div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mt-2">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-2">
             {filteredData.length === 0 ? (
               <p className="text-center text-sm text-slate-400 py-6">Belum ada transaksi di periode ini</p>
             ) : (
@@ -305,7 +307,7 @@ export default function RiwayatPage() {
       {isDetailOpen && selectedTx && (
         <div className="fixed inset-0 z-[100] flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
           {/* Header Modal */}
-          <header className="bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
+          <header className="bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <button onClick={() => setIsDetailOpen(false)} className={`p-2 -ml-2 rounded-xl active:bg-slate-100 ${primaryText} transition-colors shrink-0`}>
                 <span className="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
@@ -322,7 +324,7 @@ export default function RiwayatPage() {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* Rincian Transaksi */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
               <h2 className="font-extrabold text-slate-800 text-lg mb-4">Rincian Transaksi</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
@@ -341,7 +343,7 @@ export default function RiwayatPage() {
             </div>
 
             {/* Pesanan */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
               <h2 className="font-extrabold text-slate-800 text-lg mb-4">Pesanan</h2>
               
               <div className="space-y-2 mb-4 mt-2">
@@ -360,7 +362,7 @@ export default function RiwayatPage() {
                 ))}
               </div>
 
-              <div className="border-t border-slate-100 pt-3 space-y-2 text-sm">
+              <div className="border-t border-slate-200 pt-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Total Pesanan</span>
                   <span className="font-bold text-slate-800">{formatRupiah(selectedTx.total)}</span>
@@ -382,7 +384,7 @@ export default function RiwayatPage() {
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center gap-3 shrink-0">
+          <div className="bg-white border-t border-slate-200 p-4 pb-8 flex items-center gap-3 shrink-0">
             <button 
               onClick={() => handlePrintReceipt(selectedTx)}
               className={`flex-1 ${primaryBg} hover:opacity-90 active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center`}
@@ -402,7 +404,7 @@ export default function RiwayatPage() {
                   <span className="material-symbols-outlined !text-[20px]">more_vert</span>
                 </button>
                 {/* Popover Menu */}
-                <div className="hidden absolute bottom-full right-0 mb-2 w-32 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                <div className="hidden absolute bottom-full right-0 mb-2 w-32 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
                   <button 
                     onClick={() => handleDeleteTransaction(selectedTx.id)}
                     className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"

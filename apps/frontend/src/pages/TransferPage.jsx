@@ -271,7 +271,7 @@ export default function TransferPage() {
       )}
 
       {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-40 border-b border-slate-100 px-5 pt-4 pb-3 flex flex-col gap-3">
+      <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 pt-4 pb-3 flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
@@ -282,7 +282,7 @@ export default function TransferPage() {
           <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Transfer Barang</h1>
         </div>
         {/* Tabs */}
-        <div className="flex border-b border-slate-100 -mx-5 px-5 gap-1">
+        <div className="flex border-b border-slate-200 -mx-5 px-5 gap-1">
           {TABS.map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-1.5 pb-3 px-3 text-sm font-bold transition-all border-b-2 ${activeTab === tab.key ? `${primaryText} border-current` : 'text-slate-400 border-transparent'}`}>
@@ -298,7 +298,7 @@ export default function TransferPage() {
         {/* ── ADMIN: Form Buat Mutasi ── */}
         {activeTab === 'new' && isAdmin && (
           <div className="space-y-4">
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4">
               <h2 className="font-headline font-bold text-slate-800">Detail Pengiriman</h2>
 
               {/* From Branch */}
@@ -336,7 +336,7 @@ export default function TransferPage() {
             </div>
 
             {/* Item List */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 space-y-3">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-3">
               <div className="flex justify-between items-center">
                 <h2 className="font-headline font-bold text-slate-800">Daftar Barang</h2>
                 <button onClick={() => setAddItemOpen(true)}
@@ -367,7 +367,7 @@ export default function TransferPage() {
 
               {/* Add Item Modal */}
               {addItemOpen && (
-                <div className="border-t border-slate-100 pt-3 space-y-3">
+                <div className="border-t border-slate-200 pt-3 space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Pilih Produk</label>
                     <div className="relative">
@@ -387,7 +387,7 @@ export default function TransferPage() {
                       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 !text-[18px]">search</span>
                       
                       {showDropdown && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-100 shadow-xl max-h-48 overflow-y-auto rounded-xl">
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 shadow-xl max-h-48 overflow-y-auto rounded-xl">
                           {products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase())).length === 0 ? (
                             <div className="p-3 text-sm text-slate-500 text-center">Produk tidak ditemukan</div>
                           ) : (
@@ -483,7 +483,7 @@ export default function TransferPage() {
                   </div>
                 )}
 
-                <div className="border-t border-slate-100 p-4 space-y-2">
+                <div className="border-t border-slate-200 p-4 space-y-2">
                   {confirmingId !== tr.id ? (
                     <button onClick={() => setConfirmingId(tr.id)}
                       className="w-full py-3 bg-green-600 text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
@@ -574,7 +574,7 @@ export default function TransferPage() {
                   </div>
 
                   {/* Divider */}
-                  <div className="mx-5 border-t-2 border-dashed border-slate-100" />
+                  <div className="mx-5 border-t-2 border-dashed border-slate-200" />
 
                   {/* Items */}
                   <div className="px-5 py-4 space-y-3">
@@ -610,7 +610,7 @@ export default function TransferPage() {
 
                   {/* Catatan & Konfirmasi */}
                   {(tr.note || tr.confirmedAt || tr.status === 'transit') && (
-                    <div className="bg-slate-50 px-5 py-3.5 text-xs space-y-2 border-t border-slate-100">
+                    <div className="bg-slate-50 px-5 py-3.5 text-xs space-y-2 border-t border-slate-200">
                       {tr.note && (
                         <div className="flex gap-2">
                           <span className="material-symbols-outlined text-slate-400 !text-[14px]">edit_document</span>
