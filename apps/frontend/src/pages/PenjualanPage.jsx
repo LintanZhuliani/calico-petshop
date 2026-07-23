@@ -351,7 +351,7 @@ export default function PenjualanPage() {
               <button
                 key={type}
                 onClick={() => setReportType(type)}
-                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `${primaryBg} text-white shadow-md` : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${reportType === type ? `bg-white ${primaryText} shadow-sm` : `text-slate-500 hover:${primaryLight} hover:${primaryText}`}`}
               >
                 {type}
               </button>
