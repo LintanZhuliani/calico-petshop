@@ -57,25 +57,11 @@ export default function ScanPage() {
 
   const playBeep = () => {
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      // Frekuensi lebih tinggi (sekitar 2600Hz) khas scanner kasir
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(2600, audioCtx.currentTime);
-      
-      // Volume dan durasi yang sangat singkat dan tajam (0.08 detik)
-      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-      
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.08);
+      const audio = new Audio('/beep.wav');
+      audio.volume = 0.5;
+      audio.play().catch(e => console.log('Audio play error:', e));
     } catch (e) {
-      console.log('Audio error:', e);
+      console.log('Audio init error:', e);
     }
   };
 
