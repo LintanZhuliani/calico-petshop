@@ -9,6 +9,13 @@ import { getExpiryStatus, getExpiryColorClass } from '../utils/stockAlerts';
 let Html5Qrcode = null;
 let Html5QrcodeSupportedFormats = null;
 
+// Preload audio untuk menghilangkan delay
+const beepAudio = typeof window !== 'undefined' ? new Audio('/beep.wav') : null;
+if (beepAudio) {
+  beepAudio.volume = 0.5;
+  beepAudio.preload = 'auto';
+}
+
 export default function ScanPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,12 +63,9 @@ export default function ScanPage() {
   };
 
   const playBeep = () => {
-    try {
-      const audio = new Audio('/beep.wav');
-      audio.volume = 0.5;
-      audio.play().catch(e => console.log('Audio play error:', e));
-    } catch (e) {
-      console.log('Audio init error:', e);
+    if (beepAudio) {
+      beepAudio.currentTime = 0;
+      beepAudio.play().catch(e => console.log('Audio play error:', e));
     }
   };
 
