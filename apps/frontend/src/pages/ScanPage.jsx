@@ -46,10 +46,13 @@ export default function ScanPage() {
   const branchId = sessionBranch;
 
   useEffect(() => {
+    productsRef.current = products;
+  }, [products]);
+
+  useEffect(() => {
     apiFetch(`/products?branchId=${branchId}`)
       .then(data => {
         setProducts(data);
-        productsRef.current = data;
       })
       .catch(err => console.error(err));
     // Dynamically import html5-qrcode
@@ -257,8 +260,8 @@ export default function ScanPage() {
             <span className="material-symbols-outlined !text-[24px]">menu</span>
           </button>
           <div>
-            <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan barang</h1>
-            <p className="text-sm text-slate-400 mt-0.5">Scan garis barcode kemasan untuk memproses stok</p>
+            <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Scan Barcode</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Arahkan ke garis barcode untuk memproses stok</p>
           </div>
         </div>
       </header>
