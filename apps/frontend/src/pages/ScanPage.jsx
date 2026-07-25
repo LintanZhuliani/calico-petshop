@@ -55,6 +55,27 @@ export default function ScanPage() {
     setTimeout(() => setToast(''), 2500);
   };
 
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 800;
+      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.1);
+    } catch (e) {
+      console.log('Audio error:', e);
+    }
+  };
+
   const findProduct = (code) => {
     const term = code.toLowerCase().trim();
     const termNorm = term.replace(/^0+/, '');
@@ -99,6 +120,7 @@ export default function ScanPage() {
             ] : undefined,
           },
           (decodedText) => {
+            playBeep();
             stopScanner();
             findProduct(decodedText);
           },
