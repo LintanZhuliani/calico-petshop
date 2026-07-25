@@ -40,13 +40,17 @@ export default function ScanPage() {
   const [libLoaded, setLibLoaded] = useState(false);
 
   const scannerRef = useRef(null);
+  const productsRef = useRef([]); // Untuk menghindari stale closure
   const scannerDivId = 'calico-qr-scanner';
 
   const branchId = sessionBranch;
 
   useEffect(() => {
     apiFetch(`/products?branchId=${branchId}`)
-      .then(data => setProducts(data))
+      .then(data => {
+        setProducts(data);
+        productsRef.current = data;
+      })
       .catch(err => console.error(err));
     // Dynamically import html5-qrcode
     import('html5-qrcode').then(mod => {
@@ -72,7 +76,7 @@ export default function ScanPage() {
   const findProduct = (code) => {
     const term = code.toLowerCase().trim();
     const termNorm = term.replace(/^0+/, '');
-    const p = products.find(p => {
+    const p = productsRef.current.find(p => {
       if (p.barcode && termNorm && p.barcode.replace(/^0+/, '') === termNorm) return true;
       return p.id === term || p.name.toLowerCase().includes(term);
     });
@@ -114,8 +118,11 @@ export default function ScanPage() {
           },
           (decodedText) => {
             playBeep();
-            stopScanner();
-            findProduct(decodedText);
+            // Memberikan jeda kecil agar audio sempat diputar sebelum React melakukan re-render yang memblokir thread
+            setTimeout(() => {
+              stopScanner();
+              findProduct(decodedText);
+            }, 50);
           },
           (errorMessage) => { /* ignore scan errors */ }
         ).then(() => {
