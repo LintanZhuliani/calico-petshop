@@ -64,13 +64,16 @@ export default function ScanPage() {
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
       
+      // Frekuensi lebih tinggi (sekitar 2600Hz) khas scanner kasir
       oscillator.type = 'sine';
-      oscillator.frequency.value = 800;
-      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(2600, audioCtx.currentTime);
       
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.1);
+      // Volume dan durasi yang sangat singkat dan tajam (0.08 detik)
+      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+      
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.08);
     } catch (e) {
       console.log('Audio error:', e);
     }
