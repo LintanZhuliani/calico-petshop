@@ -37,9 +37,26 @@ if (!process.env.VERCEL) {
 }
 
 // ── CORS ──
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://calico-petshop-frontend.vercel.app",
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      // Allow exact matches and Vercel preview URLs
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, origin);
+      }
+      return callback(null, false);
+    },
     credentials: true, // Allow cookies for Better Auth sessions
   })
 );

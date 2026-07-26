@@ -35,7 +35,17 @@ export default function ScanPage() {
   const [qty, setQty] = useState(1);
   const [expiredDate, setExpiredDate] = useState('');
   const [toast, setToast] = useState('');
-  const [products, setProducts] = useState([]);
+  // Inisialisasi products dari cache localStorage agar tidak kosong saat scan
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('calico_products_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [productsReady, setProductsReady] = useState(() => {
+    try { return !!localStorage.getItem('calico_products_cache'); }
+    catch { return false; }
+  });
   const [scannerReady, setScannerReady] = useState(false);
   const [libLoaded, setLibLoaded] = useState(false);
 
@@ -53,6 +63,17 @@ export default function ScanPage() {
     apiFetch(`/products?branchId=${branchId}`)
       .then(data => {
         setProducts(data);
+        setProductsReady(true);
+        // Simpan ke cache untuk digunakan oleh ScanPage berikutnya
+        try {
+          const lightData = data.map(p => ({
+            id: p.id, name: p.name, barcode: p.barcode,
+            sellPrice: p.sellPrice, capitalPrice: p.capitalPrice,
+            category: p.category, image: p.image,
+            totalStock: p.totalStock, batches: p.batches,
+          }));
+          localStorage.setItem('calico_products_cache', JSON.stringify(lightData));
+        } catch (e) { /* ignore storage errors */ }
       })
       .catch(err => console.error(err));
     // Dynamically import html5-qrcode
@@ -98,6 +119,10 @@ export default function ScanPage() {
       showToast('Library scanner belum siap.');
       return;
     }
+    if (!productsReady || productsRef.current.length === 0) {
+      showToast('Memuat data produk, tunggu sebentar...');
+      return;
+    }
     setScanning(true);
     setScanResult(null);
     setNotFound(false);
@@ -121,11 +146,11 @@ export default function ScanPage() {
           },
           (decodedText) => {
             playBeep();
-            // Memberikan jeda kecil agar audio sempat diputar sebelum React melakukan re-render yang memblokir thread
+            // Jeda 250ms agar audio sempat diputar sebelum main thread diblokir oleh camera teardown + React re-render
             setTimeout(() => {
               stopScanner();
               findProduct(decodedText);
-            }, 50);
+            }, 250);
           },
           (errorMessage) => { /* ignore scan errors */ }
         ).then(() => {
@@ -294,8 +319,12 @@ export default function ScanPage() {
             <div className={`w-20 h-20 ${primaryLight} rounded-3xl flex items-center justify-center mb-4`}>
               <span className={`material-symbols-outlined ${primaryText} !text-[40px]`} style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
             </div>
-            <p className="font-bold text-slate-700">Tap untuk mulai scan</p>
-            <p className="text-sm text-slate-400 mt-1 px-4 text-center">Arahkan kamera ke gambar Barcode pada kemasan</p>
+            <p className="font-bold text-slate-700">
+              {productsReady ? 'Tap untuk mulai scan' : 'Memuat data produk...'}
+            </p>
+            <p className="text-sm text-slate-400 mt-1 px-4 text-center">
+              {productsReady ? 'Arahkan kamera ke gambar Barcode pada kemasan' : 'Mohon tunggu sebentar'}
+            </p>
           </div>
         )}
 
