@@ -68,7 +68,7 @@ export const dashboardService = {
       const stockAgg = await db.select({
         productId: branchStock.productId,
         minStock: product.minStock,
-        totalStock: sql<number>`sum(${batch.qty})`
+        totalStock: sql<number>`sum(case when ${batch.expiredDate} is null or ${batch.expiredDate} > current_date then ${batch.qty} else 0 end)`
       })
       .from(branchStock)
       .innerJoin(product, and(eq(branchStock.productId, product.id), eq(product.isArchived, false)))
