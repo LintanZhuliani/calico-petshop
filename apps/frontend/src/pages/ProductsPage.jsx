@@ -916,7 +916,12 @@ export default function ProductsPage() {
       return cached ? JSON.parse(cached) : [];
     } catch { return []; }
   });
-  const [apiCategories, setApiCategories] = useState([]);
+  const [apiCategories, setApiCategories] = useState(() => {
+    try {
+      const cached = localStorage.getItem('calico_categories_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [search, setSearch] = useState(location.state?.search || '');
   const [filterCat, setFilterCat] = useState('Semua');
@@ -971,6 +976,7 @@ export default function ProductsPage() {
         // Strip base64 images to prevent QuotaExceededError and keep stringify fast
         const lightData = data.map(p => ({ ...p, image: p.image?.startsWith('data:') ? null : p.image }));
         localStorage.setItem('calico_products_cache', JSON.stringify(lightData));
+        localStorage.setItem('calico_categories_cache', JSON.stringify(cats));
       } catch (e) {
         console.warn("Could not cache products:", e);
       }
