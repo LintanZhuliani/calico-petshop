@@ -60,12 +60,8 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
       res.status(404).json({ error: "Category not found" });
       return;
     }
-    res.json({ message: "Category deleted", category: cat });
+    res.json(cat);
   } catch (err: any) {
-    if (err.message === "Cannot delete Lainnya") {
-      res.status(400).json({ error: "Gagal: Kategori 'Lainnya' adalah kategori bawaan dan tidak dapat dihapus." });
-      return;
-    }
     next(err);
   }
 });

@@ -9,6 +9,7 @@ import {
   product,
   branchStock,
   batch,
+  category,
 } from "../db/schema/index.js";
 import { generateId, daysUntilExpiry } from "../lib/utils.js";
 import { uploadBase64Image } from "../lib/cloudinary.js";
@@ -200,20 +201,36 @@ export const productService = {
     }
 
     const id = generateId("p");
-    const results = await db
-      .insert(product)
-      .values({
-        id,
-        name: data.name,
-        category: data.category,
-        buyPrice: data.buyPrice || 0,
-        price: data.price,
-        barcode: data.barcode || null,
-        image: data.image || null,
-        imageEmoji: data.imageEmoji || null,
-        minStock: data.minStock || 5,
-      })
-      .returning();
+    const results = await db.transaction(async (tx) => {
+      // Auto-create category if not exists
+      if (data.category) {
+        const [existingCat] = await tx
+          .select()
+          .from(category)
+          .where(eq(category.name, data.category));
+        if (!existingCat) {
+          await tx.insert(category).values({
+            id: generateId("cat"),
+            name: data.category,
+          });
+        }
+      }
+
+      return await tx
+        .insert(product)
+        .values({
+          id,
+          name: data.name,
+          category: data.category,
+          buyPrice: data.buyPrice || 0,
+          price: data.price,
+          barcode: data.barcode || null,
+          image: data.image || null,
+          imageEmoji: data.imageEmoji || null,
+          minStock: data.minStock || 5,
+        })
+        .returning();
+    });
       
     getIo()?.emit("DATA_UPDATED");
     return results[0];
@@ -237,11 +254,27 @@ export const productService = {
       data.image = await uploadBase64Image(data.image);
     }
 
-    const results = await db
-      .update(product)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(product.id, id))
-      .returning();
+    const results = await db.transaction(async (tx) => {
+      // Auto-create category if not exists
+      if (data.category) {
+        const [existingCat] = await tx
+          .select()
+          .from(category)
+          .where(eq(category.name, data.category));
+        if (!existingCat) {
+          await tx.insert(category).values({
+            id: generateId("cat"),
+            name: data.category,
+          });
+        }
+      }
+
+      return await tx
+        .update(product)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(product.id, id))
+        .returning();
+    });
       
     getIo()?.emit("DATA_UPDATED");
     return results[0] || null;

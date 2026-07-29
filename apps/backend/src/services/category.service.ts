@@ -56,9 +56,6 @@ export const categoryService = {
         .from(category)
         .where(eq(category.id, id));
       if (!oldCat) return null;
-      if (oldCat.name === "Lainnya") {
-        throw new Error("Cannot delete Lainnya");
-      }
 
       // Update all products that had this category to 'Lainnya'
       await tx
@@ -71,18 +68,6 @@ export const categoryService = {
         .delete(category)
         .where(eq(category.id, id))
         .returning();
-
-      // Ensure "Lainnya" exists in category table
-      const [lainnya] = await tx
-        .select()
-        .from(category)
-        .where(eq(category.name, "Lainnya"));
-      if (!lainnya) {
-        await tx.insert(category).values({
-          id: generateId("cat"),
-          name: "Lainnya",
-        });
-      }
 
       getIo()?.emit("DATA_UPDATED");
       return deletedCat;
