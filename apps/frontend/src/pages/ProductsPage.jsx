@@ -58,6 +58,7 @@ function StockBadge({ total, min }) {
 // ── Modal Tambah Produk (Admin) ──
 function AddProductModal({ onClose, onSave, categories }) {
   const [form, setForm] = useState({ name: '', category: categories[0]?.name || '', buyPrice: '', price: '', barcode: '', minStock: 5, image: '', qty: '', expiredDate: '' });
+  const [isSaving, setIsSaving] = useState(false);
   const [customCat, setCustomCat] = useState('');
   const [showCustomCat, setShowCustomCat] = useState(false);
   const handle = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -86,23 +87,28 @@ function AddProductModal({ onClose, onSave, categories }) {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.price) return;
     const finalCategory = showCustomCat ? customCat.trim() : form.category;
     if (!finalCategory) return;
-    onSave({
-      id: generateId('p'),
-      name: form.name,
-      category: finalCategory,
-      buyPrice: form.buyPrice ? Number(String(form.buyPrice).replace(/\./g, '')) : 0,
-      price: form.price ? Number(String(form.price).replace(/\./g, '')) : 0,
-      barcode: form.barcode || generateId('bc'),
-      image: form.image,
-      minStock: Number(form.minStock),
-      batches: form.qty
-        ? [{ batchId: generateId('b'), qty: Number(form.qty), expiredDate: form.expiredDate || null, receivedDate: new Date().toISOString().split('T')[0] }]
-        : [],
-    });
+    setIsSaving(true);
+    try {
+      await onSave({
+        id: generateId('p'),
+        name: form.name,
+        category: finalCategory,
+        buyPrice: form.buyPrice ? Number(String(form.buyPrice).replace(/\./g, '')) : 0,
+        price: form.price ? Number(String(form.price).replace(/\./g, '')) : 0,
+        barcode: form.barcode || generateId('bc'),
+        image: form.image,
+        minStock: Number(form.minStock),
+        batches: form.qty
+          ? [{ batchId: generateId('b'), qty: Number(form.qty), expiredDate: form.expiredDate || null, receivedDate: new Date().toISOString().split('T')[0] }]
+          : [],
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -162,8 +168,8 @@ function AddProductModal({ onClose, onSave, categories }) {
             <InputField label="Tgl Expired" type="date" value={form.expiredDate} onChange={v => handle('expiredDate', v)} />
           </div>
         </div>
-        <button onClick={handleSave} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all">
-          Simpan Produk
+        <button onClick={handleSave} disabled={isSaving} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all disabled:opacity-50">
+          {isSaving ? 'Menyimpan...' : 'Simpan Produk'}
         </button>
       </div>
     </div>
@@ -325,6 +331,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
 
 function EditProductModal({ product, onClose, onSave, onRefresh, categories }) {
   const [localBatches, setLocalBatches] = useState(product.batches || []);
+  const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
     name: product.name || '',
     category: product.category || categories[0]?.name || '',
@@ -378,6 +385,7 @@ function EditProductModal({ product, onClose, onSave, onRefresh, categories }) {
 
   const handleSave = async () => {
     if (!form.name || !form.price) return;
+    setIsSaving(true);
     try {
       const finalCategory = showCustomCat ? customCat.trim() : form.category;
       if (!finalCategory) return;
@@ -395,6 +403,8 @@ function EditProductModal({ product, onClose, onSave, onRefresh, categories }) {
       );
     } catch (e) {
       alert("Gagal menyimpan produk: " + e.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -511,8 +521,8 @@ function EditProductModal({ product, onClose, onSave, onRefresh, categories }) {
           </div>
         )}
 
-        <button onClick={handleSave} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all">
-          Simpan Perubahan
+        <button onClick={handleSave} disabled={isSaving} className="w-full py-4 bg-[#D35400] hover:bg-[#b84800] text-white font-bold rounded-2xl active:scale-95 transition-all disabled:opacity-50 mt-8">
+          {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
         </button>
       </div>
     </div>
@@ -876,9 +886,7 @@ function ManageCategoryModal({ onClose, categories, onRefresh }) {
                   <span className="font-medium text-slate-700 text-sm">{c.name}</span>
                   <div className="flex gap-2">
                     <button onClick={() => { setEditingId(c.id); setEditName(c.name); }} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><span className="material-symbols-outlined !text-[18px]">edit</span></button>
-                    {c.name !== 'Lainnya' && (
-                      <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><span className="material-symbols-outlined !text-[18px]">delete</span></button>
-                    )}
+                    <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><span className="material-symbols-outlined !text-[18px]">delete</span></button>
                   </div>
                 </>
               )}
