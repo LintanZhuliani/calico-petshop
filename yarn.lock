@@ -522,8 +522,10 @@
 "@types/use-sync-external-store@^0.0.6":
   version "0.0.6"
 
-"@types/ws@^8.5.12":
+"@types/ws@^8.18.1", "@types/ws@^8.5.12":
   version "8.18.1"
+  resolved "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz"
+  integrity sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==
   dependencies:
     "@types/node" "*"
 
@@ -657,6 +659,7 @@ autoprefixer@^10.5.0:
     node-cron "^4.6.0"
     nodemailer "^8.0.11"
     socket.io "^4.8.3"
+    ws "^8.21.1"
 
 balanced-match@^1.0.0:
   version "1.0.2"
@@ -2769,6 +2772,11 @@ word-wrap@^1.2.5:
 
 wrappy@1:
   version "1.0.2"
+
+ws@^8.21.1:
+  version "8.21.1"
+  resolved "https://registry.npmjs.org/ws/-/ws-8.21.1.tgz"
+  integrity sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==
 
 ws@~8.20.1:
   version "8.20.1"
