@@ -393,14 +393,14 @@ export default function KasirPage() {
 
   // Tambah ke keranjang
   const handleAddToCart = (product) => {
-    const total = product.totalStock || 0;
-    if (total === 0) { showToast('Stok habis!'); return; }
+    const sellable = (product.totalStock || 0) - (product.expiredStock || 0);
+    if (sellable <= 0) { showToast('Stok habis atau sudah kadaluarsa!'); return; }
     // Use FEFO sell price (Opsi A: harga dari batch paling lama)
     const price = product.fefoSellPrice || product.price;
     setCart(prev => {
       const existing = prev.find(i => i.id === product.id);
       if (existing) {
-        if (existing.qty >= total) { showToast('Stok tidak cukup!'); return prev; }
+        if (existing.qty >= sellable) { showToast('Stok tidak cukup!'); return prev; }
         return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1, price } : i);
       }
       return [...prev, { id: product.id, name: product.name, price, qty: 1 }];

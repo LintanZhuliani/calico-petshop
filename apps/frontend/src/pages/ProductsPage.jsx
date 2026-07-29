@@ -1128,12 +1128,13 @@ export default function ProductsPage() {
 
   // Kasir: Tambah ke keranjang
   const handleAddToCart = (product) => {
-    const total = product.totalStock || 0;
-    if (total === 0) { showToast('Stok habis!'); return; }
+    const sellable = (product.totalStock || 0) - (product.expiredStock || 0);
+    if (sellable <= 0) { showToast('Stok habis atau sudah kadaluarsa!'); return; }
+    
     setCart(prev => {
       const existing = prev.find(i => i.id === product.id);
       if (existing) {
-        if (existing.qty >= total) { showToast('Stok tidak cukup!'); return prev; }
+        if (existing.qty >= sellable) { showToast('Stok tidak cukup!'); return prev; }
         return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
       }
       return [...prev, { id: product.id, name: product.name, price: product.price, qty: 1 }];

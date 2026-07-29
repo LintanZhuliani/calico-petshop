@@ -56,6 +56,9 @@ export const categoryService = {
         .from(category)
         .where(eq(category.id, id));
       if (!oldCat) return null;
+      if (oldCat.name === "Lainnya") {
+        throw new Error("Cannot delete Lainnya");
+      }
 
       // Update all products that had this category to 'Lainnya'
       await tx

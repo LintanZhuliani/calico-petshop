@@ -81,7 +81,7 @@ router.post("/", requireAuth, async (req, res, next) => {
     const tx = await transactionService.checkout({
       branchId: branchId || req.user!.branchId!,
       cashierId: req.user!.id,
-      cashierName: req.user!.name,
+      cashierName: req.user!.name || "Kasir",
       items,
       paid: Number(paid),
       change: Number(change),

@@ -61,7 +61,11 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
       return;
     }
     res.json({ message: "Category deleted", category: cat });
-  } catch (err) {
+  } catch (err: any) {
+    if (err.message === "Cannot delete Lainnya") {
+      res.status(400).json({ error: "Gagal: Kategori 'Lainnya' adalah kategori bawaan dan tidak dapat dihapus." });
+      return;
+    }
     next(err);
   }
 });
