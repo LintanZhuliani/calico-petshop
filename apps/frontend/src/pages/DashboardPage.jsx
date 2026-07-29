@@ -78,7 +78,7 @@ export default function DashboardPage() {
       .catch(err => console.error('Items sold error:', err));
 
     // Fetch unified dashboard summary (Replaces 5 separate heavy queries)
-    apiFetch(`/dashboard/summary?branchId=${branch}`)
+    apiFetch(`/dashboard/summary?branchId=${branch}&t=${Date.now()}`)
       .then(data => {
         if (isAdmin) {
           setTodayTxCount(data.todayTxCount || 0);
