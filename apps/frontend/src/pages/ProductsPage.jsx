@@ -1473,4 +1473,5 @@ export default function ProductsPage() {
       <BottomNav />
     </div>
   );
+}
 
