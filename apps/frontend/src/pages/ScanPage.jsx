@@ -51,6 +51,7 @@ export default function ScanPage() {
 
   const scannerRef = useRef(null);
   const productsRef = useRef([]); // Untuk menghindari stale closure
+  const scanHandledRef = useRef(false);
   const scannerDivId = 'calico-qr-scanner';
 
   const branchId = sessionBranch;
@@ -126,6 +127,7 @@ export default function ScanPage() {
     setScanning(true);
     setScanResult(null);
     setNotFound(false);
+    scanHandledRef.current = false;
     setTimeout(() => {
       try {
         const html5QrCode = new Html5Qrcode(scannerDivId);
@@ -145,6 +147,8 @@ export default function ScanPage() {
             ] : undefined,
           },
           (decodedText) => {
+            if (scanHandledRef.current) return;
+            scanHandledRef.current = true;
             playBeep();
             // Jeda 250ms agar audio sempat diputar sebelum main thread diblokir oleh camera teardown + React re-render
             setTimeout(() => {
