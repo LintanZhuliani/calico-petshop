@@ -54,6 +54,7 @@ export default function NotifikasiPage() {
   // Separate Low Stock into Out of Stock and Critical Stock
   const validLowStock = notifPrefs.stok ? lowStock : [];
   const outOfStockItems = validLowStock.filter(item => (item.totalStock || 0) <= 0);
+  const criticalStockItems = validLowStock.filter(item => (item.totalStock || 0) > 0 && (item.totalStock || 0) <= item.minStock);
 
   return (
     <div className="bg-white min-h-screen flex flex-col font-body pb-20 transition-all duration-300">
@@ -129,6 +130,46 @@ export default function NotifikasiPage() {
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-400 mt-1">Stok di batch ini: <span className="font-semibold text-slate-600">{batch.qty} unit</span> <span className="italic">(Batch {new Date(batch.createdAt).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})})</span></p>
+                      </div>
+                      <div className="flex items-center text-slate-400">
+                        <span className="material-symbols-outlined">chevron_right</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* CRITICAL STOCK ALERTS (YELLOW) */}
+            {criticalStockItems.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-bold text-slate-800 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-amber-500 !text-[20px]">inventory_2</span>
+                    Stok Menipis
+                  </h2>
+                  <span className="px-2.5 py-0.5 bg-amber-100 text-amber-700 text-xs font-black rounded-full">
+                    {criticalStockItems.length} item
+                  </span>
+                </div>
+                
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-50">
+                  {criticalStockItems.map((p, i) => (
+                    <div 
+                      key={`crit-${i}`} 
+                      onClick={() => setSelectedNotif({ type: 'criticalStock', product: p })}
+                      className="p-4 flex gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-sm">
+                        <span className="material-symbols-outlined !text-[24px]">warning</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-slate-800 leading-tight mb-1">{p.name}</p>
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span className="text-slate-500">
+                            Stok saat ini: <strong className="text-amber-600">{p.totalStock} unit</strong> (Min: {p.minStock})
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center text-slate-400">
                         <span className="material-symbols-outlined">chevron_right</span>
@@ -283,11 +324,13 @@ export default function NotifikasiPage() {
                     </>
                   )}
 
-                  {(selectedNotif.type === 'outOfStock') && (
+                  {(selectedNotif.type === 'outOfStock' || selectedNotif.type === 'criticalStock') && (
                     <>
                       <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Status</span>
-                        <strong className='text-red-600'>Stok Habis</strong>
+                        <strong className={selectedNotif.type === 'outOfStock' ? 'text-red-600' : 'text-amber-600'}>
+                          {selectedNotif.type === 'outOfStock' ? 'Stok Habis' : 'Stok Menipis'}
+                        </strong>
                       </div>
                       <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                         <span className="text-slate-500">Stok Saat Ini</span>
@@ -301,18 +344,20 @@ export default function NotifikasiPage() {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2 w-full">
-                  <button
-                    onClick={() => {
-                      const productName = selectedNotif.product?.name;
-                      setSelectedNotif(null);
-                      navigate('/products', { state: { search: productName } });
-                    }}
-                    className={`w-full py-3.5 rounded-2xl font-bold text-white shadow-lg shadow-opacity-50 active:scale-95 transition-all ${primaryBg} ${primaryBg.replace('bg-', 'shadow-')}`}
-                  >
-                    Kelola Produk Ini
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="flex flex-col gap-2 w-full">
+                    <button
+                      onClick={() => {
+                        const productName = selectedNotif.product?.name;
+                        setSelectedNotif(null);
+                        navigate('/products', { state: { search: productName } });
+                      }}
+                      className={`w-full py-3.5 rounded-2xl font-bold text-white shadow-lg shadow-opacity-50 active:scale-95 transition-all ${primaryBg} ${primaryBg.replace('bg-', 'shadow-')}`}
+                    >
+                      Kelola Produk Ini
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

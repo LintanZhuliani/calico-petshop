@@ -112,56 +112,59 @@ export const transferService = {
   }) {
     const trId = generateId("tr");
 
-    // Deduct stock from source branch for each item
-    for (const item of data.items) {
-      const result = await productService.deductStockFEFO(
-        item.productId,
-        data.fromBranchId,
-        item.qty
-      );
-      if (!result.success) {
-        throw Object.assign(
-          new Error(
-            `Insufficient stock at source branch for ${item.productName}. Only ${result.deducted} available.`
-          ),
-          { statusCode: 400 }
+    return await db.transaction(async (tx) => {
+      // Deduct stock from source branch for each item
+      for (const item of data.items) {
+        const result = await productService.deductStockFEFO(
+          item.productId,
+          data.fromBranchId,
+          item.qty,
+          tx
         );
+        if (!result.success) {
+          throw Object.assign(
+            new Error(
+              `Insufficient stock at source branch for ${item.productName}. Only ${result.deducted} available.`
+            ),
+            { statusCode: 400 }
+          );
+        }
       }
-    }
 
-    // Create transfer record
-    const trResult = await db
-      .insert(transfer)
-      .values({
-        id: trId,
-        fromBranchId: data.fromBranchId,
-        toBranchId: data.toBranchId,
-        initiatedById: data.initiatedById,
-        initiatedByName: data.initiatedByName,
-        status: "transit",
-        note: data.note || null,
-      })
-      .returning();
+      // Create transfer record
+      const trResult = await tx
+        .insert(transfer)
+        .values({
+          id: trId,
+          fromBranchId: data.fromBranchId,
+          toBranchId: data.toBranchId,
+          initiatedById: data.initiatedById,
+          initiatedByName: data.initiatedByName,
+          status: "transit",
+          note: data.note || null,
+        })
+        .returning();
 
-    // Create transfer items
-    const trItems = await Promise.all(
-      data.items.map(async (item) => {
-        const result = await db
-          .insert(transferItem)
-          .values({
-            id: generateId("tri"),
-            transferId: trId,
-            productId: item.productId,
-            productName: item.productName,
-            qtyRequested: item.qty,
-            qtyReceived: null,
-          })
-          .returning();
-        return result[0];
-      })
-    );
+      // Create transfer items
+      const trItems = await Promise.all(
+        data.items.map(async (item) => {
+          const result = await tx
+            .insert(transferItem)
+            .values({
+              id: generateId("tri"),
+              transferId: trId,
+              productId: item.productId,
+              productName: item.productName,
+              qtyRequested: item.qty,
+              qtyReceived: null,
+            })
+            .returning();
+          return result[0];
+        })
+      );
 
-    return { ...trResult[0], items: trItems };
+      return { ...trResult[0], items: trItems };
+    });
   },
 
   /**
@@ -191,47 +194,48 @@ export const transferService = {
       );
     }
 
-    // Check for discrepancy
-    let hasDiscrepancy = false;
-    for (const item of tr.items) {
-      const received = data.receivedItems.find(
-        (r) => r.productId === item.productId
-      );
-      const qtyReceived = received
-        ? received.qtyReceived
-        : item.qtyRequested;
+    await db.transaction(async (tx) => {
+      // Check for discrepancy
+      let hasDiscrepancy = false;
+      for (const item of tr.items) {
+        const received = data.receivedItems.find(
+          (r) => r.productId === item.productId
+        );
+        const qtyReceived = received
+          ? received.qtyReceived
+          : item.qtyRequested;
 
-      if (qtyReceived !== item.qtyRequested) {
-        hasDiscrepancy = true;
+        if (qtyReceived !== item.qtyRequested) {
+          hasDiscrepancy = true;
+        }
+
+        // Update transfer item with received qty
+        await tx
+          .update(transferItem)
+          .set({ qtyReceived })
+          .where(eq(transferItem.id, item.id));
+
+        // Add received stock to destination branch
+        if (qtyReceived > 0) {
+          await productService.addStock({
+            productId: item.productId,
+            branchId: tr.toBranchId,
+            qty: qtyReceived,
+          }, tx);
+        }
       }
 
-      // Update transfer item with received qty
-      await db
-        .update(transferItem)
-        .set({ qtyReceived })
-        .where(eq(transferItem.id, item.id));
-
-      // Add received stock to destination branch
-      if (qtyReceived > 0) {
-        await productService.addStock({
-          productId: item.productId,
-          branchId: tr.toBranchId,
-          qty: qtyReceived,
-        });
-      }
-    }
-
-    // Update transfer status
-    const updated = await db
-      .update(transfer)
-      .set({
-        status: hasDiscrepancy ? "discrepancy" : "completed",
-        confirmedById: data.confirmedById,
-        confirmedByName: data.confirmedByName,
-        confirmedAt: new Date(),
-      })
-      .where(eq(transfer.id, data.transferId))
-      .returning();
+      // Update transfer status
+      await tx
+        .update(transfer)
+        .set({
+          status: hasDiscrepancy ? "discrepancy" : "completed",
+          confirmedById: data.confirmedById,
+          confirmedByName: data.confirmedByName,
+          confirmedAt: new Date(),
+        })
+        .where(eq(transfer.id, data.transferId));
+    });
 
     return this.getById(data.transferId);
   },

@@ -14,6 +14,8 @@ export {
 
 export { branch, branchRelations } from "./branch.js";
 
+export { category } from "./category.js";
+
 export { product, productRelations } from "./product.js";
 
 export { branchStock, branchStockRelations } from "./branch-stock.js";

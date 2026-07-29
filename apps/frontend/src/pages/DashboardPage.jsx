@@ -22,10 +22,7 @@ export default function DashboardPage() {
   const cacheKey = `calico_dashboard_stats_${branchId}`;
   const cachedStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
 
-  const [products, setProducts] = useState([]);
-  const [transfers, setTransfers] = useState([]);
-  const [lowStock, setLowStock] = useState([]);
-  const [expiring, setExpiring] = useState([]);
+  const [expiringCount, setExpiringCount] = useState(cachedStats.expiringCount || 0);
   const [showNotif, setShowNotif] = useState(false);
   
   const [todayTxCount, setTodayTxCount] = useState(cachedStats.todayTxCount || 0);
@@ -42,8 +39,6 @@ export default function DashboardPage() {
     const today = new Date().toISOString().split('T')[0];
     const branch = branchId;
     const lastClosedAt = localStorage.getItem(`calico_last_closed_at_${userName}`);
-    
-    // Fetch today's transaction summary (Manually calculate if kasir has a closed shift, otherwise use API summary)
     
     // Fetch today's transactions to count items sold and recalculate revenue/count if Kasir
     apiFetch(`/transactions?date=${today}&branchId=${branch}`)
@@ -82,81 +77,38 @@ export default function DashboardPage() {
       })
       .catch(err => console.error('Items sold error:', err));
 
-    if (isAdmin) {
-      apiFetch(`/transactions/summary?date=${today}&branchId=${branch}`)
-        .then(data => {
-          const txCount = data.totalTransactions || 0;
-          const revenue = data.totalRevenue || 0;
-          setTodayTxCount(txCount);
-          setTodayRevenue(revenue);
-          
-          const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-          localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayTxCount: txCount, todayRevenue: revenue }));
-        })
-        .catch(err => console.error('Dashboard summary error:', err));
-    }
-
-    // Fetch products + stock info
-    apiFetch(`/products?branchId=${branch}`)
+    // Fetch unified dashboard summary (Replaces 5 separate heavy queries)
+    apiFetch(`/dashboard/summary?branchId=${branch}`)
       .then(data => {
-        setProducts(data);
-        // Low stock: products where totalStock === 0 (user requested to remove 'stok menipis')
-        const ls = data.filter(p => (p.totalStock || 0) <= 0);
-        setLowStock(ls);
-        setLowStockCount(ls.length);
+        if (isAdmin) {
+          setTodayTxCount(data.todayTxCount || 0);
+          setTodayRevenue(data.todayRevenue || 0);
+        }
         
+        setLowStockCount(data.lowStockCount || 0);
+        setInTransitCount(data.inTransitCount || 0);
+        setExpiringCount(data.expiringCount || 0);
+        
+        // Populate chart
+        if (data.chartData && Array.isArray(data.chartData)) {
+          const maxVal = Math.max(...data.chartData.map(d => d.total), 1);
+          setChartHeights(data.chartData.map(d => (d.total / maxVal) * 100));
+          setChartLabels(data.chartData.map(d => d.label));
+          setChartValues(data.chartData.map(d => d.total));
+        }
+
+        // Cache the summary
         const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-        localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, lowStockCount: ls.length }));
+        localStorage.setItem(cacheKey, JSON.stringify({
+          ...currentStats,
+          todayTxCount: data.todayTxCount,
+          todayRevenue: data.todayRevenue,
+          lowStockCount: data.lowStockCount,
+          inTransitCount: data.inTransitCount,
+          expiringCount: data.expiringCount
+        }));
       })
-      .catch(err => console.error('Products error:', err));
-
-    // Fetch expiring batches (within 30 days)
-    apiFetch(`/products/alerts/expiring?branchId=${branch}&days=30`)
-      .then(data => setExpiring(data || []))
-      .catch(err => console.error('Expiring error:', err));
-
-    // Fetch transfers in transit
-    apiFetch(`/transfers?status=transit&branchId=${branch}`)
-      .then(data => {
-        const trs = Array.isArray(data) ? data : [];
-        setTransfers(trs);
-        const inTransit = trs.filter(t => t.status === 'transit').length;
-        setInTransitCount(inTransit);
-        
-        const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-        localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, inTransitCount: inTransit }));
-      })
-      .catch(err => console.error('Transfers error:', err));
-
-    // Fetch last 7 days of transactions for the chart
-    apiFetch(`/transactions?branchId=${branch}`)
-      .then(data => {
-        if (!Array.isArray(data)) return;
-        
-        const last7Days = Array.from({length: 7}).map((_, i) => {
-          const d = new Date();
-          d.setDate(d.getDate() - (6 - i));
-          return {
-            dateStr: d.toISOString().split('T')[0],
-            label: d.toLocaleDateString('id-ID', { weekday: 'short' }),
-            total: 0
-          };
-        });
-
-        data.forEach(tx => {
-          const txDate = new Date(tx.date).toISOString().split('T')[0];
-          const dayIndex = last7Days.findIndex(d => d.dateStr === txDate);
-          if (dayIndex !== -1) {
-            last7Days[dayIndex].total += isAdmin ? tx.total : 1;
-          }
-        });
-
-        const maxVal = Math.max(...last7Days.map(d => d.total), 1);
-        setChartHeights(last7Days.map(d => (d.total / maxVal) * 100));
-        setChartLabels(last7Days.map(d => d.label));
-        setChartValues(last7Days.map(d => d.total));
-      })
-      .catch(err => console.error('Chart error:', err));
+      .catch(err => console.error('Dashboard summary error:', err));
   }, [branchId, isAdmin, cacheKey]);
 
   // Track sidebar toggle state dynamically
@@ -181,8 +133,6 @@ export default function DashboardPage() {
   const primaryLightText = isAdmin ? 'text-orange-600' : 'text-red-600';
   const primaryBorder = isAdmin ? 'border-orange-100' : 'border-red-100';
 
-  const totalProducts = products.length;
-
   const greetingHour = new Date().getHours();
   const greeting = greetingHour < 11 ? 'Selamat Pagi' : greetingHour < 15 ? 'Selamat Siang' : greetingHour < 18 ? 'Selamat Sore' : 'Selamat Malam';
   const todayStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -192,9 +142,9 @@ export default function DashboardPage() {
     return saved ? JSON.parse(saved) : { stok: true, expired: true, shift: true };
   });
 
-  const notifLowStockCount = notifPrefs.stok ? lowStock.length : 0;
-  const expiringCount = notifPrefs.expired ? expiring.length : 0;
-  const badgeCount = notifLowStockCount + expiringCount;
+  const notifLowStockCount = notifPrefs.stok ? lowStockCount : 0;
+  const badgeExpiringCount = notifPrefs.expired ? expiringCount : 0;
+  const badgeCount = notifLowStockCount + badgeExpiringCount;
 
   return (
     <div className={`bg-white min-h-screen flex flex-col pb-24 font-body transition-all duration-300 ${
@@ -211,7 +161,7 @@ export default function DashboardPage() {
           </button>
         </div>
         <button 
-          onClick={() => navigate('/notifikasi', { state: { ...location.state, lowStock, expiring } })}
+          onClick={() => navigate('/notifikasi', { state: location.state })}
           className={`relative p-2 rounded-full bg-slate-50 hover:bg-slate-100 transition-all`}
         >
           <span className={`material-symbols-outlined !text-[20px] text-slate-600`}>notifications</span>

@@ -23,7 +23,8 @@ export default function RiwayatNotifikasiPage() {
   // Fetch History Logs
   useEffect(() => {
     setLoadingHistory(true);
-    apiFetch(`/notifications?branchId=${branchId}`)
+    apiFetch(`/notifications/seed`)
+      .then(() => apiFetch(`/notifications?branchId=${branchId}`))
       .then(data => setHistoryLogs(data || []))
       .catch(err => console.error("Failed to fetch history:", err))
       .finally(() => setLoadingHistory(false));

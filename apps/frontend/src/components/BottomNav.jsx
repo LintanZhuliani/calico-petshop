@@ -113,7 +113,7 @@ export default function BottomNav() {
             </button>
           </div>
           
-          <div className="flex flex-col gap-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
+          <div className="flex-1 flex flex-col gap-2 overflow-y-auto overflow-x-hidden scrollbar-hide pb-8">
             {otherMenus.map((menu) => {
               const active = isActive(menu.path);
               return (

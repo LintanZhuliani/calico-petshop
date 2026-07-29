@@ -248,7 +248,7 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
         </div>
 
         {/* Footer: tombol konfirmasi */}
-        <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-200">
+        <div className="px-6 pt-3 pb-16 shrink-0 border-t border-slate-200">
           <button
             onClick={handleConfirm}
             disabled={

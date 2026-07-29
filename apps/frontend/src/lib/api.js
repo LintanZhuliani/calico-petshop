@@ -15,6 +15,7 @@ export async function apiFetch(endpoint, options = {}) {
       ...(options.headers || {}),
     },
     credentials: "include", // This is crucial for session cookies
+    cache: "no-store", // Mencegah caching oleh browser (fix stale data)
   };
 
   if (options.body && typeof options.body === "object") {
@@ -24,6 +25,16 @@ export async function apiFetch(endpoint, options = {}) {
   const response = await fetch(url, config);
 
   if (!response.ok) {
+    // Global 401 Unauthorized Handling
+    if (response.status === 401) {
+      // Hanya redirect jika kita belum berada di halaman login
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        // Hapus cache yang sensitif
+        localStorage.removeItem('calico_products_cache');
+        window.location.href = "/login?expired=true";
+      }
+    }
+
     let errorMessage = `API Error: ${response.statusText}`;
     try {
       const errData = await response.json();

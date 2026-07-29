@@ -284,9 +284,9 @@ export const productService = {
     expiredDate?: string | null;
     buyPrice?: number | null;
     sellPrice?: number | null;
-  }) {
+  }, tx: any = db) {
     // Find or create branch_stock
-    let bs = await db
+    let bs = await tx
       .select()
       .from(branchStock)
       .where(
@@ -298,7 +298,7 @@ export const productService = {
 
     let branchStockId: string;
     if (bs.length === 0) {
-      const newBs = await db
+      const newBs = await tx
         .insert(branchStock)
         .values({
           id: generateId("bs"),
@@ -312,7 +312,7 @@ export const productService = {
     }
 
     // Add batch with per-batch pricing
-    const newBatch = await db
+    const newBatch = await tx
       .insert(batch)
       .values({
         id: generateId("b"),
@@ -367,10 +367,11 @@ export const productService = {
   async deductStockFEFO(
     productId: string,
     branchId: string,
-    qtyToDeduct: number
+    qtyToDeduct: number,
+    tx: any = db
   ): Promise<{ success: boolean; deducted: number; totalCost: number; totalRevenue: number }> {
     // Get branch_stock
-    const bsResult = await db
+    const bsResult = await tx
       .select()
       .from(branchStock)
       .where(
@@ -387,18 +388,18 @@ export const productService = {
     const branchStockId = bsResult[0].id;
 
     // Get product for fallback prices
-    const prod = await db.select().from(product).where(eq(product.id, productId));
+    const prod = await tx.select().from(product).where(eq(product.id, productId));
     const fallbackBuyPrice = prod[0]?.buyPrice ?? 0;
     const fallbackSellPrice = prod[0]?.price ?? 0;
 
     // Get all batches, sorted FEFO
-    const batches = await db
+    const batches = await tx
       .select()
       .from(batch)
       .where(eq(batch.branchStockId, branchStockId));
 
     // Sort: earliest expiry first, null expiry last (fallback to FIFO)
-    batches.sort((a, b) => {
+    batches.sort((a: any, b: any) => {
       if (!a.expiredDate && !b.expiredDate) return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       if (!a.expiredDate) return 1;
       if (!b.expiredDate) return -1;
@@ -428,9 +429,9 @@ export const productService = {
 
       if (newQty <= 0) {
         // Remove empty batch
-        await db.delete(batch).where(eq(batch.id, b.id));
+        await tx.delete(batch).where(eq(batch.id, b.id));
       } else {
-        await db
+        await tx
           .update(batch)
           .set({ qty: newQty })
           .where(eq(batch.id, b.id));
@@ -463,7 +464,7 @@ export const productService = {
       .from(batch)
       .innerJoin(branchStock, eq(batch.branchStockId, branchStock.id))
       .innerJoin(product, eq(branchStock.productId, product.id))
-      .where(eq(branchStock.branchId, branchId));
+      .where(and(eq(branchStock.branchId, branchId), eq(product.isArchived, false)));
 
     // Group batches by product to determine sessionIndex correctly
     const productBatches: Record<string, any[]> = {};
@@ -481,7 +482,7 @@ export const productService = {
       
       pBatches.forEach((row, index) => {
         const days = daysUntilExpiry(row.batch.expiredDate);
-        if (days <= withinDays && days > 0) {
+        if (days <= withinDays && days >= 0) {
           alerts.push({
             product: row.product,
             batch: row.batch,

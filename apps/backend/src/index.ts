@@ -25,6 +25,7 @@ import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { reportRoutes } from "./routes/report.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -74,6 +75,15 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "5mb" })); // 5mb for base64 product images
 
 // ── API Routes ──
+// Global Cache-Control untuk mencegah isu stale data dari browser/proxy
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+  next();
+});
+
 app.use("/api/branches", branchRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
@@ -82,6 +92,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // ── Health Check ──
 app.get("/api/health", (req, res) => {

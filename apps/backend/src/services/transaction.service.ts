@@ -88,29 +88,31 @@ export const transactionService = {
     const total = data.items.reduce((s, i) => s + i.price * i.qty, 0);
     const txId = generateTxId();
 
-    // Step 1: Create transaction record FIRST (safe — no stock changes yet)
-    const txResult = await db
-      .insert(transaction)
-      .values({
-        id: txId,
-        branchId: data.branchId,
-        cashierId: data.cashierId,
-        cashierName: data.cashierName,
-        total,
-        paid: data.paid,
-        change: data.change,
-        paymentMethod: data.paymentMethod || "Tunai",
-      })
-      .returning();
+    return await db.transaction(async (tx) => {
+      // Step 1: Create transaction record FIRST (safe — no stock changes yet)
+      const txResult = await tx
+        .insert(transaction)
+        .values({
+          id: txId,
+          branchId: data.branchId,
+          cashierId: data.cashierId,
+          cashierName: data.cashierName,
+          total,
+          paid: data.paid,
+          change: data.change,
+          paymentMethod: data.paymentMethod || "Tunai",
+        })
+        .returning();
 
-    // Step 2: Deduct stock FEFO first to get accurate batch costs
-    const deductionResults: { productId: string; totalCost: number; qty: number }[] = [];
-    try {
+      // Step 2: Deduct stock FEFO first to get accurate batch costs
+      const deductionResults: { productId: string; totalCost: number; qty: number }[] = [];
       for (const item of data.items) {
+        // We pass the transaction object `tx` to ensure stock deduction is part of the atomic transaction
         const result = await productService.deductStockFEFO(
           item.productId,
           data.branchId,
-          item.qty
+          item.qty,
+          tx
         );
         if (!result.success) {
           throw Object.assign(
@@ -126,38 +128,33 @@ export const transactionService = {
           qty: item.qty,
         });
       }
-    } catch (err) {
-      // Rollback: hapus transaksi yang sudah dibuat jika stok gagal
-      await db.delete(transactionItem).where(eq(transactionItem.transactionId, txId));
-      await db.delete(transaction).where(eq(transaction.id, txId));
-      throw err;
-    }
 
-    // Step 3: Create transaction items with accurate buyPrice from FEFO batches
-    const txItems = await Promise.all(
-      data.items.map(async (item) => {
-        const deduction = deductionResults.find(d => d.productId === item.productId);
-        // Use weighted average buyPrice from the actual batches that were deducted
-        const buyPrice = deduction && deduction.qty > 0
-          ? Math.round(deduction.totalCost / deduction.qty)
-          : (item.buyPrice ?? 0);
-        const result = await db
-          .insert(transactionItem)
-          .values({
-            id: generateId("ti"),
-            transactionId: txId,
-            productId: item.productId,
-            productName: item.productName,
-            qty: item.qty,
-            price: item.price,
-            buyPrice,
-          })
-          .returning();
-        return result[0];
-      })
-    );
+      // Step 3: Create transaction items with accurate buyPrice from FEFO batches
+      const txItems = await Promise.all(
+        data.items.map(async (item) => {
+          const deduction = deductionResults.find(d => d.productId === item.productId);
+          // Use weighted average buyPrice from the actual batches that were deducted
+          const buyPrice = deduction && deduction.qty > 0
+            ? Math.round(deduction.totalCost / deduction.qty)
+            : (item.buyPrice ?? 0);
+          const result = await tx
+            .insert(transactionItem)
+            .values({
+              id: generateId("ti"),
+              transactionId: txId,
+              productId: item.productId,
+              productName: item.productName,
+              qty: item.qty,
+              price: item.price,
+              buyPrice,
+            })
+            .returning();
+          return result[0];
+        })
+      );
 
-    return { ...txResult[0], items: txItems };
+      return { ...txResult[0], items: txItems };
+    });
   },
 
   /**
@@ -244,21 +241,23 @@ export const transactionService = {
     const tx = await this.getById(id);
     if (!tx) throw new Error("Transaksi tidak ditemukan");
 
-    // 1. Restore stock for all items
-    for (const item of tx.items) {
-      await productService.addStock({
-        productId: item.productId,
-        branchId: tx.branchId,
-        qty: item.qty,
-        expiredDate: null, // We don't know the exact original expiry, so we append without expiry
-      });
-    }
+    await db.transaction(async (dbTx) => {
+      // 1. Restore stock for all items
+      for (const item of tx.items) {
+        await productService.addStock({
+          productId: item.productId,
+          branchId: tx.branchId,
+          qty: item.qty,
+          expiredDate: null, // We don't know the exact original expiry, so we append without expiry
+        }, dbTx);
+      }
 
-    // 2. Delete transaction items
-    await db.delete(transactionItem).where(eq(transactionItem.transactionId, id));
+      // 2. Delete transaction items
+      await dbTx.delete(transactionItem).where(eq(transactionItem.transactionId, id));
 
-    // 3. Delete transaction
-    await db.delete(transaction).where(eq(transaction.id, id));
+      // 3. Delete transaction
+      await dbTx.delete(transaction).where(eq(transaction.id, id));
+    });
 
     getIo()?.emit("DATA_UPDATED");
     return true;

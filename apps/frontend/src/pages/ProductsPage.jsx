@@ -46,11 +46,7 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
   });
 }
 
-const CATEGORIES = [
-  "Makanan Kering", "Makanan Basah", "Camilan & Treat", "Susu & Minuman",
-  "Vitamin & Suplemen", "Obat-obatan", "Pasir Kucing", "Shampo & Grooming",
-  "Aksesoris", "Mainan", "Kandang & Tas", "Grooming", "Ongkos Kirim", "Penginapan Kucing"
-];
+// Removed hardcoded CATEGORIES
 
 // ── Komponen Badge Status Stok ──
 function StockBadge({ total, min }) {
@@ -60,8 +56,8 @@ function StockBadge({ total, min }) {
 }
 
 // ── Modal Tambah Produk (Admin) ──
-function AddProductModal({ onClose, onSave }) {
-  const [form, setForm] = useState({ name: '', category: CATEGORIES[0], buyPrice: '', price: '', barcode: '', minStock: 5, image: '', qty: '', expiredDate: '' });
+function AddProductModal({ onClose, onSave, categories }) {
+  const [form, setForm] = useState({ name: '', category: categories[0]?.name || '', buyPrice: '', price: '', barcode: '', minStock: 5, image: '', qty: '', expiredDate: '' });
   const [customCat, setCustomCat] = useState('');
   const [showCustomCat, setShowCustomCat] = useState(false);
   const handle = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -111,7 +107,7 @@ function AddProductModal({ onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white w-full rounded-t-3xl p-6 pb-10 space-y-4 animate-[slideUp_0.25s_ease]" style={{ maxHeight: '90dvh', overflowY: 'auto' }}>
+      <div className="bg-white w-full rounded-t-3xl p-6 pb-24 space-y-4 animate-[slideUp_0.25s_ease]" style={{ maxHeight: '90dvh', overflowY: 'auto' }}>
         <div className="flex justify-between items-center">
           <h2 className="font-headline font-bold text-xl text-slate-900">Tambah Produk</h2>
           <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 active:scale-95"><span className="material-symbols-outlined text-slate-500">close</span></button>
@@ -137,7 +133,7 @@ function AddProductModal({ onClose, onSave }) {
           <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Kategori</label>
           <select value={showCustomCat ? '__custom__' : form.category} onChange={e => handleCategoryChange(e.target.value)}
             className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 font-medium outline-none">
-            {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+            {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             <option value="__custom__">+ Tambah Kategori Baru</option>
           </select>
           {showCustomCat && (
@@ -193,7 +189,7 @@ function AddStockModal({ product, onClose, onSave }) {
   };
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white w-full rounded-t-3xl p-6 pb-10 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white w-full rounded-t-3xl p-6 pb-24 space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="font-headline font-bold text-xl text-slate-900">Tambah Stok</h2>
@@ -310,7 +306,7 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
           {batch.expiredDate ? (
             <span className={`text-[10px] flex items-center gap-0.5 mt-0.5 ${isExpired ? 'line-through opacity-80' : 'text-orange-500'}`}>
               <span className="material-symbols-outlined !text-[12px]">calendar_today</span>
-              Exp: {new Date(batch.expiredDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+              Exp: {new Date(batch.expiredDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
           ) : (
             <span className="text-[10px] opacity-60">Tanpa Exp</span>
@@ -327,11 +323,11 @@ function BatchItemEditor({ batch, index, onUpdate, onDelete, onSelect }) {
   );
 }
 
-function EditProductModal({ product, onClose, onSave, onRefresh }) {
+function EditProductModal({ product, onClose, onSave, onRefresh, categories }) {
   const [localBatches, setLocalBatches] = useState(product.batches || []);
   const [form, setForm] = useState({
     name: product.name || '',
-    category: product.category || CATEGORIES[0],
+    category: product.category || categories[0]?.name || '',
     buyPrice: product.fefoBuyPrice !== undefined ? product.fefoBuyPrice : (product.buyPrice || ''),
     price: product.fefoSellPrice !== undefined ? product.fefoSellPrice : (product.price || ''),
     barcode: product.barcode || '',
@@ -404,7 +400,7 @@ function EditProductModal({ product, onClose, onSave, onRefresh }) {
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white w-full rounded-t-3xl p-6 pb-10 space-y-4" style={{ maxHeight: '90dvh', overflowY: 'auto' }}>
+      <div className="bg-white w-full rounded-t-3xl p-6 pb-24 space-y-4" style={{ maxHeight: '90dvh', overflowY: 'auto' }}>
         <div className="flex justify-between items-center">
           <div>
             <h2 className="font-headline font-bold text-xl text-slate-900">Edit Produk</h2>
@@ -448,11 +444,7 @@ function EditProductModal({ product, onClose, onSave, onRefresh }) {
           <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Kategori</label>
           <select value={showCustomCat ? '__custom__' : form.category} onChange={e => handleCategoryChange(e.target.value)}
             className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 font-medium outline-none">
-            {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-            {/* If current category isn't in CATEGORIES, show it too */}
-            {!CATEGORIES.includes(form.category) && !showCustomCat && (
-              <option key={form.category}>{form.category}</option>
-            )}
+            {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             <option value="__custom__">+ Tambah Kategori Baru</option>
           </select>
           {showCustomCat && (
@@ -471,7 +463,7 @@ function EditProductModal({ product, onClose, onSave, onRefresh }) {
           <InputField label="Harga Jual (Rp)*" type="number" value={form.price} onChange={v => handle('price', v)} placeholder="28000" />
         </div>
 
-        {form.buyPrice && form.price && Number(form.price) > 0 && (
+        {Number(form.buyPrice) > 0 && Number(form.price) > 0 && (
           <div className="bg-green-50 border border-green-100 rounded-2xl p-3 flex justify-between items-center">
             <span className="text-sm font-semibold text-green-700">Estimasi Markup</span>
             <span className="font-bold text-green-700">
@@ -794,6 +786,111 @@ function InputField({ label, type = 'text', value, onChange, placeholder }) {
 // ─────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
+// ── Modal Kelola Kategori (Admin) ──
+function ManageCategoryModal({ onClose, categories, onRefresh }) {
+  const [newCat, setNewCat] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!newCat.trim()) return;
+    try {
+      setIsLoading(true);
+      await apiFetch('/categories', { method: 'POST', body: JSON.stringify({ name: newCat }) });
+      setNewCat('');
+      await onRefresh();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdate = async (id) => {
+    if (!editName.trim()) return;
+    try {
+      setIsLoading(true);
+      await apiFetch(`/categories/${id}`, { method: 'PUT', body: JSON.stringify({ name: editName }) });
+      setEditingId(null);
+      await onRefresh();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!confirm(`Hapus kategori "${name}"?\n\nSemua produk di kategori ini akan otomatis dipindahkan ke kategori 'Lainnya'.`)) return;
+    try {
+      setIsLoading(true);
+      await apiFetch(`/categories/${id}`, { method: 'DELETE' });
+      await onRefresh();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 animate-[slideUp_0.2s_ease]" style={{ maxHeight: '90dvh', display: 'flex', flexDirection: 'column' }}>
+        <div className="flex justify-between items-center shrink-0">
+          <h2 className="font-headline font-bold text-xl text-slate-900">Kelola Kategori</h2>
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 active:scale-95"><span className="material-symbols-outlined text-slate-500">close</span></button>
+        </div>
+
+        <form onSubmit={handleAdd} className="flex gap-2 shrink-0">
+          <input
+            type="text"
+            value={newCat}
+            onChange={e => setNewCat(e.target.value)}
+            placeholder="Tambah kategori baru..."
+            className="flex-1 px-4 py-2 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-xl text-sm outline-none"
+          />
+          <button type="submit" disabled={!newCat.trim() || isLoading} className="px-4 py-2 bg-[#D35400] text-white rounded-xl font-bold disabled:opacity-50">
+            Tambah
+          </button>
+        </form>
+
+        <div className="flex-1 overflow-y-auto space-y-2 mt-4 pr-1">
+          {categories.map(c => (
+            <div key={c.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+              {editingId === c.id ? (
+                <div className="flex flex-1 gap-2">
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="flex-1 px-3 py-1.5 border-2 border-orange-400 rounded-lg text-sm outline-none"
+                    autoFocus
+                  />
+                  <button onClick={() => handleUpdate(c.id)} disabled={isLoading} className="p-1.5 bg-green-100 text-green-600 rounded-lg"><span className="material-symbols-outlined !text-[18px]">check</span></button>
+                  <button onClick={() => setEditingId(null)} className="p-1.5 bg-slate-200 text-slate-600 rounded-lg"><span className="material-symbols-outlined !text-[18px]">close</span></button>
+                </div>
+              ) : (
+                <>
+                  <span className="font-medium text-slate-700 text-sm">{c.name}</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => { setEditingId(c.id); setEditName(c.name); }} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><span className="material-symbols-outlined !text-[18px]">edit</span></button>
+                    {c.name !== 'Lainnya' && (
+                      <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><span className="material-symbols-outlined !text-[18px]">delete</span></button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+          {categories.length === 0 && <p className="text-center text-slate-400 text-sm py-4">Belum ada kategori</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductsPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -811,6 +908,8 @@ export default function ProductsPage() {
       return cached ? JSON.parse(cached) : [];
     } catch { return []; }
   });
+  const [apiCategories, setApiCategories] = useState([]);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [search, setSearch] = useState(location.state?.search || '');
   const [filterCat, setFilterCat] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
@@ -854,8 +953,12 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setIsLoading(products.length === 0);
-      const data = await apiFetch(`/products?branchId=${branchId}`);
+      const [data, cats] = await Promise.all([
+        apiFetch(`/products?branchId=${branchId}`),
+        apiFetch('/categories')
+      ]);
       setProducts(data);
+      setApiCategories(cats);
       try {
         // Strip base64 images to prevent QuotaExceededError and keep stringify fast
         const lightData = data.map(p => ({ ...p, image: p.image?.startsWith('data:') ? null : p.image }));
@@ -1087,10 +1190,10 @@ export default function ProductsPage() {
 
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const uniqueCats = ['Semua', ...new Set(products.map(p => p.category).filter(c => c && c.toLowerCase() !== 'semua'))];
+  const uniqueCats = ['Semua', ...apiCategories.map(c => c.name)];
 
   return (
-    <div className={`bg-white min-h-screen flex flex-col font-body pb-0 md:pb-0 transition-all duration-300 ${
+    <div className={`bg-white min-h-screen flex flex-col font-body pb-24 md:pb-0 transition-all duration-300 ${
       sidebarOpen ? 'md:pl-64' : 'md:pl-16'
     }`}>
       {/* ── Toast ── */}
@@ -1159,32 +1262,34 @@ export default function ProductsPage() {
               </button>
             </div>
             {/* Filter Chips */}
-            <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide">
+            <div className="flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-hide items-center">
+              {isAdmin && (
+                <button 
+                  onClick={() => setShowCategoryManager(true)}
+                  className="shrink-0 p-1.5 rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-all bg-white"
+                  title="Kelola Kategori"
+                >
+                  <span className="material-symbols-outlined !text-[20px]">more_vert</span>
+                </button>
+              )}
               <button 
                 onClick={() => { setFilterStatus('Semua'); setFilterCat('Semua'); }}
                 className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterStatus === 'Semua' && filterCat === 'Semua' ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}
               >
                 Semua
               </button>
-              <div className="w-px bg-slate-200 my-1" />
+              <div className="w-px bg-slate-200 h-6 shrink-0" />
               {uniqueCats.filter(c => c !== 'Semua').map(c => (
                 <button key={c} onClick={() => setFilterCat(filterCat === c ? 'Semua' : c)}
                   className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterCat === c ? `${primaryLight} ${primaryText} border-current shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
                   {c}
                 </button>
               ))}
-              <div className="w-px bg-slate-200 my-1" />
-              <button 
-                onClick={() => { setFilterStatus('hampir'); setFilterCat('Semua'); }}
-                className={`shrink-0 text-sm font-medium capitalize px-4 py-1.5 rounded-lg border transition-all ${filterStatus === 'hampir' ? `bg-red-50 text-red-600 border-red-500 shadow-[0_2px_8px_rgba(0,0,0,0.04)]` : 'bg-white border-slate-300 text-red-500 hover:bg-slate-50'}`}
-              >
-                Hampir Expired
-              </button>
             </div>
           </header>
 
           {/* ── Product Grid (1 column per line layout as requested) ── */}
-          <main className="px-5 py-4 grid grid-cols-1 gap-3 w-full">
+          <main className="px-5 pt-4 pb-28 grid grid-cols-1 gap-3 w-full">
             {isLoading ? (
               <div className="col-span-full flex flex-col items-center justify-center py-20">
                 <div className={`w-10 h-10 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin`}></div>
@@ -1273,6 +1378,9 @@ export default function ProductsPage() {
                 </div>
               );
             })}
+            
+            {/* Spacer for mobile bottom nav */}
+            <div className="col-span-full h-24 md:h-0 flex-shrink-0" />
           </main>
         </div>
       </div>
@@ -1356,13 +1464,13 @@ export default function ProductsPage() {
       )}
 
       {/* ── Modals ── */}
-      {addProductOpen && <AddProductModal onClose={() => setAddProductOpen(false)} onSave={handleSaveProduct} />}
+      {addProductOpen && <AddProductModal onClose={() => setAddProductOpen(false)} onSave={handleSaveProduct} categories={apiCategories} />}
       {addStockTarget && <AddStockModal product={addStockTarget} onClose={() => setAddStockTarget(null)} onSave={handleAddStock} />}
-      {editTarget && <EditProductModal product={editTarget} onClose={() => setEditTarget(null)} onSave={handleEditComplete} onRefresh={fetchProducts} />}
+      {editTarget && <EditProductModal product={editTarget} onClose={() => setEditTarget(null)} onSave={handleEditComplete} onRefresh={fetchProducts} categories={apiCategories} />}
       {checkoutOpen && <CheckoutModal cart={cart} onClose={() => setCheckoutOpen(false)} onConfirm={handleConfirmCheckout} />}
+      {showCategoryManager && <ManageCategoryModal onClose={() => setShowCategoryManager(false)} categories={apiCategories} onRefresh={fetchProducts} />}
 
       <BottomNav />
     </div>
   );
-}
 
