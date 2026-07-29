@@ -227,14 +227,14 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Card 3 — Stok Kritis */}
-          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${lowStock.length > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-200'}`}>
-            <span className={`material-symbols-outlined !text-[28px] ${lowStock.length > 0 ? 'text-red-500' : 'text-slate-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+          <div className={`rounded-2xl p-4 border shadow-sm flex flex-col justify-between min-h-[108px] transition-transform hover:scale-[1.02] ${lowStockCount > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-200'}`}>
+            <span className={`material-symbols-outlined !text-[28px] ${lowStockCount > 0 ? 'text-red-500' : 'text-slate-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
               warning
             </span>
             <div>
-              <p className={`text-[10px] font-bold uppercase tracking-wide ${lowStock.length > 0 ? 'text-red-400' : 'text-slate-400'}`}>Stok Kritis</p>
-              <p className={`text-lg font-extrabold font-headline ${lowStock.length > 0 ? 'text-red-600' : 'text-slate-900'}`}>
-                {lowStock.length} Produk
+              <p className={`text-[10px] font-bold uppercase tracking-wide ${lowStockCount > 0 ? 'text-red-400' : 'text-slate-400'}`}>Stok Kritis</p>
+              <p className={`text-lg font-extrabold font-headline ${lowStockCount > 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                {lowStockCount} Produk
               </p>
             </div>
           </div>
