@@ -13,47 +13,74 @@ const router = Router();
 router.get("/seed", async (req, res) => {
   try {
     let count = 0;
-    const bsResults = await db.select().from(branchStock);
-    for (const bs of bsResults) {
-      const batches = await db.select().from(batch).where(eq(batch.branchStockId, bs.id));
-      for (const b of batches) {
-        if (!b.expiredDate || b.qty <= 0) continue;
-        
-        const days = daysUntilExpiry(b.expiredDate);
-        let type = '';
-        let message = '';
-        
-        if (days <= 0) {
-          type = 'expired';
-          message = `Telah Kadaluarsa sejak ${Math.abs(days)} hari yang lalu`;
-        } else if (days <= 7) {
-          type = 'expiry_7';
-          message = `Akan Kadaluarsa dalam ${days} hari (1 Minggu)`;
-        } else if (days <= 30) {
-          type = 'expiry_30';
-          message = `Akan Kadaluarsa dalam ${days} hari (1 Bulan)`;
-        }
+    
+    // 1. Fetch all batches and branchStocks in a single JOIN
+    const results = await db.select({
+      batch: batch,
+      branchId: branchStock.branchId,
+      productId: branchStock.productId
+    })
+    .from(batch)
+    .innerJoin(branchStock, eq(batch.branchStockId, branchStock.id))
+    .where(and(
+      db.isNotNull(batch.expiredDate),
+      db.sql`${batch.qty} > 0`
+    ));
 
-        if (type) {
-          const existing = await db.select().from(notificationLog).where(
-            and(
-              eq(notificationLog.batchId, b.id),
-              eq(notificationLog.type, type)
-            )
-          );
-          if (existing.length === 0) {
-            await db.insert(notificationLog).values({
-              branchId: bs.branchId,
-              productId: bs.productId,
-              batchId: b.id,
-              type: type,
-              message: message,
-            });
-            count++;
-          }
+    if (results.length === 0) {
+      return res.json({ success: true, count: 0 });
+    }
+
+    // 2. Fetch all existing notification logs for these batches
+    const existingLogs = await db.select({
+      batchId: notificationLog.batchId,
+      type: notificationLog.type
+    })
+    .from(notificationLog);
+    
+    const existingSet = new Set(existingLogs.map(l => `${l.batchId}_${l.type}`));
+
+    // 3. Determine new logs
+    const logsToInsert: any[] = [];
+    
+    for (const row of results) {
+      const b = row.batch;
+      const days = daysUntilExpiry(b.expiredDate);
+      let type = '';
+      let message = '';
+      
+      if (days <= 0) {
+        type = 'expired';
+        message = `Telah Kadaluarsa sejak ${Math.abs(days)} hari yang lalu`;
+      } else if (days <= 7) {
+        type = 'expiry_7';
+        message = `Akan Kadaluarsa dalam ${days} hari (1 Minggu)`;
+      } else if (days <= 30) {
+        type = 'expiry_30';
+        message = `Akan Kadaluarsa dalam ${days} hari (1 Bulan)`;
+      }
+
+      if (type) {
+        const key = `${b.id}_${type}`;
+        if (!existingSet.has(key)) {
+          logsToInsert.push({
+            branchId: row.branchId,
+            productId: row.productId,
+            batchId: b.id,
+            type: type,
+            message: message,
+          });
+          existingSet.add(key); // Prevent duplicates in the same run
+          count++;
         }
       }
     }
+
+    // 4. Bulk insert
+    if (logsToInsert.length > 0) {
+      await db.insert(notificationLog).values(logsToInsert);
+    }
+
     res.json({ success: true, count });
   } catch(e: any) {
     res.status(500).json({ error: e.message });

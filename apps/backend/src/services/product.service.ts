@@ -479,10 +479,23 @@ export const productService = {
 
   /** Get low-stock products at a branch */
   async getLowStock(branchId: string) {
-    const products = await this.getAll({ branchId });
-    return (products as any[]).filter(
-      (p: any) => p.totalStock <= p.minStock
-    );
+    // Fast aggregate query
+    const stockAgg = await db.select({
+      product: product,
+      totalStock: sql<number>`sum(case when ${batch.expiredDate} is null or ${batch.expiredDate} > current_date then ${batch.qty} else 0 end)`
+    })
+    .from(branchStock)
+    .innerJoin(product, and(eq(branchStock.productId, product.id), eq(product.isArchived, false)))
+    .leftJoin(batch, eq(batch.branchStockId, branchStock.id))
+    .where(eq(branchStock.branchId, branchId))
+    .groupBy(branchStock.productId, product.id);
+
+    return stockAgg
+      .filter(s => Number(s.totalStock || 0) <= s.product.minStock)
+      .map(s => ({
+        ...s.product,
+        totalStock: Number(s.totalStock || 0)
+      }));
   },
 
   /** Get expiring batches at a branch within N days */
