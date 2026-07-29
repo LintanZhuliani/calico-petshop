@@ -31,7 +31,6 @@ export default function ScanPage() {
   const [scanResult, setScanResult] = useState(null); // product found
   const [notFound, setNotFound] = useState(false);
   const [manualCode, setManualCode] = useState('');
-  const [mode, setMode] = useState('check'); // 'check' | 'sell' | 'restock'
   const [qty, setQty] = useState(1);
   const [expiredDate, setExpiredDate] = useState('');
   const [toast, setToast] = useState('');
@@ -223,29 +222,7 @@ export default function ScanPage() {
     }
   };
 
-  // Admin: Tambah stok
-  const handleRestock = async () => {
-    if (!scanResult || qty <= 0) return;
-    try {
-      await apiFetch(`/products/${scanResult.id}/stock`, {
-        method: 'POST',
-        body: {
-          branchId: branchId,
-          qty: Number(qty),
-          expiredDate: expiredDate || null
-        }
-      });
-      showToast(`+${qty} unit ${scanResult.name} berhasil ditambahkan!`);
-      setScanResult(null);
-      setQty(1);
-      setExpiredDate('');
-      
-      // Refresh products
-      apiFetch(`/products?branchId=${branchId}`).then(setProducts);
-    } catch (err) {
-      showToast('Gagal menambah stok: ' + err.message);
-    }
-  };
+
 
   // Track sidebar toggle state dynamically
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -297,22 +274,7 @@ export default function ScanPage() {
 
       <main className="px-5 py-5 space-y-5 w-full">
         {/* Mode Toggle (khusus admin dapat restock & sell mode) */}
-        {isAdmin && (
-          <div className="bg-slate-100 p-1 rounded-2xl flex">
-            {['check', 'sell', 'restock'].map(m => (
-              <button key={m} onClick={() => { setMode(m); setScanResult(null); setNotFound(false); }}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === m ? `bg-white ${primaryText} shadow-sm` : 'text-slate-400'}`}>
-                {m === 'check' ? (
-                  <span className="flex items-center gap-1.5 justify-center"><span className="material-symbols-outlined !text-[18px]">search</span> Cek Stok</span>
-                ) : m === 'sell' ? (
-                  <span className="flex items-center gap-1.5 justify-center"><span className="material-symbols-outlined !text-[18px]">shopping_cart</span> Kasir</span>
-                ) : (
-                  <span className="flex items-center gap-1.5 justify-center"><span className="material-symbols-outlined !text-[18px]">add_box</span> Restock</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+
 
         {/* Scanner Area */}
         {!scanning && !scanResult && (
@@ -449,34 +411,24 @@ export default function ScanPage() {
                   className={`w-9 h-9 rounded-xl ${primaryBg} flex items-center justify-center font-bold text-white active:scale-95`}>+</button>
               </div>
 
-              {/* Admin: Restock — tambah expiry */}
-              {isAdmin && mode === 'restock' && (
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Tgl Expired (opsional)</label>
-                  <input type="date" value={expiredDate} onChange={e => setExpiredDate(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-sm outline-none" />
+              {isAdmin ? (
+                <div className="flex gap-2 pt-2">
+                  <button onClick={() => navigate('/products', { state: { search: scanResult.barcode || scanResult.id } })}
+                    className="flex-1 py-3.5 bg-slate-100 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-1.5 text-sm">
+                    <span className="material-symbols-outlined !text-[18px]">inventory_2</span>
+                    Kelola Produk
+                  </button>
+                  <button onClick={handleSell} disabled={totalStock === 0}
+                    className="flex-1 py-3.5 bg-[#D35400] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-1.5 text-sm">
+                    <span className="material-symbols-outlined !text-[18px]">shopping_cart_checkout</span>
+                    Checkout
+                  </button>
                 </div>
-              )}
-
-              {/* Action Button */}
-              {(!isAdmin || mode === 'sell') && (
+              ) : (
                 <button onClick={handleSell} disabled={totalStock === 0}
-                  className="w-full py-3.5 bg-[#C0392B] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                  className="w-full py-3.5 mt-2 bg-[#C0392B] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
                   <span className="material-symbols-outlined !text-[20px]">add_shopping_cart</span>
                   {totalStock === 0 ? 'Stok Habis' : `Tambah ke Keranjang`}
-                </button>
-              )}
-              {isAdmin && mode === 'restock' && (
-                <button onClick={handleRestock}
-                  className="w-full py-3.5 bg-[#D35400] text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined !text-[20px]">add_box</span>
-                  + Tambah {qty} unit ke stok
-                </button>
-              )}
-              {isAdmin && mode === 'check' && (
-                <button onClick={() => setMode('restock')}
-                  className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl active:scale-95 transition-all text-sm">
-                  <span className="flex items-center gap-2 justify-center"><span className="material-symbols-outlined !text-[18px]">add_box</span> Switch ke mode Restock</span>
                 </button>
               )}
             </div>
