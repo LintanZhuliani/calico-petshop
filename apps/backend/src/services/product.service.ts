@@ -32,10 +32,12 @@ export const productService = {
     // Apply search filter
     if (filters.search) {
       const s = filters.search.toLowerCase();
-      products = products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(s) ||
-          (p.barcode && p.barcode.includes(s))
+      const searchWords = s.split(/\s+/).filter(Boolean);
+      products = products.filter((p) =>
+        searchWords.every(word => 
+          p.name.toLowerCase().includes(word) ||
+          (p.barcode && p.barcode.toLowerCase().includes(word))
+        )
       );
     }
 

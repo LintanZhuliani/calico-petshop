@@ -377,9 +377,12 @@ export default function KasirPage() {
     return products.filter(p => {
       const s = search.toLowerCase().trim();
       const sNorm = s.replace(/^0+/, '');
-      const matchSearch = (p.name || '').toLowerCase().includes(s) ||
-        (p.barcode || '').toLowerCase().includes(s) ||
-        (p.barcode && sNorm && p.barcode.replace(/^0+/, '').includes(sNorm));
+      const searchWords = s.split(/\s+/).filter(Boolean);
+      const matchSearch = searchWords.length === 0 || searchWords.every(word => 
+        (p.name || '').toLowerCase().includes(word) ||
+        (p.barcode || '').toLowerCase().includes(word) ||
+        (p.barcode && word.replace(/^0+/, '') && p.barcode.replace(/^0+/, '').includes(word.replace(/^0+/, '')))
+      );
       const matchCat = filterCat === 'Semua' || p.category === filterCat;
       const total = p.totalStock || 0;
       const matchStatus = filterStatus === 'Semua'
