@@ -428,15 +428,9 @@ export default function RiwayatPage() {
                     <h3 className="font-bold text-slate-800 text-xl mb-4 leading-tight w-full">{selectedItemDetail.productName}</h3>
                     <div className="space-y-4 bg-slate-50 rounded-2xl p-4">
                       <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                        <span className="text-slate-500 font-medium">Harga Jual</span>
-                        <span className="font-extrabold text-slate-800">{formatRupiah(selectedItemDetail.price)}</span>
+                        <span className="text-slate-500 font-medium flex items-center gap-1">Harga Modal</span>
+                        <span className="font-extrabold text-slate-800">{formatRupiah(selectedItemDetail.buyPrice || 0)}</span>
                       </div>
-                      {isAdmin && (
-                        <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                          <span className="text-slate-500 font-medium flex items-center gap-1">Harga Modal <span className="material-symbols-outlined !text-[14px] text-yellow-600" title="Informasi rahasia Admin">lock</span></span>
-                          <span className="font-extrabold text-yellow-600">{formatRupiah(selectedItemDetail.buyPrice || 0)}</span>
-                        </div>
-                      )}
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500 font-medium">Jumlah Beli</span>
                         <span className="font-bold text-slate-800">{selectedItemDetail.qty} Item</span>
