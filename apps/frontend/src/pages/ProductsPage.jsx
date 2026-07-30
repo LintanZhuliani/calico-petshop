@@ -967,8 +967,8 @@ export default function ProductsPage() {
     try {
       setIsLoading(products.length === 0);
       const [data, cats] = await Promise.all([
-        apiFetch(`/products?branchId=${branchId}`),
-        apiFetch('/categories')
+        apiFetch(`/products?branchId=${branchId}&t=${Date.now()}`),
+        apiFetch(`/categories?t=${Date.now()}`)
       ]);
       setProducts(data);
       setApiCategories(cats);
