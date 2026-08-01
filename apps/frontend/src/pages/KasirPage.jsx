@@ -69,24 +69,25 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
     
-    if (payMethod === 'tunai') {
-      onConfirm(parseAmount(paid), change, 'Tunai');
-    } else if (payMethod === 'nontunai') {
-      const labels = { qris: 'QRIS', transfer: 'Transfer Bank', edc: 'EDC / Debit' };
-      onConfirm(total, 0, labels[nonTunaiType]);
-    } else {
-      // Campuran
-      const ntLabel = { qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' }[splitNonTunaiType];
-      const methodLabel = `Campuran (${ntLabel} ${formatRupiah(splitNonTunaiAmt)} + Tunai ${formatRupiah(splitCashAmt)})`;
-      onConfirm(splitNonTunaiAmt + splitCashAmt, Math.max(0, splitChange), methodLabel);
+    try {
+      if (payMethod === 'tunai') {
+        await onConfirm(parseAmount(paid), change, 'Tunai');
+      } else if (payMethod === 'nontunai') {
+        const labels = { qris: 'QRIS', transfer: 'Transfer Bank', edc: 'EDC / Debit' };
+        await onConfirm(total, 0, labels[nonTunaiType]);
+      } else {
+        // Campuran
+        const ntLabel = { qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' }[splitNonTunaiType];
+        const methodLabel = `Campuran (${ntLabel} ${formatRupiah(splitNonTunaiAmt)} + Tunai ${formatRupiah(splitCashAmt)})`;
+        await onConfirm(splitNonTunaiAmt + splitCashAmt, Math.max(0, splitChange), methodLabel);
+      }
+    } finally {
+      setIsProcessing(false);
     }
-    
-    // In case onConfirm fails and modal stays open
-    setTimeout(() => setIsProcessing(false), 2000);
   };
 
   return (
@@ -247,19 +248,24 @@ function CheckoutModal({ cart, onClose, onConfirm }) {
 
         </div>
 
-        {/* Footer: tombol konfirmasi */}
         <div className="px-6 pt-3 pb-16 shrink-0 border-t border-slate-200">
           <button
             onClick={handleConfirm}
             disabled={
-              payMethod === 'tunai' ? !canConfirmTunai :
+              isProcessing ||
+              (payMethod === 'tunai' ? !canConfirmTunai :
               payMethod === 'campuran' ? !canConfirmCampuran :
-              false
+              false)
             }
             className="w-full py-4 bg-[#C0392B] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-all text-base flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined !text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            {payMethod === 'tunai' ? 'Selesaikan Transaksi' :
+            {isProcessing ? (
+              <span className="material-symbols-outlined !text-[20px] animate-spin">refresh</span>
+            ) : (
+              <span className="material-symbols-outlined !text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            )}
+            {isProcessing ? 'Memproses...' :
+             payMethod === 'tunai' ? 'Selesaikan Transaksi' :
              payMethod === 'nontunai' ? `Bayar via ${{ qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' }[nonTunaiType]}` :
              'Konfirmasi Pembayaran Campuran'}
           </button>
