@@ -11,6 +11,13 @@ const MONTH_NAMES = [
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
 
+const BRANCHES = [
+  { id: 'semua', name: 'Semua Cabang' },
+  { id: 'pusat', name: "Calico's Pet Care (Pusat)" },
+  { id: 'gempi', name: 'Gempi Pet Shop' },
+  { id: 'baba', name: 'Baba Pet Corner' },
+];
+
 export default function RiwayatPage() {
   const location = useLocation();
   const { role, branchName: branchId } = useSession();
@@ -22,6 +29,8 @@ export default function RiwayatPage() {
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Branch filter for admin (client-side filter after fetching all)
+  const [filterBranch, setFilterBranch] = useState('semua');
 
   const [reportType, setReportType] = useState(isAdmin ? 'bulanan' : 'harian');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -35,16 +44,18 @@ export default function RiwayatPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (isAdmin) {
+      // Admin fetches ALL branches, filtering is done client-side
       params.set('branchId', 'all');
-    } else if (branchId) {
-      params.set('branchId', branchId);
+    } else {
+      // Kasir: fetch only their own branch
+      params.set('branchId', branchId || 'pusat');
     }
     
     apiFetch(`/transactions?${params}`)
       .then(data => {
         let txs = Array.isArray(data) ? data : [];
         
-        // Kasir only sees their own transactions
+        // Kasir only sees their own transactions (filter by cashier name)
         if (!isAdmin) {
           const { userName } = JSON.parse(localStorage.getItem('calico_session')) || {};
           if (userName) {
@@ -62,7 +73,6 @@ export default function RiwayatPage() {
           if (newTx) {
             setSelectedTx(newTx);
             setIsDetailOpen(true);
-            // Clear the state so it doesn't reopen on refresh
             window.history.replaceState({ ...location.state, autoOpenReceipt: undefined }, document.title);
           }
         } else if (location.state?.autoOpenLatest && txs.length > 0) {
@@ -106,16 +116,21 @@ export default function RiwayatPage() {
   const filteredData = useMemo(() => {
     return transactions.filter(tx => {
       const d = new Date(tx.date);
+      let matchDate = false;
       if (reportType === 'harian') {
-        return d.toDateString() === selectedDate.toDateString();
+        matchDate = d.toDateString() === selectedDate.toDateString();
       } else if (reportType === 'bulanan') {
-        return d.getFullYear() === selectedDate.getFullYear() && d.getMonth() === selectedDate.getMonth();
+        matchDate = d.getFullYear() === selectedDate.getFullYear() && d.getMonth() === selectedDate.getMonth();
       } else if (reportType === 'tahunan') {
-        return d.getFullYear() === selectedDate.getFullYear();
+        matchDate = d.getFullYear() === selectedDate.getFullYear();
+      } else {
+        matchDate = true;
       }
-      return true;
+      // Admin: filter by selected branch
+      const matchBranch = !isAdmin || filterBranch === 'semua' || tx.branchId === filterBranch;
+      return matchDate && matchBranch;
     });
-  }, [transactions, selectedDate, reportType]);
+  }, [transactions, selectedDate, reportType, filterBranch, isAdmin]);
 
   const handleDeleteTransaction = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus transaksi ini? Stok akan dikembalikan otomatis.")) return;
@@ -221,21 +236,37 @@ export default function RiwayatPage() {
         </div>
 
         {isAdmin ? (
-          <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
-            {['harian', 'bulanan', 'tahunan'].map(type => (
-              <button
-                key={type}
-                onClick={() => setReportType(type)}
-                className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
-                  reportType === type 
-                    ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
-                    : `border-transparent text-slate-500 hover:bg-slate-50`
-                }`}
+          <>
+            <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
+              {['harian', 'bulanan', 'tahunan'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => setReportType(type)}
+                  className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
+                    reportType === type 
+                      ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
+                      : `border-transparent text-slate-500 hover:bg-slate-50`
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            {/* Branch filter dropdown for admin */}
+            <div className="flex items-center gap-2 px-5 py-2 border-b border-slate-100">
+              <span className="material-symbols-outlined !text-[16px] text-slate-400">storefront</span>
+              <select
+                id="riwayat-branch-filter"
+                value={filterBranch}
+                onChange={e => setFilterBranch(e.target.value)}
+                className="text-sm font-semibold text-slate-600 bg-transparent border-none outline-none cursor-pointer"
               >
-                {type}
-              </button>
-            ))}
-          </div>
+                {BRANCHES.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+          </>
         ) : (
           <div className="border-b-2 border-slate-200 w-full" />
         )}

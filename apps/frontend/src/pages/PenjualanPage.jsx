@@ -37,13 +37,25 @@ export default function PenjualanPage() {
     setLoading(true);
     const params = new URLSearchParams();
     if (isAdmin) {
+      // Admin fetches all, branch filtering done client-side via filterBranch
       params.set('branchId', 'all');
-    } else if (branchId) {
-      params.set('branchId', branchId);
+    } else {
+      // Kasir: fetch their own branch only
+      params.set('branchId', branchId || 'pusat');
     }
     
     apiFetch(`/transactions?${params}`)
-      .then(data => setTransactions(Array.isArray(data) ? data : []))
+      .then(data => {
+        let txs = Array.isArray(data) ? data : [];
+        // Kasir only sees their own transactions (filter by name)
+        if (!isAdmin) {
+          const { userName } = JSON.parse(localStorage.getItem('calico_session')) || {};
+          if (userName) {
+            txs = txs.filter(tx => tx.cashierName === userName);
+          }
+        }
+        setTransactions(txs);
+      })
       .catch(err => console.error('Failed to load transactions:', err))
       .finally(() => setLoading(false));
   };
