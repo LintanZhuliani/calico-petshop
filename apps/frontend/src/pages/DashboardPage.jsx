@@ -31,13 +31,17 @@ export default function DashboardPage() {
   const [lowStockCount, setLowStockCount] = useState(cachedStats.lowStockCount || 0);
   const [inTransitCount, setInTransitCount] = useState(cachedStats.inTransitCount || 0);
 
+  // Admin-only: selected branch for dashboard stats ('all' = semua cabang)
+  const [dashboardBranch, setDashboardBranch] = useState('all');
+
   const [chartHeights, setChartHeights] = useState([0,0,0,0,0,0,0]);
   const [chartLabels, setChartLabels] = useState(['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']);
   const [chartValues, setChartValues] = useState([0,0,0,0,0,0,0]);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    const branch = isAdmin ? 'all' : branchId;
+    // For admin: use selected dashboardBranch; for kasir: use their own branch
+    const branch = isAdmin ? dashboardBranch : branchId;
     const lastClosedAt = localStorage.getItem(`calico_last_closed_at_${userName}`);
     
     // Fetch today's transactions to count items sold and recalculate revenue/count if Kasir
@@ -77,7 +81,7 @@ export default function DashboardPage() {
       })
       .catch(err => console.error('Items sold error:', err));
 
-    // Fetch unified dashboard summary (Replaces 5 separate heavy queries)
+    // Fetch unified dashboard summary
     apiFetch(`/dashboard/summary?branchId=${branch}&t=${Date.now()}`)
       .then(data => {
         if (isAdmin) {
@@ -109,7 +113,7 @@ export default function DashboardPage() {
         }));
       })
       .catch(err => console.error('Dashboard summary error:', err));
-  }, [branchId, isAdmin, cacheKey]);
+  }, [branchId, isAdmin, cacheKey, dashboardBranch]);
 
   // Track sidebar toggle state dynamically
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -174,11 +178,37 @@ export default function DashboardPage() {
       </header>
 
       <main className="px-5 py-6 space-y-4 w-full">
-        {/* ── Greeting ── */}
+        {/* ── Greeting / Branch Selector ── */}
         <section className="text-center md:text-left md:mt-4">
           <h1 className={`text-2xl md:text-3xl font-extrabold font-headline ${primaryText} leading-tight`}>
-            {shopName}
+            {isAdmin
+              ? (BRANCHES.find(b => b.id === dashboardBranch)?.name || "Semua Cabang")
+              : shopName}
           </h1>
+          {/* Branch selector pills for admin */}
+          {isAdmin && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                onClick={() => setDashboardBranch('all')}
+                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                  dashboardBranch === 'all'
+                    ? `${primaryBg} text-white border-transparent`
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'
+                }`}
+              >Semua</button>
+              {BRANCHES.map(b => (
+                <button
+                  key={b.id}
+                  onClick={() => setDashboardBranch(b.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                    dashboardBranch === b.id
+                      ? `${primaryBg} text-white border-transparent`
+                      : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'
+                  }`}
+                >{b.name}</button>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── Quick Links ── */}

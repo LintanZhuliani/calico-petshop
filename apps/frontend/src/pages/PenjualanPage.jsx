@@ -29,7 +29,8 @@ export default function PenjualanPage() {
   const [reportType, setReportType] = useState(isAdmin ? 'bulanan' : 'harian'); // 'harian', 'bulanan', 'tahunan'
   const [selectedDate, setSelectedDate] = useState(new Date());
   
-  const [filterBranch, setFilterBranch] = useState(branchId || 'semua');
+  // Admin sees all branches by default; kasir has no branch filter (only sees own txns)
+  const [filterBranch, setFilterBranch] = useState(isAdmin ? 'semua' : (branchId || 'semua'));
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
