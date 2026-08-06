@@ -41,7 +41,7 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res, next) => {
       res.status(400).json({ error: "Name is required" });
       return;
     }
-    const cat = await categoryService.update(req.params.id, name);
+    const cat = await categoryService.update(req.params.id as string, name);
     res.json(cat);
   } catch (err: any) {
     if (err.code === "23505") {
@@ -55,7 +55,7 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res, next) => {
 // DELETE /api/categories/:id — Delete category and set products to Lainnya
 router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const cat = await categoryService.delete(req.params.id);
+    const cat = await categoryService.delete(req.params.id as string);
     if (!cat) {
       res.status(404).json({ error: "Category not found" });
       return;

@@ -19,10 +19,11 @@ export const transactionService = {
     branchId?: string;
     cashierId?: string;
     status?: string;
+    includePending?: boolean;
   }) {
     // Collect conditions
     const conditions = [];
-    if (filters.branchId) {
+    if (filters.branchId && filters.branchId !== 'all') {
       conditions.push(eq(transaction.branchId, filters.branchId));
     }
     if (filters.cashierId) {
@@ -45,6 +46,7 @@ export const transactionService = {
 
     if (filters.date) {
       return txs.filter((t) => {
+        if (filters.includePending && t.status === 'PENDING') return true;
         const txDate = new Date(t.date).toISOString().split("T")[0];
         return txDate === filters.date;
       });
@@ -202,7 +204,7 @@ export const transactionService = {
         );
       }
       
-      const buyPrice = result.qty > 0 ? Math.round(result.totalCost / result.qty) : 0;
+      const buyPrice = result.deducted > 0 ? Math.round(result.totalCost / result.deducted) : 0;
       
       // Update the transaction item with new buyPrice
       await db

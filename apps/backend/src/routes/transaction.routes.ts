@@ -45,9 +45,10 @@ router.get("/", requireAuth, async (req, res, next) => {
   try {
     const txs = await transactionService.getAll({
       date: req.query.date as string,
-      branchId: (req.query.branchId as string) || req.user!.branchId || undefined,
+      branchId: (req.query.branchId as string) === 'all' ? undefined : ((req.query.branchId as string) || req.user!.branchId || undefined),
       cashierId: req.user!.role === 'admin' ? (req.query.cashierId as string) : req.user!.id,
       status: req.query.status as string,
+      includePending: req.query.includePending === 'true',
     });
     res.json(txs);
   } catch (err) {

@@ -4,7 +4,7 @@ import { notificationLog } from "../db/schema/notification-log.js";
 import { branchStock } from "../db/schema/branch-stock.js";
 import { batch } from "../db/schema/batch.js";
 import { product } from "../db/schema/product.js";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, isNotNull, sql } from "drizzle-orm";
 import { daysUntilExpiry } from "../lib/utils.js";
 
 const router = Router();
@@ -23,8 +23,8 @@ router.get("/seed", async (req, res) => {
     .from(batch)
     .innerJoin(branchStock, eq(batch.branchStockId, branchStock.id))
     .where(and(
-      db.isNotNull(batch.expiredDate),
-      db.sql`${batch.qty} > 0`
+      isNotNull(batch.expiredDate),
+      sql`${batch.qty} > 0`
     ));
 
     if (results.length === 0) {
