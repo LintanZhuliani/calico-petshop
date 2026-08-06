@@ -401,19 +401,70 @@ export default function PenjualanPage() {
         </div>
 
         {/* Ringkasan Angka */}
-        {isAdmin && (
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-            <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-1 flex items-center gap-1">
-                Laba Kotor <span className="material-symbols-outlined !text-[14px] text-yellow-600">lock</span>
-              </p>
-              <p className="font-extrabold font-headline text-2xl md:text-3xl text-slate-800 leading-none">{formatRupiah(totalKeuntungan)}</p>
+        <div className={`grid gap-3 ${isAdmin ? 'grid-cols-2' : 'grid-cols-2'}`}>
+          {/* Card: Total Pendapatan */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${primaryLight}`}>
+              <span className={`material-symbols-outlined !text-[20px] ${primaryText}`} style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
             </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-yellow-50">
-              <span className="material-symbols-outlined !text-[28px] text-yellow-600">account_balance_wallet</span>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Pendapatan</p>
+              <p className={`font-extrabold font-headline text-base leading-tight ${primaryText}`}>{formatRupiah(totalPendapatan)}</p>
             </div>
           </div>
-        )}
+
+          {/* Card: Jumlah Transaksi */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-blue-50">
+              <span className="material-symbols-outlined !text-[20px] text-blue-600" style={{ fontVariationSettings: "'FILL' 1" }}>receipt_long</span>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                {reportType === 'harian' ? 'Transaksi Hari Ini' : reportType === 'bulanan' ? 'Transaksi Bulan Ini' : 'Transaksi Tahun Ini'}
+              </p>
+              <p className="font-extrabold font-headline text-base leading-tight text-blue-600">{totalTransaksi} Transaksi</p>
+            </div>
+          </div>
+
+          {/* Card: Total Item */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-purple-50">
+              <span className="material-symbols-outlined !text-[20px] text-purple-600" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Item Terjual</p>
+              <p className="font-extrabold font-headline text-base leading-tight text-purple-600">{totalItem} Item</p>
+            </div>
+          </div>
+
+          {/* Card: Laba Kotor (Admin only) */}
+          {isAdmin ? (
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-yellow-50">
+                <span className="material-symbols-outlined !text-[20px] text-yellow-600" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                  Laba Kotor <span className="material-symbols-outlined !text-[12px] text-yellow-600">lock</span>
+                </p>
+                <p className="font-extrabold font-headline text-base leading-tight text-yellow-600">{formatRupiah(totalKeuntungan)}</p>
+              </div>
+            </div>
+          ) : (
+            /* For kasir: show avg transaction value instead */
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-green-50">
+                <span className="material-symbols-outlined !text-[20px] text-green-600" style={{ fontVariationSettings: "'FILL' 1" }}>avg_pace</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Rata-rata / Transaksi</p>
+                <p className="font-extrabold font-headline text-base leading-tight text-green-600">
+                  {formatRupiah(totalTransaksi > 0 ? Math.round(totalPendapatan / totalTransaksi) : 0)}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Tombol Unduh */}
         {isAdmin && (
