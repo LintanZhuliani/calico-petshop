@@ -163,6 +163,23 @@ export default function DashboardPage() {
           >
             <span className="material-symbols-outlined !text-[24px]">menu</span>
           </button>
+          {/* Branch dropdown for admin in header */}
+          {isAdmin && (
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+              <span className="material-symbols-outlined !text-[16px] text-slate-400">storefront</span>
+              <select
+                id="dashboard-branch-filter"
+                value={dashboardBranch}
+                onChange={e => setDashboardBranch(e.target.value)}
+                className="text-sm font-semibold text-slate-700 bg-transparent border-none outline-none cursor-pointer"
+              >
+                <option value="all">Semua Cabang</option>
+                {BRANCHES.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <button 
           onClick={() => navigate('/notifikasi', { state: location.state })}
@@ -178,37 +195,13 @@ export default function DashboardPage() {
       </header>
 
       <main className="px-5 py-6 space-y-4 w-full">
-        {/* ── Greeting / Branch Selector ── */}
+        {/* ── Greeting ── */}
         <section className="text-center md:text-left md:mt-4">
           <h1 className={`text-2xl md:text-3xl font-extrabold font-headline ${primaryText} leading-tight`}>
             {isAdmin
-              ? (BRANCHES.find(b => b.id === dashboardBranch)?.name || "Semua Cabang")
+              ? (BRANCHES.find(b => b.id === dashboardBranch)?.name || 'Semua Cabang')
               : shopName}
           </h1>
-          {/* Branch selector pills for admin */}
-          {isAdmin && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              <button
-                onClick={() => setDashboardBranch('all')}
-                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                  dashboardBranch === 'all'
-                    ? `${primaryBg} text-white border-transparent`
-                    : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'
-                }`}
-              >Semua</button>
-              {BRANCHES.map(b => (
-                <button
-                  key={b.id}
-                  onClick={() => setDashboardBranch(b.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                    dashboardBranch === b.id
-                      ? `${primaryBg} text-white border-transparent`
-                      : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'
-                  }`}
-                >{b.name}</button>
-              ))}
-            </div>
-          )}
         </section>
 
         {/* ── Quick Links ── */}
