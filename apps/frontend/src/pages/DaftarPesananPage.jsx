@@ -347,33 +347,33 @@ export default function DaftarPesananPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex justify-between items-center pt-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500 font-bold uppercase">Total</span>
-                        <span className={`font-extrabold ${primaryText}`}>{formatRupiah(order.total)}</span>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-3 gap-3">
+                      <div className="flex items-baseline gap-2 w-full justify-between sm:w-auto sm:justify-start">
+                        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total</span>
+                        <span className={`font-black text-lg ${primaryText}`}>{formatRupiah(order.total)}</span>
                       </div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
                         {/* Tombol Lihat Struk (Selalu Muncul) */}
                         <button 
                           onClick={() => { setSelectedTx(order); setIsDetailOpen(true); }}
-                          className="px-4 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-xs bg-white hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1 shadow-sm"
+                          className="flex-1 sm:flex-none justify-center px-4 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-xl text-xs bg-white hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1 shadow-sm"
                         >
                           <span className="material-symbols-outlined !text-[16px]">receipt_long</span>
-                          <span className="hidden sm:inline">Struk</span>
+                          <span>Struk</span>
                         </button>
 
                         {isPending && (
                           <button 
                             onClick={() => handleOpenPayModal(order)}
-                            className={`px-5 py-2 ${primaryBg} text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-sm`}
+                            className={`flex-1 sm:flex-none justify-center px-5 py-2 ${primaryBg} text-white font-bold rounded-xl text-xs active:scale-95 transition-all shadow-sm`}
                           >
                             Bayar
                           </button>
                         )}
                         {(isPending || isAdmin) && (
-                          <div className="relative group ml-1">
-                            <button className="p-2 border-2 border-slate-200 rounded-xl text-slate-500"
+                          <div className="relative group ml-1 shrink-0">
+                            <button className="p-2 border-2 border-slate-200 rounded-xl text-slate-500 shrink-0"
                               onClick={(e) => {
                                 const menu = e.currentTarget.nextElementSibling;
                                 menu.classList.toggle('hidden');
