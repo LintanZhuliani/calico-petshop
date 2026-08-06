@@ -418,7 +418,7 @@ export default function PenjualanPage() {
         </div>
 
         {/* Ringkasan Angka */}
-        <div className={`grid gap-3 ${isAdmin ? 'grid-cols-2' : 'grid-cols-2'}`}>
+        <div className="grid grid-cols-2 gap-3">
           {/* Card: Total Pendapatan */}
           <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${primaryLight}`}>
@@ -430,31 +430,7 @@ export default function PenjualanPage() {
             </div>
           </div>
 
-          {/* Card: Jumlah Transaksi */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-blue-50">
-              <span className="material-symbols-outlined !text-[20px] text-blue-600" style={{ fontVariationSettings: "'FILL' 1" }}>receipt_long</span>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                {reportType === 'harian' ? 'Transaksi Hari Ini' : reportType === 'bulanan' ? 'Transaksi Bulan Ini' : 'Transaksi Tahun Ini'}
-              </p>
-              <p className="font-extrabold font-headline text-base leading-tight text-blue-600">{totalTransaksi} Transaksi</p>
-            </div>
-          </div>
-
-          {/* Card: Total Item */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-purple-50">
-              <span className="material-symbols-outlined !text-[20px] text-purple-600" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Item Terjual</p>
-              <p className="font-extrabold font-headline text-base leading-tight text-purple-600">{totalItem} Item</p>
-            </div>
-          </div>
-
-          {/* Card: Laba Kotor (Admin only) */}
+          {/* Card: Laba Kotor (Admin) / Rata-rata (Kasir) */}
           {isAdmin ? (
             <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-yellow-50">
@@ -468,7 +444,6 @@ export default function PenjualanPage() {
               </div>
             </div>
           ) : (
-            /* For kasir: show avg transaction value instead */
             <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-green-50">
                 <span className="material-symbols-outlined !text-[20px] text-green-600" style={{ fontVariationSettings: "'FILL' 1" }}>avg_pace</span>
