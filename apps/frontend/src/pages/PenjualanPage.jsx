@@ -364,21 +364,38 @@ export default function PenjualanPage() {
         </div>
         
         {isAdmin ? (
-          <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
-            {['harian', 'bulanan', 'tahunan'].map(type => (
-              <button
-                key={type}
-                onClick={() => setReportType(type)}
-                className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
-                  reportType === type 
-                    ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
-                    : `border-transparent text-slate-500 hover:bg-slate-50`
-                }`}
+          <>
+            <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
+              {['harian', 'bulanan', 'tahunan'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => setReportType(type)}
+                  className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
+                    reportType === type 
+                      ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
+                      : `border-transparent text-slate-500 hover:bg-slate-50`
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            {/* Branch filter dropdown for admin */}
+            <div className="flex items-center gap-2 px-5 py-2 border-b border-slate-100">
+              <span className="material-symbols-outlined !text-[16px] text-slate-400">storefront</span>
+              <select
+                id="penjualan-branch-filter"
+                value={filterBranch}
+                onChange={e => setFilterBranch(e.target.value)}
+                className="text-sm font-semibold text-slate-600 bg-transparent border-none outline-none cursor-pointer"
               >
-                {type}
-              </button>
-            ))}
-          </div>
+                <option value="semua">Semua Cabang</option>
+                {BRANCHES.filter(b => b.id !== 'semua').map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+          </>
         ) : (
           <div className="border-b-2 border-slate-200 w-full" />
         )}
