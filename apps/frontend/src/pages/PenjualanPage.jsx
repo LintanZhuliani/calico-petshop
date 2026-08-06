@@ -36,7 +36,12 @@ export default function PenjualanPage() {
   const fetchTransactions = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (branchId) params.set('branchId', branchId);
+    if (isAdmin) {
+      params.set('branchId', 'all');
+    } else if (branchId) {
+      params.set('branchId', branchId);
+    }
+    
     apiFetch(`/transactions?${params}`)
       .then(data => setTransactions(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to load transactions:', err))

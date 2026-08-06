@@ -34,7 +34,12 @@ export default function RiwayatPage() {
   const fetchTransactions = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (branchId) params.set('branchId', branchId);
+    if (isAdmin) {
+      params.set('branchId', 'all');
+    } else if (branchId) {
+      params.set('branchId', branchId);
+    }
+    
     apiFetch(`/transactions?${params}`)
       .then(data => {
         let txs = Array.isArray(data) ? data : [];

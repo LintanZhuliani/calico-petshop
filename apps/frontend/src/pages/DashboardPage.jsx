@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    const branch = branchId;
+    const branch = isAdmin ? 'all' : branchId;
     const lastClosedAt = localStorage.getItem(`calico_last_closed_at_${userName}`);
     
     // Fetch today's transactions to count items sold and recalculate revenue/count if Kasir
