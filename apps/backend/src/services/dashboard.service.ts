@@ -119,12 +119,20 @@ export const dashboardService = {
     for (let i = 0; i < 7; i++) {
       const d = new Date(sevenDaysAgo);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       chartMap[dateStr] = 0;
     }
 
     for (const tx of recentTxs) {
-      const dateStr = new Date(tx.date).toISOString().split('T')[0];
+      const d = new Date(tx.date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
       if (chartMap[dateStr] !== undefined) {
         chartMap[dateStr] += cashierId ? 1 : tx.total; // Cashiers see count, admins see revenue
       }
