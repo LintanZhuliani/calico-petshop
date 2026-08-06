@@ -26,6 +26,7 @@ import { reportRoutes } from "./routes/report.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
+import customerRoutes from "./routes/customer.routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -93,6 +94,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/customers", customerRoutes);
 
 // ── Health Check ──
 app.get("/api/health", (req, res) => {

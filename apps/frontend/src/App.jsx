@@ -11,6 +11,7 @@ import PenjualanPage from "./pages/PenjualanPage";
 import KasirPage from "./pages/KasirPage";
 import RiwayatPage from "./pages/RiwayatPage";
 import RiwayatNotifikasiPage from "./pages/RiwayatNotifikasiPage";
+import DaftarPesananPage from "./pages/DaftarPesananPage";
 
 import RekapHarianPage from "./pages/RekapHarianPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/transfer" element={<TransferPage />} />
         <Route path="/penjualan" element={<PenjualanPage />} />
         <Route path="/kasir" element={<KasirPage />} />
+        <Route path="/pesanan" element={<DaftarPesananPage />} />
         <Route path="/riwayat" element={<RiwayatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />

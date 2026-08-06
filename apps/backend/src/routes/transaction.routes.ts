@@ -47,6 +47,7 @@ router.get("/", requireAuth, async (req, res, next) => {
       date: req.query.date as string,
       branchId: (req.query.branchId as string) || req.user!.branchId || undefined,
       cashierId: req.user!.role === 'admin' ? (req.query.cashierId as string) : req.user!.id,
+      status: req.query.status as string,
     });
     res.json(txs);
   } catch (err) {
@@ -71,7 +72,7 @@ router.get("/:id", requireAuth, async (req, res, next) => {
 // POST /api/transactions — POS Checkout
 router.post("/", requireAuth, async (req, res, next) => {
   try {
-    const { items, paid, change, paymentMethod, branchId } = req.body;
+    const { items, paid, change, paymentMethod, branchId, status, customerId, customerName, orderType, pickupDate, additionalFee, dueDate } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       res.status(400).json({ error: "Cart items are required" });
@@ -86,9 +87,41 @@ router.post("/", requireAuth, async (req, res, next) => {
       paid: Number(paid),
       change: Number(change),
       paymentMethod: paymentMethod || "Tunai",
+      status: status as "PENDING" | "COMPLETED" | undefined,
+      customerId,
+      customerName,
+      orderType,
+      pickupDate: pickupDate ? new Date(pickupDate) : undefined,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      additionalFee: additionalFee ? Number(additionalFee) : 0,
     });
 
     res.status(201).json(tx);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/transactions/:id/pay — Pay pending order
+router.put("/:id/pay", requireAuth, async (req, res, next) => {
+  try {
+    const { paid, change, paymentMethod } = req.body;
+    const tx = await transactionService.payOrder(req.params.id as string, {
+      paid: Number(paid),
+      change: Number(change),
+      paymentMethod: paymentMethod || "Tunai",
+    });
+    res.json(tx);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/transactions/:id/cancel — Cancel pending order
+router.post("/:id/cancel", requireAuth, async (req, res, next) => {
+  try {
+    const tx = await transactionService.cancelOrder(req.params.id as string);
+    res.json(tx);
   } catch (err) {
     next(err);
   }

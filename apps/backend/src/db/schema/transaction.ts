@@ -7,6 +7,7 @@ import { relations } from "drizzle-orm";
 import { branch } from "./branch.js";
 import { user } from "./auth.js";
 import { product } from "./product.js";
+import { customer } from "./customer.js";
 
 export const transaction = pgTable("transaction", {
   id: text("id").primaryKey(),
@@ -22,6 +23,14 @@ export const transaction = pgTable("transaction", {
   change: integer("change").notNull().default(0),
   paymentMethod: text("payment_method").notNull().default("Tunai"),
   date: timestamp("date").notNull().defaultNow(),
+  status: text("status").notNull().default("COMPLETED"), // PENDING, COMPLETED, CANCELLED
+  customerId: text("customer_id"),
+  customerName: text("customer_name"),
+  orderType: text("order_type"),
+  pickupDate: timestamp("pickup_date"),
+  additionalFee: integer("additional_fee").notNull().default(0),
+  additionalFeesDetails: text("additional_fees_details"), // JSON stringified array of {name, amount}
+  dueDate: timestamp("due_date"),
 });
 
 export const transactionRelations = relations(transaction, ({ one, many }) => ({
@@ -32,6 +41,10 @@ export const transactionRelations = relations(transaction, ({ one, many }) => ({
   cashier: one(user, {
     fields: [transaction.cashierId],
     references: [user.id],
+  }),
+  customer: one(customer, {
+    fields: [transaction.customerId],
+    references: [customer.id],
   }),
   items: many(transactionItem),
 }));

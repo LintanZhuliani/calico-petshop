@@ -5,6 +5,7 @@ import { apiFetch } from '../lib/api';
 import { useSession } from '../lib/useSession';
 import { socket } from '../lib/socket';
 import { formatRupiah, generateId } from '../utils/formatters';
+import CheckoutModal from '../components/CheckoutModal';
 
 // Cloudinary image optimization utility (resizes to 150x150, auto formats & compresses)
 function getOptimizedImageUrl(url, width = 150, height = 150) {
@@ -23,278 +24,6 @@ function StockBadge({ total, min }) {
 }
 
 // ── Modal Checkout (Kasir) ──
-function CheckoutModal({ cart, onClose, onConfirm }) {
-  const [paid, setPaid] = useState('');
-  const [payMethod, setPayMethod] = useState('tunai');       // 'tunai' | 'nontunai' | 'campuran'
-  const [nonTunaiType, setNonTunaiType] = useState('qris'); // 'qris' | 'transfer' | 'edc'
-
-  // Campuran (split payment)
-  const [splitNonTunai, setSplitNonTunai] = useState('');
-  const [splitCash, setSplitCash] = useState('');
-  const [splitNonTunaiType, setSplitNonTunaiType] = useState('qris');
-
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-
-  // Fungsi pembersih: hapus titik ribuan agar "40.000" terbaca sebagai 40000
-  const parseAmount = (str) => Number(String(str).replace(/\./g, '').replace(/,/g, ''));
-
-  const change = parseAmount(paid) - total;
-  const QUICK_PAYS = [
-    total,
-    Math.ceil(total / 10000) * 10000 + 10000,
-    Math.ceil(total / 50000) * 50000,
-    Math.ceil(total / 100000) * 100000,
-  ];
-
-  const NON_TUNAI_OPTS = [
-    { key: 'qris',     label: 'QRIS',     icon: 'qr_code_2' },
-    { key: 'transfer', label: 'Transfer', icon: 'account_balance' },
-    { key: 'edc',      label: 'EDC',      icon: 'credit_card' },
-  ];
-
-  // Campuran: hitung sisa yang harus dibayar cash
-  const splitNonTunaiAmt = parseAmount(splitNonTunai);
-  const splitCashAmt = parseAmount(splitCash);
-  const sisaCash = total - splitNonTunaiAmt; // sisa yang harus dibayar tunai
-  const splitChange = splitCashAmt - sisaCash; // kembalian dari uang tunai
-
-  // Validasi
-  const canConfirmTunai = payMethod === 'tunai' && paid !== '' && change >= 0;
-  const canConfirmNonTunai = payMethod === 'nontunai';
-  const canConfirmCampuran = payMethod === 'campuran' 
-    && splitNonTunaiAmt > 0 
-    && splitNonTunaiAmt < total 
-    && splitCashAmt >= sisaCash
-    && sisaCash > 0;
-
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleConfirm = async () => {
-    if (isProcessing) return;
-    setIsProcessing(true);
-    
-    try {
-      if (payMethod === 'tunai') {
-        await onConfirm(parseAmount(paid), change, 'Tunai');
-      } else if (payMethod === 'nontunai') {
-        const labels = { qris: 'QRIS', transfer: 'Transfer Bank', edc: 'EDC / Debit' };
-        await onConfirm(total, 0, labels[nonTunaiType]);
-      } else {
-        // Campuran
-        const ntLabel = { qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' }[splitNonTunaiType];
-        const methodLabel = `Campuran (${ntLabel} ${formatRupiah(splitNonTunaiAmt)} + Tunai ${formatRupiah(splitCashAmt)})`;
-        await onConfirm(splitNonTunaiAmt + splitCashAmt, Math.max(0, splitChange), methodLabel);
-      }
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white w-full rounded-t-3xl flex flex-col" style={{ maxHeight: '92dvh' }}>
-
-        {/* Header */}
-        <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
-          <h2 className="font-headline font-bold text-xl text-slate-900">Konfirmasi Pembayaran</h2>
-          <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 active:scale-95">
-            <span className="material-symbols-outlined text-slate-500">close</span>
-          </button>
-        </div>
-
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-6 pb-2 space-y-4">
-
-          {/* Ringkasan item */}
-          <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
-            {cart.map(item => (
-              <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-slate-700">{item.name} ×{item.qty}</span>
-                <span className="font-semibold text-slate-900">{formatRupiah(item.price * item.qty)}</span>
-              </div>
-            ))}
-            <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900">
-              <span>Total</span>
-              <span className="text-[#C0392B] text-base">{formatRupiah(total)}</span>
-            </div>
-          </div>
-
-          {/* Toggle Metode Pembayaran */}
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Metode Pembayaran</p>
-            <div className="bg-slate-100 p-1 rounded-2xl flex gap-1">
-              {[
-                { key: 'tunai', icon: 'payments', label: 'Tunai' },
-                { key: 'nontunai', icon: 'credit_card', label: 'Non-Tunai' },
-                { key: 'campuran', icon: 'join', label: 'Campuran' },
-              ].map(m => (
-                <button
-                  key={m.key}
-                  onClick={() => setPayMethod(m.key)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1
-                    ${payMethod === m.key ? 'bg-white text-[#C0392B] shadow-sm' : 'text-slate-400'}`}
-                >
-                  <span className="material-symbols-outlined !text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>{m.icon}</span>
-                  {m.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Tunai ── */}
-          {payMethod === 'tunai' && (
-            <div className="space-y-3">
-              <InputField label="Uang Dibayar" type="number" value={paid} onChange={setPaid} placeholder={String(total)} />
-              <div className="flex gap-2 flex-wrap">
-                {[...new Set(QUICK_PAYS)].map(p => (
-                  <button key={p} onClick={() => setPaid(String(p))}
-                    className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 active:scale-95 transition-all">
-                    {formatRupiah(p)}
-                  </button>
-                ))}
-              </div>
-              {paid && (
-                <div className={`rounded-2xl p-4 text-center ${change >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{change >= 0 ? 'Kembalian' : 'Kurang'}</p>
-                  <p className={`text-2xl font-extrabold font-headline ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatRupiah(Math.abs(change))}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── Non-Tunai ── */}
-          {payMethod === 'nontunai' && (
-            <div className="space-y-3">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilih Tipe Non-Tunai</p>
-              <div className="grid grid-cols-3 gap-2.5">
-                {NON_TUNAI_OPTS.map(opt => (
-                  <button key={opt.key} onClick={() => setNonTunaiType(opt.key)}
-                    className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border-2 font-bold text-sm transition-all active:scale-95
-                      ${nonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
-                    <span className="material-symbols-outlined !text-[28px]" style={{ fontVariationSettings: nonTunaiType === opt.key ? "'FILL' 1" : "'FILL' 0" }}>{opt.icon}</span>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-400 !text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
-                <p className="text-xs text-blue-700 font-medium">
-                  Pembayaran via <strong>{{ qris: 'QRIS', transfer: 'Transfer Bank', edc: 'EDC / Debit' }[nonTunaiType]}</strong> sebesar <strong>{formatRupiah(total)}</strong> tidak memerlukan kembalian.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── Campuran (Split Payment) ── */}
-          {payMethod === 'campuran' && (
-            <div className="space-y-3">
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 flex items-start gap-2">
-                <span className="material-symbols-outlined text-amber-500 !text-[20px] mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
-                <p className="text-xs text-amber-800 font-medium">
-                  Pelanggan membayar sebagian dengan <strong>saldo digital / kartu</strong>, dan sisanya dengan <strong>uang tunai</strong>.
-                </p>
-              </div>
-
-              {/* Pilih tipe non-tunai untuk split */}
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tipe Saldo / Kartu</p>
-              <div className="grid grid-cols-3 gap-2">
-                {NON_TUNAI_OPTS.map(opt => (
-                  <button key={opt.key} onClick={() => setSplitNonTunaiType(opt.key)}
-                    className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 font-bold text-xs transition-all active:scale-95
-                      ${splitNonTunaiType === opt.key ? 'border-[#C0392B] bg-red-50 text-[#C0392B]' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>
-                    <span className="material-symbols-outlined !text-[22px]" style={{ fontVariationSettings: splitNonTunaiType === opt.key ? "'FILL' 1" : "'FILL' 0" }}>{opt.icon}</span>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input jumlah non-tunai */}
-              <InputField 
-                label={`Jumlah Bayar via ${({ qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' })[splitNonTunaiType]}`}
-                type="number" value={splitNonTunai} onChange={setSplitNonTunai} 
-                placeholder="Contoh: 20000" 
-              />
-
-              {/* Otomatis hitung sisa */}
-              {splitNonTunaiAmt > 0 && splitNonTunaiAmt < total && (
-                <>
-                  <div className="bg-slate-50 rounded-2xl p-3 flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500">Sisa Bayar Tunai</span>
-                    <span className="font-extrabold text-slate-900 font-headline">{formatRupiah(sisaCash)}</span>
-                  </div>
-
-                  <InputField label="Uang Tunai Pelanggan" type="number" value={splitCash} onChange={setSplitCash} placeholder={String(sisaCash)} />
-
-                  {splitCashAmt > 0 && (
-                    <div className={`rounded-2xl p-4 text-center ${splitChange >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{splitChange >= 0 ? 'Kembalian Tunai' : 'Masih Kurang'}</p>
-                      <p className={`text-2xl font-extrabold font-headline ${splitChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatRupiah(Math.abs(splitChange))}
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {splitNonTunaiAmt >= total && splitNonTunaiAmt > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-amber-700 font-bold">Jumlah saldo sudah melebihi total. Gunakan metode Non-Tunai saja.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-        </div>
-
-        <div className="px-6 pt-3 pb-16 shrink-0 border-t border-slate-200">
-          <button
-            onClick={handleConfirm}
-            disabled={
-              isProcessing ||
-              (payMethod === 'tunai' ? !canConfirmTunai :
-              payMethod === 'campuran' ? !canConfirmCampuran :
-              false)
-            }
-            className="w-full py-4 bg-[#C0392B] disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-all text-base flex items-center justify-center gap-2"
-          >
-            {isProcessing ? (
-              <span className="material-symbols-outlined !text-[20px] animate-spin">refresh</span>
-            ) : (
-              <span className="material-symbols-outlined !text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            )}
-            {isProcessing ? 'Memproses...' :
-             payMethod === 'tunai' ? 'Selesaikan Transaksi' :
-             payMethod === 'nontunai' ? `Bayar via ${{ qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' }[nonTunaiType]}` :
-             'Konfirmasi Pembayaran Campuran'}
-          </button>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-// ── Input Field Helper ──
-function InputField({ label, type = 'text', value, onChange, placeholder }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 font-medium outline-none transition-all placeholder:text-slate-300"
-      />
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────
 export default function KasirPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -418,19 +147,19 @@ export default function KasirPage() {
   };
 
   // Proses transaksi
-  const handleConfirmCheckout = async (paid, change, paymentMethod = 'Tunai') => {
+  const handleConfirmCheckout = async (checkoutData) => {
     try {
       const txItems = cart.map(i => ({ productId: i.id, productName: i.name, qty: i.qty, price: i.price }));
       
+      const payload = {
+        items: txItems,
+        branchId,
+        ...checkoutData
+      };
+
       const response = await apiFetch('/transactions', {
         method: 'POST',
-        body: {
-          items: txItems,
-          paid,
-          change,
-          paymentMethod,
-          branchId
-        }
+        body: payload
       });
 
       setCart([]);
@@ -439,13 +168,13 @@ export default function KasirPage() {
       
       showToast('Transaksi berhasil!');
       
-      // Auto redirect to history to show receipt
+      // Auto redirect to history or pending depending on status
       setTimeout(() => {
-        navigate('/riwayat', { 
-          state: { 
-            autoOpenLatest: true 
-          } 
-        });
+        if (checkoutData.status === 'PENDING') {
+          navigate('/pesanan', { state: { autoOpenLatest: true } });
+        } else {
+          navigate('/riwayat', { state: { autoOpenLatest: true } });
+        }
       }, 500);
       
       fetchProducts(); // Refresh stock
@@ -686,7 +415,7 @@ export default function KasirPage() {
       )}
 
       {/* ── Checkout Modal ── */}
-      {checkoutOpen && <CheckoutModal cart={cart} onClose={() => setCheckoutOpen(false)} onConfirm={handleConfirmCheckout} />}
+      {checkoutOpen && <CheckoutModal isAdmin={isAdmin} cart={cart} onClose={() => setCheckoutOpen(false)} onConfirm={handleConfirmCheckout} />}
 
       <BottomNav />
     </div>

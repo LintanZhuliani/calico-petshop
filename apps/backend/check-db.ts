@@ -1,17 +1,27 @@
-import { db } from './src/db/index.js';
-import * as schema from './src/db/schema/index.js';
-import { eq } from 'drizzle-orm';
+import { db } from "./src/db/index.js";
+import { batch } from "./src/db/schema/batch.js";
+import { branchStock } from "./src/db/schema/branch-stock.js";
+import { product } from "./src/db/schema/product.js";
+import { eq, ilike } from "drizzle-orm";
 
-async function checkUser() {
+async function check() {
   try {
-    const user = await db.query.user.findFirst({
-      where: eq(schema.user.email, 'lintanzhuliani840@gmail.com')
-    });
-    console.log("USER FOUND:", user ? "YES" : "NO", user);
-    process.exit(0);
+    const prod = await db.select().from(product).where(ilike(product.name, "%Animal%Tuna%")).limit(1);
+    console.log("Product:", prod[0]?.name);
+
+    if (prod[0]) {
+      const bs = await db.select().from(branchStock).where(eq(branchStock.productId, prod[0].id));
+      console.log("BranchStocks:", bs.map(b => ({ id: b.id, branch: b.branchId, total: b.totalStock })));
+
+      const bsIds = bs.map(b => b.id);
+      const batches = await db.select().from(batch);
+      const relevant = batches.filter(b => bsIds.includes(b.branchStockId));
+      console.log("Batches:", relevant.map(b => ({ id: b.id, qty: b.qty })));
+    }
   } catch (err) {
-    console.error("DB ERROR", err);
-    process.exit(1);
+    console.error(err);
+  } finally {
+    process.exit(0);
   }
 }
-checkUser();
+check();

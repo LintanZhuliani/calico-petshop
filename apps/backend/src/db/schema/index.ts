@@ -35,3 +35,5 @@ export {
   transferItem,
   transferItemRelations,
 } from "./transfer.js";
+
+export { customer, customerRelations } from "./customer.js";

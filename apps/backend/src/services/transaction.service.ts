@@ -18,6 +18,7 @@ export const transactionService = {
     date?: string; // 'YYYY-MM-DD'
     branchId?: string;
     cashierId?: string;
+    status?: string;
   }) {
     // Collect conditions
     const conditions = [];
@@ -26,6 +27,9 @@ export const transactionService = {
     }
     if (filters.cashierId) {
       conditions.push(eq(transaction.cashierId, filters.cashierId));
+    }
+    if (filters.status) {
+      conditions.push(eq(transaction.status, filters.status));
     }
     
     // We cannot easily filter by YYYY-MM-DD string in raw SQL in a cross-database way without raw sql, 
@@ -84,41 +88,60 @@ export const transactionService = {
     paid: number;
     change: number;
     paymentMethod: string;
+    status?: "PENDING" | "COMPLETED";
+    customerId?: string;
+    customerName?: string;
+    orderType?: string;
+    pickupDate?: Date;
+    additionalFee?: number;
+    additionalFeeType?: string;
+    additionalFeesDetails?: string;
+    dueDate?: Date;
   }) {
-    const total = data.items.reduce((s, i) => s + i.price * i.qty, 0);
+    const totalItems = data.items.reduce((s, i) => s + i.price * i.qty, 0);
+    const total = totalItems + (data.additionalFee || 0);
     const txId = generateTxId();
+    const isPending = data.status === "PENDING";
 
-    return await db.transaction(async (tx) => {
-      // Step 1: Create transaction record FIRST (safe — no stock changes yet)
-      const txResult = await tx
-        .insert(transaction)
-        .values({
-          id: txId,
-          branchId: data.branchId,
-          cashierId: data.cashierId,
-          cashierName: data.cashierName,
-          total,
-          paid: data.paid,
-          change: data.change,
-          paymentMethod: data.paymentMethod || "Tunai",
-        })
-        .returning();
+    // Step 1: Create transaction record FIRST (safe — no stock changes yet)
+    const txResult = await db
+      .insert(transaction)
+      .values({
+        id: txId,
+        branchId: data.branchId,
+        cashierId: data.cashierId,
+        cashierName: data.cashierName,
+        total,
+        paid: data.paid,
+        change: data.change,
+        paymentMethod: data.paymentMethod || "Tunai",
+        status: isPending ? "PENDING" : "COMPLETED",
+        customerId: data.customerId || null,
+        customerName: data.customerName || null,
+        orderType: data.orderType || null,
+        pickupDate: data.pickupDate || null,
+        additionalFee: data.additionalFee || 0,
+        additionalFeesDetails: data.additionalFeesDetails || null,
+        dueDate: data.dueDate || null,
+      })
+      .returning();
 
-      // Step 2: Deduct stock FEFO first to get accurate batch costs
-      const deductionResults: { productId: string; totalCost: number; qty: number }[] = [];
+    // Step 2: Deduct stock FEFO first to get accurate batch costs (SKIP IF PENDING)
+    const deductionResults: { productId: string; totalCost: number; qty: number }[] = [];
+    if (!isPending) {
       for (const item of data.items) {
-        // We pass the transaction object `tx` to ensure stock deduction is part of the atomic transaction
         const result = await productService.deductStockFEFO(
           item.productId,
           data.branchId,
           item.qty,
-          tx
+          db
         );
         if (!result.success) {
+          // If we are not using atomic transactions, we ideally should rollback here. 
+          // For now, we throw and leave the transaction record (it will be considered failed or we can delete it)
+          await db.delete(transaction).where(eq(transaction.id, txId));
           throw Object.assign(
-            new Error(
-              `Stok tidak cukup untuk ${item.productName}. Hanya tersedia ${result.deducted} unit.`
-            ),
+            new Error(`Stok tidak cukup untuk ${item.productName}. Hanya tersedia ${result.deducted} unit.`),
             { statusCode: 400 }
           );
         }
@@ -128,40 +151,107 @@ export const transactionService = {
           qty: item.qty,
         });
       }
+    }
 
-      // Step 3: Create transaction items with accurate buyPrice from FEFO batches
-      const txItems = await Promise.all(
-        data.items.map(async (item) => {
-          const deduction = deductionResults.find(d => d.productId === item.productId);
-          // Use weighted average buyPrice from the actual batches that were deducted
-          const buyPrice = deduction && deduction.qty > 0
-            ? Math.round(deduction.totalCost / deduction.qty)
-            : (item.buyPrice ?? 0);
-          const result = await tx
-            .insert(transactionItem)
-            .values({
-              id: generateId("ti"),
-              transactionId: txId,
-              productId: item.productId,
-              productName: item.productName,
-              qty: item.qty,
-              price: item.price,
-              buyPrice,
-            })
-            .returning();
-          return result[0];
-        })
+    // Step 3: Create transaction items
+    const txItems = await Promise.all(
+      data.items.map(async (item) => {
+        const deduction = deductionResults.find(d => d.productId === item.productId);
+        // Use weighted average buyPrice from the actual batches that were deducted
+        const buyPrice = deduction && deduction.qty > 0
+          ? Math.round(deduction.totalCost / deduction.qty)
+          : 0;
+
+        const result = await db
+          .insert(transactionItem)
+          .values({
+            id: generateId("ti"),
+            transactionId: txId,
+            productId: item.productId,
+            productName: item.productName,
+            qty: item.qty,
+            price: item.price,
+            buyPrice,
+          })
+          .returning();
+        return result[0];
+      })
+    );
+
+    return { ...txResult[0], items: txItems };
+  },
+
+  /** Pay for a pending order */
+  async payOrder(id: string, data: { paid: number; change: number; paymentMethod: string }) {
+    const tx = await this.getById(id);
+    if (!tx) throw new Error("Pesanan tidak ditemukan");
+    if (tx.status !== "PENDING") throw new Error("Pesanan tidak dalam status PENDING");
+
+    // 1. Deduct stock for all items now (FEFO) and calculate actual buyPrice
+    for (const item of tx.items) {
+      const result = await productService.deductStockFEFO(
+        item.productId,
+        tx.branchId,
+        item.qty,
+        db
       );
+      if (!result.success) {
+        throw Object.assign(
+          new Error(`Stok tidak cukup untuk ${item.productName}. Hanya tersedia ${result.deducted} unit.`),
+          { statusCode: 400 }
+        );
+      }
+      
+      const buyPrice = result.qty > 0 ? Math.round(result.totalCost / result.qty) : 0;
+      
+      // Update the transaction item with new buyPrice
+      await db
+        .update(transactionItem)
+        .set({ buyPrice })
+        .where(eq(transactionItem.id, item.id));
+    }
 
-      return { ...txResult[0], items: txItems };
-    });
+    // 2. Mark transaction as COMPLETED
+    const [updated] = await db
+      .update(transaction)
+      .set({
+        status: "COMPLETED",
+        paid: data.paid,
+        change: data.change,
+        paymentMethod: data.paymentMethod || "Tunai",
+      })
+      .where(eq(transaction.id, id))
+      .returning();
+
+    getIo()?.emit("DATA_UPDATED");
+    return updated;
+  },
+
+  /** Cancel a pending order and restore stock */
+  async cancelOrder(id: string) {
+    const tx = await this.getById(id);
+    if (!tx) throw new Error("Pesanan tidak ditemukan");
+    if (tx.status !== "PENDING") throw new Error("Hanya pesanan PENDING yang bisa dibatalkan");
+
+    // Because PENDING orders do not deduct stock in the new logic, we don't need to restore stock here!
+    
+    // 2. Mark transaction as CANCELLED
+    const [updated] = await db
+      .update(transaction)
+      .set({ status: "CANCELLED" })
+      .where(eq(transaction.id, id))
+      .returning();
+
+    getIo()?.emit("DATA_UPDATED");
+    return updated;
   },
 
   /**
    * Daily summary — total transactions, revenue, breakdown per payment method.
    */
   async getSummary(filters: { date?: string; branchId?: string; cashierId?: string }) {
-    const txs = await this.getAll(filters);
+    // Only include COMPLETED transactions for financial reports
+    const txs = await this.getAll({ ...filters, status: "COMPLETED" });
 
     const total = txs.reduce((s, tx) => s + tx.total, 0);
     const count = txs.length;
@@ -241,23 +331,23 @@ export const transactionService = {
     const tx = await this.getById(id);
     if (!tx) throw new Error("Transaksi tidak ditemukan");
 
-    await db.transaction(async (dbTx) => {
-      // 1. Restore stock for all items
+    // 1. Restore stock for all items ONLY IF status was COMPLETED
+    if (tx.status === "COMPLETED") {
       for (const item of tx.items) {
         await productService.addStock({
           productId: item.productId,
           branchId: tx.branchId,
           qty: item.qty,
           expiredDate: null, // We don't know the exact original expiry, so we append without expiry
-        }, dbTx);
+        }, db);
       }
+    }
 
-      // 2. Delete transaction items
-      await dbTx.delete(transactionItem).where(eq(transactionItem.transactionId, id));
+    // 2. Delete transaction items
+    await db.delete(transactionItem).where(eq(transactionItem.transactionId, id));
 
-      // 3. Delete transaction
-      await dbTx.delete(transaction).where(eq(transaction.id, id));
-    });
+    // 3. Delete transaction
+    await db.delete(transaction).where(eq(transaction.id, id));
 
     getIo()?.emit("DATA_UPDATED");
     return true;
