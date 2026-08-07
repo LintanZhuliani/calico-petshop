@@ -100,6 +100,11 @@ export default function DaftarPesananPage() {
       // Keep only PENDING and COMPLETED
       if (order.status === 'CANCELLED') return false;
 
+      // HANYA tampilkan transaksi yang merupakan "Pesanan" atau "Piutang".
+      // Transaksi Kasir biasa (Bayar Langsung) tidak memiliki orderType dan bukan Piutang.
+      const isPesananAtauPiutang = order.orderType || order.paymentMethod === 'Piutang';
+      if (!isPesananAtauPiutang) return false;
+
       if (activeTab === 'Pesanan Baru') {
         // Pesanan Baru = SEMUA pesanan HARI INI (Apapun statusnya)
         const today = new Date().toDateString();
@@ -220,7 +225,8 @@ export default function DaftarPesananPage() {
           const fees = JSON.parse(tx.additionalFeesDetails);
           fees.forEach(fee => {
             if (fee.name && fee.amount) {
-              text += pad(`Biaya: ${fee.name}`, Number(fee.amount).toLocaleString('id-ID')) + '\n';
+              const label = fee.name === 'Diskon Transaksi' ? fee.name : `Biaya: ${fee.name}`;
+              text += pad(label, Number(fee.amount).toLocaleString('id-ID')) + '\n';
             }
           });
         } catch (e) {
@@ -555,34 +561,26 @@ export default function DaftarPesananPage() {
                   <span className="text-slate-500">Total Produk</span>
                   <span className="font-bold text-slate-800">{formatRupiah((selectedTx.items || []).reduce((s,i)=>s+i.price*i.qty,0))}</span>
                 </div>
-                {selectedTx.additionalFee > 0 && (
-                  (() => {
-                    if (selectedTx.additionalFeesDetails) {
-                      try {
-                        const fees = JSON.parse(selectedTx.additionalFeesDetails);
-                        return fees.map((fee, idx) => fee.name && fee.amount ? (
-                          <div key={idx} className="flex justify-between">
-                            <span className="text-slate-500">Biaya: {fee.name}</span>
-                            <span className="font-bold text-slate-800">{formatRupiah(fee.amount)}</span>
-                          </div>
-                        ) : null);
-                      } catch (e) {
-                        return (
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Biaya Tambahan</span>
-                            <span className="font-bold text-slate-800">{formatRupiah(selectedTx.additionalFee)}</span>
-                          </div>
-                        );
-                      }
-                    }
-                    return (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Biaya Tambahan</span>
-                        <span className="font-bold text-slate-800">{formatRupiah(selectedTx.additionalFee)}</span>
-                      </div>
-                    );
-                  })()
-                )}
+                {selectedTx.additionalFeesDetails && (() => {
+                  try {
+                    const fees = JSON.parse(selectedTx.additionalFeesDetails);
+                    return fees.map((fee, idx) => {
+                      if (!fee.name || !fee.amount) return null;
+                      const label = fee.name.startsWith('Diskon') ? fee.name : `Biaya: ${fee.name}`;
+                      const amountNum = Number(fee.amount);
+                      return (
+                        <div key={idx} className="flex justify-between">
+                          <span className="text-slate-500">{label}</span>
+                          <span className={`font-bold ${amountNum < 0 ? 'text-red-500' : 'text-slate-800'}`}>
+                            {amountNum < 0 ? '-' : ''}{formatRupiah(Math.abs(amountNum))}
+                          </span>
+                        </div>
+                      );
+                    });
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
                 <div className="flex justify-between pt-2 border-t">
                   <span className="font-extrabold text-slate-900 text-base">Total</span>
                   <span className="font-extrabold text-[#C0392B] text-base">{formatRupiah(selectedTx.total)}</span>

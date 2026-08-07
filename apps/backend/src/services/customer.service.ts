@@ -20,17 +20,22 @@ export class CustomerService {
     return customers;
   }
 
-  async create(data: { name: string; phone?: string }) {
+  async create(data: { name: string; phone?: string; branchId: string }) {
     const id = `CST${Date.now()}${randomBytes(2).toString("hex").toUpperCase()}`;
     const [newCustomer] = await db
       .insert(customer)
       .values({
         id,
+        branchId: data.branchId,
         name: data.name,
         phone: data.phone || null,
       })
       .returning();
     return newCustomer;
+  }
+
+  async delete(id: string) {
+    await db.delete(customer).where(eq(customer.id, id));
   }
 }
 

@@ -18,12 +18,40 @@ router.get("/", requireAuth, async (req, res, next) => {
 router.post("/", requireAuth, async (req, res, next) => {
   try {
     const { name, phone } = req.body;
+    let branchId = req.user?.branchId;
+
     if (!name) {
       res.status(400).json({ error: "Name is required" });
       return;
     }
-    const customer = await customerService.create({ name, phone });
+
+    if (!branchId) {
+      const { db } = await import("../db/index.js");
+      const { branch } = await import("../db/schema/index.js");
+      const branches = await db.select().from(branch).limit(1);
+      if (branches.length > 0) {
+        branchId = branches[0].id;
+      }
+    }
+    
+    if (!branchId) {
+      res.status(400).json({ error: "Branch ID is required. Kasir must be assigned to a branch." });
+      return;
+    }
+
+    const customer = await customerService.create({ name, phone, branchId });
     res.status(201).json(customer);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/customers/:id
+router.delete("/:id", requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await customerService.delete(id as string);
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }

@@ -109,9 +109,21 @@ export default function PenjualanPage() {
   const totalPendapatan = filteredData.reduce((s, tx) => s + tx.total, 0);
   const totalTransaksi = filteredData.length;
   const totalItem = filteredData.reduce((s, tx) => s + (tx.items?.reduce((si, it) => si + it.qty, 0) || 0), 0);
-  const totalKeuntungan = filteredData.reduce((s, tx) => 
-    s + (tx.items?.reduce((si, item) => si + (item.qty * (item.price - (item.buyPrice || 0))), 0) || 0)
-  , 0);
+  const totalKeuntungan = filteredData.reduce((s, tx) => s + (tx.items?.reduce((is, item) => is + (item.qty * (item.price - (item.buyPrice || 0))), 0) || 0), 0);
+
+  const totalTunai = filteredData.reduce((s, tx) => {
+    const method = tx.paymentMethod || 'Tunai';
+    if (method === 'Tunai') return s + tx.total;
+    if (method.startsWith('Campuran')) {
+      const match = method.match(/Rp\s*([\d\.]+)/);
+      if (match) {
+        const nonTunaiAmt = Number(match[1].replace(/\./g, ''));
+        return s + Math.max(0, tx.total - nonTunaiAmt);
+      }
+    }
+    return s;
+  }, 0);
+  const totalNonTunai = totalPendapatan - totalTunai;
 
   // Data Chart
   const chartData = useMemo(() => {
@@ -427,6 +439,10 @@ export default function PenjualanPage() {
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Pendapatan</p>
               <p className={`font-extrabold font-headline text-base leading-tight ${primaryText}`}>{formatRupiah(totalPendapatan)}</p>
+              <div className="flex gap-2 mt-1">
+                <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">Tunai: {formatRupiah(totalTunai)}</span>
+                <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">Non-Tunai: {formatRupiah(totalNonTunai)}</span>
+              </div>
             </div>
           </div>
 
@@ -468,46 +484,6 @@ export default function PenjualanPage() {
             Unduh Excel
           </button>
         )}
-
-        {/* Grafik Penjualan */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-          <p className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-            <span className={`material-symbols-outlined !text-[18px] ${primaryText}`}>monitoring</span>
-            Tren Penjualan {reportType.charAt(0).toUpperCase() + reportType.slice(1)}
-          </p>
-          {totalTransaksi === 0 ? (
-            <div className="text-center py-8 text-slate-400">
-              <span className="material-symbols-outlined !text-[40px] opacity-40">receipt_long</span>
-              <p className="text-sm mt-2">Belum ada transaksi di periode ini</p>
-            </div>
-          ) : (
-            <div className="flex items-end gap-1 h-36 overflow-x-auto pb-1 scrollbar-hide pt-4">
-              {chartData.data.map((item, i) => {
-                const height = item.val > 0 ? Math.max((item.val / chartData.maxVal) * 100, 8) : 4;
-                // Show label rules: Daily: show every 3rd hour, Monthly: show every 5 days, Yearly: show all months
-                const showLabel = reportType === 'tahunan' ? true :
-                                  reportType === 'bulanan' ? (i === 0 || i % 4 === 0 || i === chartData.data.length - 1) :
-                                  (i % 3 === 0);
-                return (
-                  <div key={i} className="flex flex-col items-center flex-1 min-w-[12px] group relative">
-                    {item.val > 0 && (
-                      <div className="absolute -top-8 bg-slate-800 text-white text-[9px] px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-md">
-                        {formatRupiah(item.val)}
-                      </div>
-                    )}
-                    <div
-                      className={`w-full max-w-[20px] rounded-t-md transition-all ${item.val > 0 ? (isAdmin ? 'bg-[#D35400] hover:bg-[#b84800]' : 'bg-[#C0392B] hover:bg-red-800') : 'bg-slate-100'}`}
-                      style={{ height: `${height}%` }}
-                    />
-                    <p className={`text-[9px] mt-1.5 transition-all ${showLabel ? 'text-slate-500 font-medium' : 'text-transparent'}`}>
-                      {item.label}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
 
         {/* Penjualan Per Cabang */}
         {filterBranch === 'semua' && (

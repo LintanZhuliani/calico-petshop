@@ -169,6 +169,7 @@ export default function RiwayatPage() {
     const dateStr = `${String(txDate.getDate()).padStart(2, '0')}-${String(txDate.getMonth() + 1).padStart(2, '0')}-${txDate.getFullYear()} ${String(txDate.getHours()).padStart(2, '0')}:${String(txDate.getMinutes()).padStart(2, '0')}`;
     text += pad("Tanggal", dateStr) + '\n';
     text += pad("Kasir", tx.cashierName || 'Admin') + '\n';
+    if (tx.customerName) text += pad("Pelanggan", tx.customerName) + '\n';
     text += pad("Pembayaran", tx.paymentMethod || 'Tunai') + '\n';
     text += '-'.repeat(32) + '\n';
     
@@ -401,8 +402,28 @@ export default function RiwayatPage() {
               <div className="border-t border-slate-200 pt-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Total Pesanan</span>
-                  <span className="font-bold text-slate-800">{formatRupiah(selectedTx.total)}</span>
+                  <span className="font-bold text-slate-800">{formatRupiah((selectedTx.items || []).reduce((s, i) => s + i.price * i.qty, 0))}</span>
                 </div>
+                {selectedTx.additionalFeesDetails && (() => {
+                  try {
+                    const fees = JSON.parse(selectedTx.additionalFeesDetails);
+                    return fees.map((fee, idx) => {
+                      if (!fee.name || !fee.amount) return null;
+                      const label = fee.name.startsWith('Diskon') ? fee.name : `Biaya: ${fee.name}`;
+                      const amountNum = Number(fee.amount);
+                      return (
+                        <div key={idx} className="flex justify-between">
+                          <span className="text-slate-500">{label}</span>
+                          <span className={`font-bold ${amountNum < 0 ? 'text-red-500' : 'text-slate-800'}`}>
+                            {amountNum < 0 ? '-' : ''}{formatRupiah(Math.abs(amountNum))}
+                          </span>
+                        </div>
+                      );
+                    });
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
                 <div className="flex justify-between pt-1">
                   <span className="font-extrabold text-slate-900 text-base">Total</span>
                   <span className="font-extrabold text-slate-900 text-base">{formatRupiah(selectedTx.total)}</span>

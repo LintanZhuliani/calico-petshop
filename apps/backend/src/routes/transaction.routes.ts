@@ -73,7 +73,7 @@ router.get("/:id", requireAuth, async (req, res, next) => {
 // POST /api/transactions — POS Checkout
 router.post("/", requireAuth, async (req, res, next) => {
   try {
-    const { items, paid, change, paymentMethod, branchId, status, customerId, customerName, orderType, pickupDate, additionalFee, dueDate } = req.body;
+    const { items, paid, change, paymentMethod, branchId, status, customerId, customerName, orderType, pickupDate, additionalFee, additionalFeesDetails, dueDate } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       res.status(400).json({ error: "Cart items are required" });
@@ -95,6 +95,7 @@ router.post("/", requireAuth, async (req, res, next) => {
       pickupDate: pickupDate ? new Date(pickupDate) : undefined,
       dueDate: dueDate ? new Date(dueDate) : undefined,
       additionalFee: additionalFee ? Number(additionalFee) : 0,
+      additionalFeesDetails: additionalFeesDetails || null,
     });
 
     res.status(201).json(tx);

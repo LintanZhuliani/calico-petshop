@@ -4,11 +4,11 @@ import { formatRupiah } from '../utils/formatters';
 import { apiFetch } from '../lib/api';
 
 export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
-  const primaryText = isAdmin ? 'text-[#D35400]' : '${primaryText}';
-  const primaryBg = isAdmin ? 'bg-[#D35400]' : '${primaryBg}';
-  const primaryLightBg = isAdmin ? 'bg-orange-50' : '${primaryLightBg}';
+  const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
+  const primaryBg = isAdmin ? 'bg-[#D35400]' : 'bg-[#C0392B]';
+  const primaryLightBg = isAdmin ? 'bg-orange-50' : 'bg-red-50';
   const primaryBorder = isAdmin ? 'border-[#D35400]' : 'border-[#C0392B]';
-  const primaryBorderLight = isAdmin ? 'border-orange-300' : '${primaryBorderLight}';
+  const primaryBorderLight = isAdmin ? 'border-orange-300' : 'border-red-300';
   // Step 1: Metode & Biaya Tambahan, Step 2: Form Pelanggan atau Pembayaran
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,6 +27,9 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
   const [isDelivery, setIsDelivery] = useState(false); // Jenis Pesanan (Kirim = true)
   const [pickupDate, setPickupDate] = useState(false); // Jadwal Ambil
   const [dueDate, setDueDate] = useState(''); // Tenggat Waktu Piutang
+  const [diskon, setDiskon] = useState(false); // Diskon Transaksi
+  const [discountAmount, setDiscountAmount] = useState('');
+  const [discountNote, setDiscountNote] = useState('');
 
   // === CUSTOMER MODAL STATES ===
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -64,6 +67,23 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
       setShowCustomerModal(false);
     } catch (err) {
       console.error('Failed to create customer:', err);
+      alert('Gagal menyimpan pelanggan: ' + err.message);
+    }
+  };
+
+  const handleDeleteCustomer = async (id, e) => {
+    e.stopPropagation();
+    if (!confirm('Hapus pelanggan ini?')) return;
+    try {
+      await apiFetch(`/customers/${id}`, { method: 'DELETE' });
+      if (customerId === id) {
+        setCustomerId('');
+        setCustomerName('');
+        setCustomerPhone('');
+      }
+      fetchCustomers();
+    } catch (err) {
+      console.error('Failed to delete customer:', err);
     }
   };
 
@@ -79,7 +99,8 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
   const parseAmount = (str) => Number(String(str).replace(/\./g, '').replace(/,/g, ''));
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const feeTotal = hasAdditionalFee ? additionalFees.reduce((sum, fee) => sum + parseAmount(fee.amount), 0) : 0;
-  const total = cartTotal + feeTotal;
+  const discTotal = diskon ? parseAmount(discountAmount) : 0;
+  const total = Math.max(0, cartTotal + feeTotal - discTotal);
 
   // Bayar Langsung Logic
   const change = parseAmount(paid) - total;
@@ -115,8 +136,15 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
 
     try {
       const validAdditionalFees = hasAdditionalFee ? additionalFees.filter(f => f.name && f.amount) : [];
+      if (diskon && parseAmount(discountAmount) > 0) {
+        const feeName = discountNote.trim() ? `Diskon (${discountNote.trim()})` : 'Diskon Transaksi';
+        validAdditionalFees.push({ name: feeName, amount: -parseAmount(discountAmount) });
+      }
+      
+      const finalFeeTotal = validAdditionalFees.reduce((sum, f) => sum + Number(f.amount), 0);
+      
       const baseData = {
-        additionalFee: feeTotal,
+        additionalFee: finalFeeTotal,
         additionalFeesDetails: validAdditionalFees.length > 0 ? JSON.stringify(validAdditionalFees) : null,
       };
 
@@ -174,47 +202,107 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 py-2 border-b">
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-sm">Biaya Tambahan</span>
+      {/* Diskon Transaksi */}
+      <div className="flex items-center justify-between py-4 border-b">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base text-slate-800">Diskon Transaksi</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400 font-semibold">{diskon ? 'Ya' : 'Tidak'}</span>
           <button
-            onClick={() => { 
-              const next = !hasAdditionalFee;
-              setHasAdditionalFee(next); 
-              if (next && additionalFees.length === 0) setAdditionalFees([{ name: '', amount: '' }]);
-              if (!next) setAdditionalFees([]);
+            onClick={() => {
+              setDiskon(!diskon);
+              if (diskon) {
+                setDiscountAmount('');
+                setDiscountNote('');
+              }
             }}
-            className={`w-10 h-6 rounded-full relative transition-all ${hasAdditionalFee ? '${primaryBg}' : 'bg-slate-200'}`}
+            className={`w-11 h-6 rounded-full relative transition-all ${diskon ? primaryBg : 'bg-slate-200'}`}
           >
-            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${hasAdditionalFee ? 'right-1' : 'left-1'}`}></span>
+            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${diskon ? 'right-1' : 'left-1'}`}></span>
           </button>
         </div>
+      </div>
+      
+      {diskon && (
+        <div className="py-4 border-b space-y-4">
+          <div className="relative">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Nominal Diskon</label>
+            <input 
+              type="number" 
+              value={discountAmount} 
+              onChange={e => setDiscountAmount(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none mt-1" 
+              placeholder="Contoh: 5000" 
+            />
+          </div>
+          <div className="relative">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Keterangan Diskon (Opsional)</label>
+            <input 
+              type="text" 
+              value={discountNote} 
+              onChange={e => setDiscountNote(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none mt-1" 
+              placeholder="Contoh: Barang hampir kadaluarsa" 
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col py-4 border-b">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-bold text-base text-slate-800">Biaya Tambahan</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 font-semibold">{hasAdditionalFee ? 'Ya' : 'Tidak'}</span>
+            <button
+              onClick={() => { 
+                const next = !hasAdditionalFee;
+                setHasAdditionalFee(next); 
+                if (next && additionalFees.length === 0) setAdditionalFees([{ name: '', amount: '' }]);
+                if (!next) setAdditionalFees([]);
+              }}
+              className={`w-11 h-6 rounded-full relative transition-all ${hasAdditionalFee ? primaryBg : 'bg-slate-200'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${hasAdditionalFee ? 'right-1' : 'left-1'}`}></span>
+            </button>
+          </div>
+        </div>
+        
         {hasAdditionalFee && (
-          <div className="bg-slate-50 p-3 rounded-xl space-y-3">
+          <div className="space-y-3">
             {additionalFees.map((fee, idx) => (
-              <div key={idx} className="space-y-2 bg-white p-3 rounded-lg border relative">
-                {additionalFees.length > 1 && (
-                  <button onClick={() => setAdditionalFees(prev => prev.filter((_, i) => i !== idx))} className="absolute right-2 top-2 text-slate-400 hover:${primaryText}">
-                    <span className="material-symbols-outlined !text-[18px]">close</span>
-                  </button>
-                )}
-                <button onClick={() => { setFeeTargetIndex(idx); setShowFeeOptions(true); }} className="w-full py-2 border-2 border-dashed ${primaryBorderLight} ${primaryText} font-bold rounded-xl text-sm hover:${primaryLightBg}">
-                  {fee.name ? `Biaya: ${fee.name}` : 'Pilih Jenis Biaya...'}
-                </button>
+              <div key={idx} className="flex flex-col space-y-2 relative">
                 {fee.name && (
-                  <InputField label="Nominal Biaya" type="number" value={fee.amount} onChange={(val) => {
-                    setAdditionalFees(prev => {
-                      const next = [...prev];
-                      next[idx].amount = val;
-                      return next;
-                    });
-                  }} placeholder="Rp 0" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-700">{fee.name} <span className="text-red-500">*</span></span>
+                  </div>
+                )}
+                
+                {fee.name ? (
+                  <div className="relative">
+                    <input type="number" value={fee.amount} onChange={(e) => {
+                      setAdditionalFees(prev => {
+                        const next = [...prev];
+                        next[idx].amount = e.target.value;
+                        return next;
+                      });
+                    }} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none pr-10" placeholder="Rp" />
+                    <button onClick={() => setAdditionalFees(prev => prev.filter((_, i) => i !== idx))} className="absolute right-3 top-3 text-red-400">
+                      <span className="material-symbols-outlined !text-[20px]">delete</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => { setFeeTargetIndex(idx); setShowFeeOptions(true); }} className={`w-full py-3 border border-slate-200 ${primaryText} font-bold rounded-xl text-sm bg-white`}>
+                    + Biaya Tambahan
+                  </button>
                 )}
               </div>
             ))}
-            <button onClick={() => setAdditionalFees(prev => [...prev, { name: '', amount: '' }])} className="w-full py-2 font-bold ${primaryText} text-sm hover:${primaryLightBg} rounded-xl">
-              + Tambah Biaya Lainnya
-            </button>
+            {additionalFees.length > 0 && additionalFees[additionalFees.length - 1].name && (
+              <button onClick={() => setAdditionalFees(prev => [...prev, { name: '', amount: '' }])} className={`w-full py-3 border border-slate-200 ${primaryText} font-bold rounded-xl text-sm bg-white`}>
+                + Biaya Tambahan
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -222,101 +310,138 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
       {showFeeOptions && (
         <div className="fixed inset-0 z-[70] bg-black/50 flex items-end">
           <div className="bg-white w-full rounded-t-3xl p-6 space-y-4">
-            <h3 className="font-bold text-lg text-center">Pilih Biaya Tambahan</h3>
-            <div className="space-y-2">
-              {['Pajak', 'Ongkos Kirim', 'Kemasan', 'Lainnya (Ketik Sendiri)...'].map(opt => (
-                <button
-                  key={opt}
-                  onClick={() => { 
-                    let name = opt;
-                    if (opt.startsWith('Lainnya')) {
-                      name = prompt('Masukkan nama biaya tambahan:') || '';
-                    }
-                    if (name) {
-                      setAdditionalFees(prev => {
-                        const next = [...prev];
-                        next[feeTargetIndex].name = name;
-                        return next;
-                      });
-                    }
-                    setShowFeeOptions(false); 
-                  }}
-                  className="w-full text-left py-3 px-4 rounded-xl font-bold bg-slate-50 hover:bg-slate-100 border"
-                >
-                  {opt}
-                </button>
-              ))}
+            <h3 className="font-bold text-lg text-center ${primaryText}">Pilih Biaya Tambahan</h3>
+            <div className="space-y-2 mt-4">
+              <span className="font-bold text-sm text-slate-800">Pajak</span>
+              <button
+                onClick={() => { 
+                  setAdditionalFees(prev => {
+                    const next = [...prev];
+                    next[feeTargetIndex].name = 'Ongkos Kirim';
+                    return next;
+                  });
+                  setShowFeeOptions(false); 
+                }}
+                className="w-full text-left py-4 px-4 rounded-xl font-bold bg-slate-50 text-red-600 border border-slate-100"
+              >
+                Ongkos Kirim
+              </button>
+              <span className="font-bold text-sm text-slate-800 pt-2 block">Kemasan</span>
             </div>
-            <button onClick={() => setShowFeeOptions(false)} className="w-full py-3 bg-slate-200 font-bold rounded-xl text-slate-600">Batal</button>
+            <div className="flex gap-3 pt-4">
+              <button onClick={() => setShowFeeOptions(false)} className="flex-1 py-3 border border-red-500 text-red-500 font-bold rounded-2xl bg-white">Batal</button>
+              <button onClick={() => setShowFeeOptions(false)} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-2xl">Pilih</button>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="pt-4 space-y-2">
-        <div className="flex justify-between font-bold text-lg text-slate-900">
+      <div className="pt-4 pb-2 space-y-4 border-b">
+        <h3 className="font-bold text-lg text-slate-900">Rincian Pesanan</h3>
+        {cart.map((item, idx) => (
+          <div key={idx} className="flex justify-between items-start text-sm">
+            <div className="flex-1 pr-2">
+              <p className="text-slate-700">{item.name}</p>
+            </div>
+            <p className="text-slate-500 text-xs w-20">{formatRupiah(item.price)} x {item.qty}</p>
+            <p className="font-bold text-slate-900 w-24 text-right">{formatRupiah(item.price * item.qty)}</p>
+          </div>
+        ))}
+        <div className="flex justify-between items-center text-sm font-bold pt-2 border-t border-slate-100">
           <span>Total Pesanan</span>
-          <span className="${primaryText}">{formatRupiah(total)}</span>
+          <span>{formatRupiah(cartTotal)}</span>
         </div>
+        {hasAdditionalFee && additionalFees.map((fee, idx) => fee.name && (
+          <div key={idx} className="flex justify-between items-center text-sm font-bold">
+            <span>{fee.name}</span>
+            <span>{formatRupiah(parseAmount(fee.amount))}</span>
+          </div>
+        ))}
+        <div className="flex justify-between font-bold text-lg text-slate-900 pt-2">
+          <span>Total</span>
+          <span className="text-green-600">{formatRupiah(total)}</span>
+        </div>
+      </div>
+        
+      <div className="pt-4 pb-4">
         <button
           onClick={handleNext}
           className={`w-full py-4 ${primaryBg} text-white font-bold rounded-2xl text-base`}
         >
-          {orderMethod === 'buat_pesanan' ? 'Lanjut (Buat Pesanan)' : orderMethod === 'piutang' ? 'Lanjut (Detail Piutang)' : 'Lanjut Pembayaran'}
+          {orderMethod === 'buat_pesanan' ? 'Buat Pesanan' : orderMethod === 'piutang' ? 'Piutang' : 'Lanjut Pembayaran'}
         </button>
       </div>
     </div>
   );
 
   const renderStep2BuatPesanan = () => (
-    <div className="flex-1 overflow-y-auto px-6 pb-2 space-y-6">
-      <div className="flex flex-col items-center py-4">
-        <span className="material-symbols-outlined !text-6xl ${primaryText} mb-2">
-          {orderMethod === 'piutang' ? 'receipt_long' : 'person_add'}
-        </span>
-        <h3 className="font-bold text-xl">
+    <div className="fixed inset-0 z-[70] bg-black/50 flex items-end">
+      <div className="bg-white w-full rounded-t-3xl flex flex-col p-6 animate-in slide-in-from-bottom-8">
+        
+        {/* Placeholder for illustration */}
+        <div className="flex justify-center items-center py-4 bg-orange-50 rounded-2xl mb-4 h-32 relative overflow-hidden">
+          <span className="material-symbols-outlined !text-6xl text-orange-400">group</span>
+          <div className="absolute bottom-2 font-bold text-orange-800 text-xs">Ilustrasi Buat Pesanan</div>
+        </div>
+
+        <h3 className="font-extrabold text-2xl text-slate-900 mb-6">
           {orderMethod === 'piutang' ? 'Detail Piutang' : 'Buat Pesanan'}
         </h3>
-      </div>
 
-      <div className="space-y-3">
-        <div className="flex flex-col">
-          <label className="text-sm font-bold text-slate-700 mb-1">Nama Pelanggan (Wajib)</label>
-          <div 
-            onClick={() => setShowCustomerModal(true)}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-left cursor-pointer flex justify-between items-center"
-          >
-            <span className={customerName ? "text-slate-900 font-bold" : "text-slate-400"}>
-              {customerName || "Pilih atau cari pelanggan..."}
-            </span>
-            <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+        <div className="space-y-4">
+          <div className="flex flex-col">
+            {!customerName ? (
+              <div 
+                onClick={() => setShowCustomerModal(true)}
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none text-left cursor-pointer flex justify-between items-center"
+              >
+                <span className="text-slate-400 font-medium">Masukkan Nama Pelanggan</span>
+                <span className="font-bold text-red-600 px-3 py-1 border border-red-600 rounded-lg text-xs">Pilih</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-slate-900 font-bold">{customerName}</span>
+                  <button onClick={() => {setCustomerId(''); setCustomerName(''); setCustomerPhone('');}} className="p-1 hover:bg-slate-200 rounded text-slate-400">
+                    <span className="material-symbols-outlined !text-[18px]">close</span>
+                  </button>
+                </div>
+                <button onClick={() => setShowCustomerModal(true)} className="px-5 py-3 border border-red-600 text-red-600 font-bold rounded-xl bg-white text-sm shrink-0">
+                  Ubah
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {orderMethod === 'piutang' && (
+            <InputField label="Tanggal Tenggat Waktu (Opsional)" type="date" value={dueDate} onChange={setDueDate} />
+          )}
+
+          <div className="flex items-center justify-between py-2 border-b">
+            <span className="font-bold text-base text-slate-800">Delivery</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold">{isDelivery ? 'Ya' : 'Tidak'}</span>
+              <button onClick={() => setIsDelivery(!isDelivery)} className={`w-11 h-6 rounded-full relative transition-all ${isDelivery ? primaryBg : 'bg-slate-200'}`}>
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isDelivery ? 'right-1' : 'left-1'}`}></span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between py-2 border-b">
+            <span className="font-bold text-base text-slate-800">Jadwal Ambil</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold">{pickupDate ? 'Ya' : 'Tidak'}</span>
+              <button onClick={() => setPickupDate(!pickupDate)} className={`w-11 h-6 rounded-full relative transition-all ${pickupDate ? primaryBg : 'bg-slate-200'}`}>
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${pickupDate ? 'right-1' : 'left-1'}`}></span>
+              </button>
+            </div>
           </div>
         </div>
-        
-        <InputField label="Nomor Telepon (Opsional)" type="text" value={customerPhone} onChange={setCustomerPhone} placeholder="Otomatis terisi jika ada" disabled />
-        
-        {orderMethod === 'piutang' && (
-          <InputField label="Tanggal Tenggat Waktu (Opsional)" type="date" value={dueDate} onChange={setDueDate} />
-        )}
-      </div>
 
-      <div className="space-y-4 pt-4 border-t">
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-sm">Jenis Pesanan (Delivery)</span>
-          <button onClick={() => setIsDelivery(!isDelivery)} className={`w-10 h-6 rounded-full relative transition-all ${isDelivery ? primaryBg : 'bg-slate-200'}`}>
-            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isDelivery ? 'right-1' : 'left-1'}`}></span>
-          </button>
+        <div className="flex gap-3 pt-6 mt-2">
+          <button onClick={() => setStep(1)} className="flex-1 py-4 bg-white border border-red-600 text-red-600 font-bold rounded-2xl">Batal</button>
+          <button onClick={handleSubmit} disabled={!customerName.trim()} className={`flex-1 py-4 ${primaryBg} text-white font-bold rounded-2xl disabled:opacity-50`}>OK</button>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-sm">Jadwal Ambil</span>
-          <button onClick={() => setPickupDate(!pickupDate)} className={`w-10 h-6 rounded-full relative transition-all ${pickupDate ? primaryBg : 'bg-slate-200'}`}>
-            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${pickupDate ? 'right-1' : 'left-1'}`}></span>
-          </button>
-        </div>
-      </div>
-
-      <div className="flex gap-3 pt-4">
-        <button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 font-bold rounded-2xl text-slate-600 border">Kembali</button>
-        <button onClick={handleSubmit} disabled={!customerName.trim()} className={`flex-1 py-4 ${primaryBg} text-white font-bold rounded-2xl disabled:opacity-50`}>OK</button>
       </div>
     </div>
   );
@@ -405,34 +530,29 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
     const sortedGroups = Object.keys(grouped).sort();
 
     return (
-      <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+      <div className="fixed inset-0 z-[80] bg-white flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setShowCustomerModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
-            </button>
-            <h2 className="text-xl font-bold">Pilih Pelanggan</h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setIsAddingCustomer(true)} className={`px-3 py-1.5 ${primaryBg} text-white font-bold rounded-lg text-sm flex items-center gap-1`}>
-              + Pelanggan
-            </button>
-            <button onClick={fetchCustomers} className="p-1.5 border rounded-lg text-slate-500">
-              <span className="material-symbols-outlined !text-xl">sync</span>
-            </button>
-          </div>
+        <div className="flex items-center gap-3 p-4 border-b">
+          <h2 className="text-xl font-extrabold text-slate-900">Pilih Pelanggan</h2>
+          <button onClick={() => setIsAddingCustomer(true)} className={`px-4 py-2 ${primaryBg} text-white font-bold rounded-xl text-sm flex items-center gap-1 ml-auto`}>
+            + Pelanggan
+          </button>
         </div>
 
         {isAddingCustomer ? (
-          <div className="p-6 space-y-4 flex-1">
-            <h3 className="font-bold text-lg mb-2">Pelanggan Baru</h3>
-            <InputField label="Nama Pelanggan" type="text" value={newCustomerData.name} onChange={(v) => setNewCustomerData({...newCustomerData, name: v})} placeholder="Masukkan nama" />
-            <InputField label="Nomor Telepon" type="text" value={newCustomerData.phone} onChange={(v) => setNewCustomerData({...newCustomerData, phone: v})} placeholder="Masukkan nomor (opsional)" />
+          <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+            {/* Placeholder for Tambah Pelanggan Illustration */}
+            <div className="flex justify-center items-center py-4 bg-slate-50 rounded-2xl mb-4 h-32 border border-slate-200">
+               <span className="material-symbols-outlined !text-6xl text-slate-300">badge</span>
+            </div>
+
+            <h3 className="font-extrabold text-2xl text-slate-900 mb-4">Tambah Pelanggan</h3>
+            <InputField label="Nama Pelanggan" type="text" value={newCustomerData.name} onChange={(v) => setNewCustomerData({...newCustomerData, name: v})} placeholder="Masukkan nama pelanggan" />
+            <InputField label="Nomor Telepon" type="text" value={newCustomerData.phone} onChange={(v) => setNewCustomerData({...newCustomerData, phone: v})} placeholder="+62  Contoh: 8989482384 (Opsional)" />
             
-            <div className="flex gap-4 pt-4">
-              <button onClick={() => setIsAddingCustomer(false)} className="flex-1 py-3 border-2 border-slate-200 text-slate-600 font-bold rounded-xl">Batal</button>
-              <button onClick={handleCreateCustomer} disabled={!newCustomerData.name} className={`flex-1 py-3 ${primaryBg} text-white font-bold rounded-xl disabled:opacity-50`}>Simpan</button>
+            <div className="flex gap-3 pt-6">
+              <button onClick={() => setIsAddingCustomer(false)} className="flex-1 py-4 border border-red-600 text-red-600 font-bold rounded-2xl bg-white">Batal</button>
+              <button onClick={handleCreateCustomer} disabled={!newCustomerData.name} className={`flex-1 py-4 ${primaryBg} text-white font-bold rounded-2xl disabled:opacity-50`}>Simpan</button>
             </div>
           </div>
         ) : (
@@ -450,16 +570,14 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
                 />
               </div>
             </div>
-
-            {/* List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {sortedGroups.length === 0 ? (
                 <p className="text-center text-slate-400 mt-10">Tidak ada pelanggan ditemukan</p>
               ) : (
                 sortedGroups.map(group => (
                   <div key={group}>
-                    <h4 className={`font-bold text-lg mb-2 ${primaryText}`}>{group}</h4>
-                    <div className="space-y-1 border-b pb-4">
+                    <h4 className={`font-bold text-lg mb-2 text-red-600`}>{group}</h4>
+                    <div className="space-y-1 border-b pb-4 mb-4">
                       {grouped[group].map(cust => (
                         <div 
                           key={cust.id} 
@@ -467,15 +585,17 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
                             setCustomerId(cust.id);
                             setCustomerName(cust.name);
                             setCustomerPhone(cust.phone || '');
-                            setShowCustomerModal(false);
                           }}
-                          className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 cursor-pointer"
+                          className="flex items-center py-3 cursor-pointer border-b border-slate-50 last:border-none gap-2"
                         >
-                          <div>
-                            <p className="font-bold text-slate-800">{cust.name}</p>
-                            {cust.phone && <p className="text-xs text-slate-500">{cust.phone}</p>}
+                          <div className="flex-1">
+                            <p className="font-bold text-slate-800 text-sm">{cust.name}</p>
+                            <p className="text-xs text-slate-400">{cust.phone || '-'}</p>
                           </div>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${customerId === cust.id ? primaryBorder : 'border-slate-300'}`}>
+                          <button onClick={(e) => handleDeleteCustomer(cust.id, e)} className="p-1 hover:bg-red-50 rounded-lg text-slate-300 hover:text-red-500">
+                            <span className="material-symbols-outlined !text-[18px]">delete</span>
+                          </button>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ml-2 ${customerId === cust.id ? 'border-red-600' : 'border-red-600'}`}>
                             {customerId === cust.id && <div className={`w-2.5 h-2.5 rounded-full ${primaryBg}`}></div>}
                           </div>
                         </div>
@@ -484,6 +604,11 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
                   </div>
                 ))
               )}
+            </div>
+
+            <div className="p-4 border-t flex gap-3">
+              <button onClick={() => setShowCustomerModal(false)} className="flex-1 py-4 border border-red-600 text-red-600 font-bold rounded-2xl bg-white">Batal</button>
+              <button onClick={() => setShowCustomerModal(false)} className={`flex-1 py-4 ${primaryBg} text-white font-bold rounded-2xl`}>Pilih</button>
             </div>
           </>
         )}
@@ -494,20 +619,22 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       {showCustomerModal && renderCustomerModal()}
-      <div className="bg-white w-full rounded-t-3xl flex flex-col" style={{ maxHeight: '92dvh' }}>
-        <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
-          <h2 className="font-headline font-bold text-xl text-slate-900">
-            {step === 1 ? 'Checkout' : step === 2 ? 'Detail Pelanggan' : 'Konfirmasi Pembayaran'}
-          </h2>
-          <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 active:scale-95">
-            <span className="material-symbols-outlined text-slate-500">close</span>
-          </button>
+      {step !== 2 && (
+        <div className="bg-white w-full rounded-t-3xl flex flex-col" style={{ maxHeight: '92dvh' }}>
+          <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0 border-b">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-600 font-bold">arrow_back_ios</span>
+              <h2 className="font-headline font-bold text-xl text-slate-900">
+                {step === 1 ? 'Checkout' : 'Konfirmasi Pembayaran'}
+              </h2>
+            </div>
+          </div>
+          
+          {step === 1 && renderStep1()}
+          {step === 3 && renderStep3Pembayaran()}
         </div>
-        
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2BuatPesanan()}
-        {step === 3 && renderStep3Pembayaran()}
-      </div>
+      )}
+      {step === 2 && renderStep2BuatPesanan()}
     </div>
   );
 }

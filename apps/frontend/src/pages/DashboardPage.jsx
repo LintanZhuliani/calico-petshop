@@ -28,6 +28,8 @@ export default function DashboardPage() {
   const [todayTxCount, setTodayTxCount] = useState(cachedStats.todayTxCount || 0);
   const [todayRevenue, setTodayRevenue] = useState(cachedStats.todayRevenue || 0);
   const [todayItemsSold, setTodayItemsSold] = useState(cachedStats.todayItemsSold || 0);
+  const [todayTunai, setTodayTunai] = useState(cachedStats.todayTunai || 0);
+  const [todayNonTunai, setTodayNonTunai] = useState(cachedStats.todayNonTunai || 0);
   const [lowStockCount, setLowStockCount] = useState(cachedStats.lowStockCount || 0);
   const [inTransitCount, setInTransitCount] = useState(cachedStats.inTransitCount || 0);
 
@@ -66,16 +68,33 @@ export default function DashboardPage() {
           );
           setTodayItemsSold(totalItems);
           
+          const tunai = todaysTxs.reduce((s, tx) => {
+            const method = tx.paymentMethod || 'Tunai';
+            if (method === 'Tunai') return s + tx.total;
+            if (method.startsWith('Campuran')) {
+              const match = method.match(/Rp\s*([\d\.]+)/);
+              if (match) {
+                const nonTunaiAmt = Number(match[1].replace(/\./g, ''));
+                return s + Math.max(0, tx.total - nonTunaiAmt);
+              }
+            }
+            return s;
+          }, 0);
+          const revenueCalc = todaysTxs.reduce((sum, tx) => sum + tx.total, 0);
+          const nonTunai = revenueCalc - tunai;
+          
+          setTodayTunai(tunai);
+          setTodayNonTunai(nonTunai);
+          
           if (!isAdmin) {
-             const revenue = todaysTxs.reduce((sum, tx) => sum + tx.total, 0);
              setTodayTxCount(todaysTxs.length);
-             setTodayRevenue(revenue);
+             setTodayRevenue(revenueCalc);
              
              const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-             localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems, todayTxCount: todaysTxs.length, todayRevenue: revenue }));
+             localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems, todayTxCount: todaysTxs.length, todayRevenue: revenueCalc, todayTunai: tunai, todayNonTunai: nonTunai }));
           } else {
              const currentStats = JSON.parse(localStorage.getItem(cacheKey)) || {};
-             localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems }));
+             localStorage.setItem(cacheKey, JSON.stringify({ ...currentStats, todayItemsSold: totalItems, todayTunai: tunai, todayNonTunai: nonTunai }));
           }
         }
       })
@@ -237,6 +256,12 @@ export default function DashboardPage() {
               <p className={`text-lg font-extrabold font-headline ${isAdmin ? 'text-slate-900' : primaryText}`}>
                 {isAdmin ? formatRupiah(todayRevenue) : `${todayTxCount} Transaksi`}
               </p>
+              {isAdmin && (
+                <div className="flex gap-2 mt-1">
+                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">Tunai: {formatRupiah(todayTunai)}</span>
+                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">Non-Tunai: {formatRupiah(todayNonTunai)}</span>
+                </div>
+              )}
             </div>
           </div>
           {/* Card 2 */}
