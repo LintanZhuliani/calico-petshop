@@ -195,7 +195,7 @@ export default function ProfilePage() {
       { id: 'users', icon: 'manage_accounts', label: 'Kelola Karyawan', desc: 'Tambah, edit, atau nonaktifkan akun', color: primaryText },
     ] : []),
     { id: 'edit_profile', icon: 'person_edit', label: 'Edit Profil', desc: 'Ubah nama pengguna & email', color: primaryText },
-    { id: 'branches', icon: 'store', label: isAdmin ? 'Kelola Cabang' : 'Ganti Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
+    { id: 'branches', icon: 'store', label: 'Kelola Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'riwayat_notifikasi', icon: 'history', label: 'Riwayat Notifikasi', desc: 'Log hapus barang & kadaluarsa', color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
