@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_TrEU0FLlCLBFeMANqTh82Ti0Polf",
+      "name": "calico-petshop-frontend",
+      "directory": "apps/frontend",
+      "orgId": "team_kQZkymd5PGwArZtN9LqxXi7x"
+    }
+  ]
+}
