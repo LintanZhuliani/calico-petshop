@@ -115,6 +115,17 @@ app.get("/api/debug/auth", async (req, res) => {
   res.json({ user });
 });
 
+app.post("/api/debug/verify", async (req, res) => {
+  try {
+    const { Scrypt } = await import("oslo/password");
+    const scrypt = new Scrypt({ N: 16384, r: 16, p: 1, dkLen: 64 });
+    const isValid = await scrypt.verify(req.body.hash, req.body.password);
+    res.json({ isValid });
+  } catch (e) {
+    res.status(500).json({ error: String(e), stack: e.stack });
+  }
+});
+
 app.use(errorHandler);
 
 // ── Start Server ──
