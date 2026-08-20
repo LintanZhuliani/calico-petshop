@@ -67,12 +67,21 @@ app.use(
 
 // ── Better Auth Handler ──
 // IMPORTANT: Mount BEFORE express.json() to avoid body parser conflicts
-app.use((req, res, next) => {
-  if (req.url.startsWith("/api/auth")) {
-    return toNodeHandler(auth)(req, res);
+app.use("/api/auth/sign-in/email", async (req, res, next) => {
+  if (req.method === "POST") {
+    try {
+      const email = req.body?.email;
+      const internalAdapter = await auth.$context.then(c => c.internalAdapter);
+      const user = email ? await internalAdapter.findUserByEmail(email, { includeAccounts: true }) : null;
+      console.log("[INTERCEPTOR] sign-in/email POST:", { email, userFound: !!user, bodyType: typeof req.body });
+    } catch (e) {
+      console.error("[INTERCEPTOR] error:", e);
+    }
   }
   next();
 });
+
+app.all("/api/auth/*", toNodeHandler(auth));
 
 // ── Body Parser ──
 app.use(express.json({ limit: "5mb" })); // 5mb for base64 product images
