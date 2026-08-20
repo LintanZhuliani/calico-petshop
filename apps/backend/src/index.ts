@@ -95,10 +95,9 @@ app.post("/api/auth/sign-in/email", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password", code: "INVALID_EMAIL_OR_PASSWORD" });
     }
     
-    // Verify password using oslo/password (proved to work on Vercel)
-    const { Scrypt } = await import("oslo/password");
-    const scrypt = new Scrypt();
-    const isValid = await scrypt.verify(credentialAccount.password, password);
+    // Verify password using better-auth utils
+    const { verifyPassword } = await import("@better-auth/utils/password");
+    const isValid = await verifyPassword(credentialAccount.password, password);
     
     if (!isValid) {
       return res.status(401).json({ message: "Invalid email or password", code: "INVALID_EMAIL_OR_PASSWORD" });
