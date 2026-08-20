@@ -13,6 +13,7 @@ import { createServer } from "http";
 import { initSocket } from "./lib/socket.js";
 import { initCronJobs } from "./cron/expiryAlerts.js";
 import { db } from "./db/index.js";
+import { auth } from "./auth/index.js";
 
 // Initialize Background Cron Jobs
 initCronJobs();
@@ -121,6 +122,15 @@ app.post("/api/debug/verify", async (req, res) => {
     const scrypt = new Scrypt({ N: 16384, r: 16, p: 1, dkLen: 64 });
     const isValid = await scrypt.verify(req.body.hash, req.body.password);
     res.json({ isValid });
+  } catch (e) {
+    res.status(500).json({ error: String(e), stack: e.stack });
+  }
+});
+
+app.get("/api/debug/internal", async (req, res) => {
+  try {
+    const user = await auth.internalAdapter.findUserByEmail("lintanzhuliani840@gmail.com", { includeAccounts: true });
+    res.json({ user });
   } catch (e) {
     res.status(500).json({ error: String(e), stack: e.stack });
   }
