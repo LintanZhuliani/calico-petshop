@@ -137,6 +137,15 @@ app.get("/api/debug/internal", async (req, res) => {
     res.status(500).json({ error: String(e), stack: e.stack });
   }
 });
+app.get("/api/debug/adapter", async (req, res) => {
+  try {
+    const internalAdapter = await auth.$context.then(c => c.internalAdapter);
+    const user = await internalAdapter.findUserByEmail("lintanzhuliani840@gmail.com", { includeAccounts: true });
+    res.json({ user });
+  } catch (e) {
+    res.status(500).json({ error: String(e), stack: e.stack });
+  }
+});
 
 app.use(errorHandler);
 
