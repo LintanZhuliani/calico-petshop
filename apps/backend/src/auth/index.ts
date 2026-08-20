@@ -19,9 +19,9 @@ export const auth = betterAuth({
     password: {
       verify: async ({ hash, password }) => {
         try {
-          // Native fallback check using oslo
           const { Scrypt } = await import("oslo/password");
-          const scrypt = new Scrypt();
+          // MUST MATCH better-auth/utils exact parameters
+          const scrypt = new Scrypt({ N: 16384, r: 16, p: 1, dkLen: 64 });
           return await scrypt.verify(hash, password);
         } catch (e) {
           console.error("Scrypt Verify Error:", e);
