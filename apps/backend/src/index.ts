@@ -13,7 +13,6 @@ import { createServer } from "http";
 import { initSocket } from "./lib/socket.js";
 import { initCronJobs } from "./cron/expiryAlerts.js";
 import { db } from "./db/index.js";
-import { auth } from "./auth/index.js";
 
 // Initialize Background Cron Jobs
 initCronJobs();
@@ -69,7 +68,7 @@ app.use(
 app.use(express.json({ limit: "5mb" })); // 5mb for base64 product images
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
-// OVERRIDE: Custom sign-in route to bypass Better Auth + Vercel bug
+// OVERRIDE: Custom sign-in route to bypass Better Auth + Vercel body-parsing bug
 app.post("/api/auth/sign-in/email", async (req, res) => {
   try {
     const email = req.body?.email;
@@ -104,10 +103,10 @@ app.post("/api/auth/sign-in/email", async (req, res) => {
     }
     
     // Generate session
-    const crypto = await import("crypto");
-    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const nodeCrypto = await import("crypto");
+    const sessionToken = nodeCrypto.randomBytes(32).toString("hex");
     const session = {
-      id: crypto.randomBytes(16).toString("hex"),
+      id: nodeCrypto.randomBytes(16).toString("hex"),
       userId: user.id,
       token: sessionToken,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
@@ -119,16 +118,29 @@ app.post("/api/auth/sign-in/email", async (req, res) => {
     
     await db.insert(schema.session).values(session);
     
-    // Set cookie
+    // Sign cookie with HMAC-SHA256 (same as better-call's setSignedCookie)
+    const secret = process.env.BETTER_AUTH_SECRET || process.env.AUTH_SECRET || "";
+    const webcrypto = globalThis.crypto?.subtle || (await import("crypto")).webcrypto.subtle;
+    const secretKey = await webcrypto.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signatureBuffer = await webcrypto.sign("HMAC", secretKey, new TextEncoder().encode(sessionToken));
+    const signatureBase64 = Buffer.from(signatureBuffer).toString("base64");
+    const signedValue = encodeURIComponent(`${sessionToken}.${signatureBase64}`);
+    
+    // Build Set-Cookie header manually (better-auth uses __Secure- prefix in production)
     const isProd = process.env.NODE_ENV === "production";
     const cookieName = isProd ? "__Secure-better-auth.session_token" : "better-auth.session_token";
-    res.cookie(cookieName, sessionToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-      path: "/",
-      maxAge: 1000 * 60 * 60 * 24 * 7
-    });
+    const maxAge = 60 * 60 * 24 * 7; // 7 days in seconds
+    let cookieHeader = `${cookieName}=${signedValue}; Max-Age=${maxAge}; Path=/; HttpOnly`;
+    if (isProd) cookieHeader += "; Secure; SameSite=None";
+    else cookieHeader += "; SameSite=Lax";
+    
+    res.setHeader("Set-Cookie", cookieHeader);
     
     return res.json({ token: sessionToken, user: { ...user, accounts }, session });
   } catch (e) {
