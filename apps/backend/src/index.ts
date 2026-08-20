@@ -147,6 +147,16 @@ app.get("/api/debug/adapter", async (req, res) => {
   }
 });
 
+app.post("/api/debug/body", (req, res) => {
+  res.json({
+    body: req.body,
+    type: typeof req.body,
+    readableEnded: req.readableEnded,
+    readable: req.readable,
+    destroyed: req.destroyed
+  });
+});
+
 app.use(errorHandler);
 
 // ── Start Server ──
