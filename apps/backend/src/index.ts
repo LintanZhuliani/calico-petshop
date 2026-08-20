@@ -106,6 +106,14 @@ app.get("/api/health", (req, res) => {
 });
 
 // ── Error Handler ──
+app.get("/api/debug/auth", async (req, res) => {
+  const user = await db.query.user.findFirst({
+    where: (u, { eq }) => eq(u.email, "lintanzhuliani840@gmail.com"),
+    with: { accounts: true }
+  });
+  res.json({ user });
+});
+
 app.use(errorHandler);
 
 // ── Start Server ──
