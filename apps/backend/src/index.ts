@@ -122,13 +122,13 @@ app.post("/api/auth/sign-in/email", async (req, res) => {
     // Set cookie
     res.cookie("better-auth.session_token", sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
-    return res.json({ token: sessionToken, user: { ...user, accounts } });
+    return res.json({ token: sessionToken, user: { ...user, accounts }, session });
   } catch (e) {
     console.error("[CUSTOM LOGIN ERROR]", e);
     return res.status(500).json({ message: "Internal server error", error: String(e) });
