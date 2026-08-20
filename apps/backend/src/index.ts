@@ -130,6 +130,7 @@ app.post("/api/debug/verify", async (req, res) => {
 app.get("/api/debug/internal", async (req, res) => {
   try {
     const { eq } = await import("drizzle-orm");
+    const schema = await import("./db/schema/index.js");
     const user = await db.select().from(schema.user).where(eq(schema.user.email, "lintanzhuliani840@gmail.com"));
     res.json({ user, type: typeof schema.user.email });
   } catch (e) {
