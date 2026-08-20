@@ -8,6 +8,8 @@ import { db } from "../db/index.js";
 import * as schema from "../db/schema/index.js";
 import { sendResetPasswordEmail } from "../lib/email.js";
 
+import { Scrypt } from "oslo/password";
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -19,7 +21,6 @@ export const auth = betterAuth({
     password: {
       verify: async ({ hash, password }) => {
         try {
-          const { Scrypt } = await import("oslo/password");
           // MUST MATCH better-auth/utils exact parameters
           const scrypt = new Scrypt({ N: 16384, r: 16, p: 1, dkLen: 64 });
           return await scrypt.verify(hash, password);
