@@ -120,10 +120,12 @@ app.post("/api/auth/sign-in/email", async (req, res) => {
     await db.insert(schema.session).values(session);
     
     // Set cookie
-    res.cookie("better-auth.session_token", sessionToken, {
+    const isProd = process.env.NODE_ENV === "production";
+    const cookieName = isProd ? "__Secure-better-auth.session_token" : "better-auth.session_token";
+    res.cookie(cookieName, sessionToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
