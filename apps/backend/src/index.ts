@@ -65,25 +65,83 @@ app.use(
   })
 );
 
-// ── Better Auth Handler ──
-// IMPORTANT: Mount BEFORE express.json() to avoid body parser conflicts
-app.use(async (req, res, next) => {
-  if (req.url.startsWith("/api/auth/sign-in/email") && req.method === "POST") {
-    try {
-      // Since express.json is not called yet, req.body is undefined or managed by Vercel
-      console.log("[INTERCEPTOR] sign-in/email POST hit");
-    } catch (e) {
-      console.error("[INTERCEPTOR] error:", e);
+// ── Body Parser ──
+app.use(express.json({ limit: "5mb" })); // 5mb for base64 product images
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+
+// OVERRIDE: Custom sign-in route to bypass Better Auth + Vercel bug
+app.post("/api/auth/sign-in/email", async (req, res) => {
+  try {
+    const email = req.body?.email;
+    const password = req.body?.password;
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required", code: "INVALID_REQUEST" });
     }
+    
+    // Manual Drizzle query (proved to work on Vercel)
+    const { eq } = await import("drizzle-orm");
+    const schema = await import("./db/schema/index.js");
+    const users = await db.select().from(schema.user).where(eq(schema.user.email, email.toLowerCase()));
+    
+    if (!users.length) {
+      return res.status(401).json({ message: "Invalid email or password", code: "INVALID_EMAIL_OR_PASSWORD" });
+    }
+    
+    const user = users[0];
+    const accounts = await db.select().from(schema.account).where(eq(schema.account.userId, user.id));
+    const credentialAccount = accounts.find(a => a.providerId === "credential");
+    
+    if (!credentialAccount) {
+      return res.status(401).json({ message: "Invalid email or password", code: "INVALID_EMAIL_OR_PASSWORD" });
+    }
+    
+    // Verify password using oslo/password (proved to work on Vercel)
+    const { Scrypt } = await import("oslo/password");
+    const scrypt = new Scrypt();
+    const isValid = await scrypt.verify(credentialAccount.password, password);
+    
+    if (!isValid) {
+      return res.status(401).json({ message: "Invalid email or password", code: "INVALID_EMAIL_OR_PASSWORD" });
+    }
+    
+    // Generate session
+    const crypto = await import("crypto");
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const session = {
+      id: crypto.randomBytes(16).toString("hex"),
+      userId: user.id,
+      token: sessionToken,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: req.ip || "",
+      userAgent: req.headers["user-agent"] || ""
+    };
+    
+    await db.insert(schema.session).values(session);
+    
+    // Set cookie
+    res.cookie("better-auth.session_token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 1000 * 60 * 60 * 24 * 7
+    });
+    
+    return res.json({ token: sessionToken, user: { ...user, accounts } });
+  } catch (e) {
+    console.error("[CUSTOM LOGIN ERROR]", e);
+    return res.status(500).json({ message: "Internal server error", error: String(e) });
   }
+});
+
+app.use(async (req, res, next) => {
   if (req.url.startsWith("/api/auth")) {
     return toNodeHandler(auth)(req, res);
   }
   next();
 });
-
-// ── Body Parser ──
-app.use(express.json({ limit: "5mb" })); // 5mb for base64 product images
 
 // ── API Routes ──
 // Global Cache-Control untuk mencegah isu stale data dari browser/proxy
