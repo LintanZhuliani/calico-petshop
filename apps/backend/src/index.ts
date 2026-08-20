@@ -12,6 +12,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { createServer } from "http";
 import { initSocket } from "./lib/socket.js";
 import { initCronJobs } from "./cron/expiryAlerts.js";
+import { db } from "./db/index.js";
 
 // Initialize Background Cron Jobs
 initCronJobs();
