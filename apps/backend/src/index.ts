@@ -129,11 +129,9 @@ app.post("/api/debug/verify", async (req, res) => {
 
 app.get("/api/debug/internal", async (req, res) => {
   try {
-    const user = await auth.options.database.findOne({
-      model: "user",
-      where: [{ field: "email", value: "lintanzhuliani840@gmail.com" }]
-    });
-    res.json({ user });
+    const { eq } = await import("drizzle-orm");
+    const user = await db.select().from(schema.user).where(eq(schema.user.email, "lintanzhuliani840@gmail.com"));
+    res.json({ user, type: typeof schema.user.email });
   } catch (e) {
     res.status(500).json({ error: String(e), stack: e.stack });
   }
