@@ -4,6 +4,17 @@
 
 Membangun **Mobile-First Web Application** untuk manajemen stok dan distribusi produk di Toko Calico's Pet Care. Aplikasi didesain khusus untuk penggunaan via HP oleh **Admin** dan **Kasir**, dengan fokus pada kecepatan operasional, akurasi data, dan kemudahan navigasi.
 
+# Fitur: Request Produk (Kasir -> Admin) - Versi Aman & Terisolasi
+
+Memindahkan fitur utama pembuatan "Transfer/Request" dari Admin ke Kasir. Kasir akan mengajukan permintaan (RESTOCK atau ADJUSTMENT), dan Admin bertugas menyetujuinya. Sistem akan memproses mutasi stok secara otomatis setelah disetujui.
+
+> [!TIP]
+> **Jaminan Keamanan (Safety Guarantee)**
+> Untuk mencegah terulangnya bug pada sistem otentikasi (login), fitur ini akan dibangun secara **terisolasi**:
+> 1. Menggunakan file route terpisah (`/api/requests`) dan *sama sekali tidak menyentuh* file `index.ts` atau middleware otentikasi.
+> 2. Skema database menggunakan tabel baru (`product_requests`) sehingga tidak merusak data mutasi/transfer yang lama.
+> 3. Semua operasi mutasi stok akan dibungkus dalam *Database Transaction*, memastikan jika terjadi error di tengah proses, seluruh perubahan dibatalkan otomatis (tidak ada stok gantung).
+
 ---
 
 ## 1. Tech Stack

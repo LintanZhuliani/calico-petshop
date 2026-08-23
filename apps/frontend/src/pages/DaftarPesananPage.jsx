@@ -17,7 +17,9 @@ export default function DaftarPesananPage() {
   const [toastMsg, setToastMsg] = useState('');
 
   // Tabs
-  const [activeTab, setActiveTab] = useState('Semua'); // 'Semua', 'Pesanan Baru', 'Belum Dibayar', 'Sudah Dibayar'
+  const [activeTab, setActiveTab] = useState('Riwayat Pesanan');
+  const [historyPeriod, setHistoryPeriod] = useState('harian');
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Payment Modal state
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -55,13 +57,12 @@ export default function DaftarPesananPage() {
 
   const fetchOrders = async () => {
     try {
-      // Hanya ambil PENDING (semua hari) dan COMPLETED (hari ini saja) untuk mencegah loading lama
-      const todayIso = new Date().toISOString().split('T')[0];
       const activeBranch = branchId || 'all';
+      // Ambil PENDING semua + COMPLETED semua (untuk riwayat bulanan/tahunan)
       const pendingData = await apiFetch(`/transactions?branchId=${activeBranch}&status=PENDING`);
-      const todayCompleted = await apiFetch(`/transactions?branchId=${activeBranch}&date=${todayIso}&status=COMPLETED`);
+      const completedData = await apiFetch(`/transactions?branchId=${activeBranch}&status=COMPLETED`);
       
-      const allData = [...pendingData, ...todayCompleted];
+      const allData = [...pendingData, ...completedData];
       
       // Sort newest first
       allData.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -79,6 +80,35 @@ export default function DaftarPesananPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Date navigator helpers
+  const handlePrevDate = () => {
+    const d = new Date(selectedDate);
+    if (historyPeriod === 'harian') d.setDate(d.getDate() - 1);
+    else if (historyPeriod === 'bulanan') d.setMonth(d.getMonth() - 1);
+    else d.setFullYear(d.getFullYear() - 1);
+    setSelectedDate(d);
+  };
+
+  const handleNextDate = () => {
+    const d = new Date(selectedDate);
+    if (historyPeriod === 'harian') d.setDate(d.getDate() + 1);
+    else if (historyPeriod === 'bulanan') d.setMonth(d.getMonth() + 1);
+    else d.setFullYear(d.getFullYear() + 1);
+    setSelectedDate(d);
+  };
+
+  const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  const formatPeriodLabel = () => {
+    if (historyPeriod === 'harian') {
+      const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const isToday = selectedDate.toDateString() === new Date().toDateString();
+      return isToday ? `Hari Ini — ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]}` : `${days[selectedDate.getDay()]}, ${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+    }
+    if (historyPeriod === 'bulanan') return `${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+    return `${selectedDate.getFullYear()}`;
   };
 
   useEffect(() => {
@@ -101,30 +131,36 @@ export default function DaftarPesananPage() {
       if (order.status === 'CANCELLED') return false;
 
       // HANYA tampilkan transaksi yang merupakan "Pesanan" atau "Piutang".
-      // Transaksi Kasir biasa (Bayar Langsung) tidak memiliki orderType dan bukan Piutang.
       const isPesananAtauPiutang = order.orderType || order.paymentMethod === 'Piutang';
       if (!isPesananAtauPiutang) return false;
 
+      if (activeTab === 'Riwayat Pesanan') {
+        const d = new Date(order.date);
+        if (historyPeriod === 'harian') {
+          return d.toDateString() === selectedDate.toDateString();
+        }
+        if (historyPeriod === 'bulanan') {
+          return d.getMonth() === selectedDate.getMonth() && d.getFullYear() === selectedDate.getFullYear();
+        }
+        return d.getFullYear() === selectedDate.getFullYear();
+      }
       if (activeTab === 'Pesanan Baru') {
-        // Pesanan Baru = SEMUA pesanan HARI INI (Apapun statusnya)
         const today = new Date().toDateString();
         const orderDate = new Date(order.date).toDateString();
         return today === orderDate;
       }
       if (activeTab === 'Piutang') {
-        // Piutang = Semua pesanan Piutang
         return order.paymentMethod === 'Piutang';
       }
       if (activeTab === 'Belum Dibayar') {
-        // Belum Dibayar = Semua pesanan PENDING (termasuk Piutang maupun bukan)
         return order.status === 'PENDING';
       }
       if (activeTab === 'Sudah Dibayar') {
         return order.status === 'COMPLETED';
       }
-      return true; // 'Semua' shows all
+      return true;
     });
-  }, [orders, activeTab]);
+  }, [orders, activeTab, historyPeriod, selectedDate]);
 
   const handleCancelOrder = async (id) => {
     if (!window.confirm('Yakin ingin membatalkan pesanan ini?')) return;
@@ -264,15 +300,26 @@ export default function DaftarPesananPage() {
 
       {/* Header */}
       <header className="bg-white px-5 pt-8 pb-4 sticky top-0 z-30 shadow-sm border-b">
-        <h1 className={`font-headline text-2xl font-black ${primaryText}`}>Daftar Pesanan</h1>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+            className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center shrink-0"
+          >
+            <span className="material-symbols-outlined !text-[24px]">menu</span>
+          </button>
+          <div className="flex-1 text-center">
+            <h1 className={`font-headline text-2xl font-black ${primaryText}`}>Daftar Pesanan</h1>
+          </div>
+          <div className="md:hidden w-10 shrink-0"></div>
+        </div>
         
         {/* Tabs */}
-        <div className="flex gap-4 mt-4 border-b pb-2 overflow-x-auto whitespace-nowrap hide-scrollbar">
-          {['Semua', 'Pesanan Baru', 'Piutang', 'Belum Dibayar', 'Sudah Dibayar'].map(tab => (
+        <div className="flex w-full mt-4 border-b pb-2">
+          {['Riwayat Pesanan', 'Pesanan Baru', 'Piutang', 'Belum Dibayar', 'Sudah Dibayar'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`font-bold pb-2 relative transition-colors ${activeTab === tab ? primaryText : 'text-slate-400'}`}
+              className={`flex-1 text-center font-bold pb-2 relative transition-colors ${activeTab === tab ? primaryText : 'text-slate-400'}`}
             >
               {tab}
               {activeTab === tab && (
@@ -285,6 +332,49 @@ export default function DaftarPesananPage() {
 
       {/* List */}
       <main className="flex-1 p-5 space-y-4">
+
+        {/* Riwayat Pesanan: period filter + date navigator */}
+        {activeTab === 'Riwayat Pesanan' && (
+          <div className="space-y-3">
+            {/* Sub-tab Harian / Bulanan / Tahunan */}
+            <div className="flex w-full pt-1 border-b border-slate-200">
+              {['harian', 'bulanan', 'tahunan'].map(p => (
+                <button
+                  key={p}
+                  onClick={() => { setHistoryPeriod(p); setSelectedDate(new Date()); }}
+                  className={`flex-1 text-center py-2 text-sm font-bold rounded-t-xl border border-b-0 capitalize transition-all ${
+                    historyPeriod === p
+                      ? `${primaryText} border-slate-200 bg-white relative z-10 translate-y-[1px]`
+                      : 'text-slate-400 border-transparent hover:bg-slate-50'
+                  }`}
+                >
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* Date navigator */}
+            <div className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl py-3 px-4 shadow-sm">
+              <button
+                onClick={handlePrevDate}
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-slate-100 active:scale-95 transition-all border border-slate-100"
+              >
+                <span className="material-symbols-outlined !text-[16px] text-slate-600">chevron_left</span>
+              </button>
+              <div className="text-center">
+                <p className={`font-bold text-sm leading-tight ${primaryText}`}>{formatPeriodLabel()}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{historyPeriod}</p>
+              </div>
+              <button
+                onClick={handleNextDate}
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-slate-100 active:scale-95 transition-all border border-slate-100"
+              >
+                <span className="material-symbols-outlined !text-[16px] text-slate-600">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex justify-center py-20">
             <div className={`w-8 h-8 border-4 border-slate-200 border-t-[${isAdmin ? '#D35400' : '#C0392B'}] rounded-full animate-spin`}></div>

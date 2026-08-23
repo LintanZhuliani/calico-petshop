@@ -10,7 +10,7 @@ export const initSocket = (server: any, corsOrigin: string) => {
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     console.log("Client connected via WebSocket:", socket.id);
     
     socket.on("disconnect", () => {

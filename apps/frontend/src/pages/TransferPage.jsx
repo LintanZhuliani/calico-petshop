@@ -5,64 +5,70 @@ import { apiFetch } from '../lib/api';
 import { useSession } from '../lib/useSession';
 import { socket } from '../lib/socket';
 import { BRANCHES } from '../data/mockData';
-import { formatRupiah, formatDateTime, generateId } from '../utils/formatters';
+import { formatDateTime } from '../utils/formatters';
 
 const STATUS_CONFIG = {
-  transit: { label: 'Dalam Perjalanan', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100', icon: 'local_shipping' },
-  completed: { label: 'Selesai', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100', icon: 'check_circle' },
-  discrepancy: { label: 'Ada Selisih', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100', icon: 'error' },
+  pending: { label: 'Menunggu', color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-100', icon: 'hourglass_empty' },
+  approved: { label: 'Disetujui', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100', icon: 'check_circle' },
+  rejected: { label: 'Ditolak', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100', icon: 'cancel' },
 };
 
 function getBranchName(id) {
   return BRANCHES.find(b => b.id === id)?.name || id;
 }
 
-export default function TransferPage() {
-  const location = useLocation();
-  const { role, branchName: branchId, userName } = useSession();
+export default function RequestPage() {
+  const { role, branchName: branchId, userName, userId } = useSession();
   const isAdmin = role === 'admin';
 
   const primaryText = isAdmin ? 'text-[#D35400]' : 'text-[#C0392B]';
   const primaryBg = isAdmin ? 'bg-[#D35400]' : 'bg-[#C0392B]';
   const primaryLight = isAdmin ? 'bg-orange-50' : 'bg-red-50';
 
-  const [activeTab, setActiveTab] = useState(isAdmin ? 'new' : 'incoming');
-  const [transfers, setTransfers] = useState([]);
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'incoming' : 'new');
+  const [historyPeriod, setHistoryPeriod] = useState('bulanan');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [requests, setRequests] = useState([]);
   const [products, setProducts] = useState([]);
   const [toast, setToast] = useState('');
 
-  // Form state (admin — buat mutasi baru)
-  const [fromBranch, setFromBranch] = useState(isAdmin ? branchId : 'pusat');
-  const [toBranch, setToBranch] = useState('');
-  const [note, setNote] = useState('');
-  const [transferItems, setTransferItems] = useState([]);
+  // Form state (Kasir — buat request)
+  const [requestType, setRequestType] = useState('RESTOCK');
+  const [requestItems, setRequestItems] = useState([]);
   const [addItemOpen, setAddItemOpen] = useState(false);
+  
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedQty, setSelectedQty] = useState('');
+  const [selectedProductName, setSelectedProductName] = useState('');
   const [productSearch, setProductSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-
-  // Konfirmasi penerimaan
-  const [confirmingId, setConfirmingId] = useState(null);
-  const [receivedQtys, setReceivedQtys] = useState({});
+  const [qty, setQty] = useState('');
+  const [expiredDate, setExpiredDate] = useState('');
+  const [note, setNote] = useState('');
+  
+  // Admin Approval state
+  const [processingId, setProcessingId] = useState(null);
+  const [sourceBranchId, setSourceBranchId] = useState('pusat');
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
   };
 
-  const fetchTransfers = async () => {
+  const isPusatAdmin = isAdmin && branchId === 'pusat';
+
+  const fetchRequests = async () => {
     try {
-      const data = await apiFetch(`/transfers?branchId=${branchId}`);
-      setTransfers(data || []);
+      const url = isPusatAdmin ? '/requests' : `/requests?branchId=${branchId}`;
+      const data = await apiFetch(url);
+      setRequests(data || []);
     } catch (err) {
-      console.error('Failed to fetch transfers:', err);
+      console.error('Failed to fetch requests:', err);
     }
   };
 
-  const fetchProductsForBranch = async (branch) => {
+  const fetchProducts = async () => {
     try {
-      const data = await apiFetch(`/products?branchId=${branch}`);
+      const data = await apiFetch(`/products?branchId=${branchId}`);
       setProducts(data || []);
     } catch (err) {
       console.error('Failed to fetch products:', err);
@@ -70,182 +76,164 @@ export default function TransferPage() {
   };
 
   useEffect(() => {
-    fetchTransfers();
-  }, []);
+    fetchRequests();
+    if (!isPusatAdmin) fetchProducts();
+  }, [isPusatAdmin, branchId]);
 
   useEffect(() => {
-    if (isAdmin && activeTab === 'new') {
-      fetchProductsForBranch(fromBranch);
-      setTransferItems([]); // Reset items if branch changes because stock is different
-    }
-  }, [fromBranch, isAdmin, activeTab]);
-
-  useEffect(() => {
-    // Real-time synchronization
     const onDataUpdated = () => {
-      fetchTransfers();
-      if (isAdmin && activeTab === 'new') {
-        fetchProductsForBranch(fromBranch);
-      }
+      fetchRequests();
+      if (!isPusatAdmin) fetchProducts();
+    };
+    const onNewRequest = () => {
+      if (isPusatAdmin) showToast('Ada request baru dari Kasir!');
+      fetchRequests();
     };
     
     socket.on('DATA_UPDATED', onDataUpdated);
-    return () => socket.off('DATA_UPDATED', onDataUpdated);
-  }, [isAdmin, activeTab, fromBranch]);
-
-  // Admin: Kirim mutasi baru
-  const handleSendTransfer = async () => {
-    if (!fromBranch || !toBranch || fromBranch === toBranch || transferItems.length === 0) {
-      showToast('Lengkapi data transfer terlebih dahulu!');
-      return;
+    socket.on('NEW_REQUEST', onNewRequest);
+    return () => {
+      socket.off('DATA_UPDATED', onDataUpdated);
+      socket.off('NEW_REQUEST', onNewRequest);
     }
-    
-    try {
-      await apiFetch('/transfers', {
-        method: 'POST',
-        body: {
-          fromBranchId: fromBranch,
-          toBranchId: toBranch,
-          note,
-          items: transferItems.map(i => ({
-            productId: i.productId,
-            productName: i.productName,
-            qty: i.qty,
-          }))
-        }
-      });
-      
-      setTransferItems([]);
-      setNote('');
-      setToBranch('');
-      setActiveTab('list');
-      showToast('Transfer berhasil dikirim! Status: Dalam Perjalanan');
-      fetchTransfers();
-    } catch (err) {
-      showToast('Gagal: ' + err.message);
-    }
-  };
+  }, [isPusatAdmin, branchId]);
 
   const handleAddItem = () => {
-    if (!selectedProduct) {
-      showToast('Silakan cari dan klik/pilih produk dari daftar terlebih dahulu!');
-      return;
-    }
-    if (!selectedQty || Number(selectedQty) <= 0) {
-      showToast('Masukkan jumlah stok yang valid!');
-      return;
-    }
-    const p = products.find(prod => prod.id === selectedProduct);
-    if (!p) return;
-    
-    const qty = Number(selectedQty);
-    if (qty > p.totalStock) {
-      showToast(`Stok tidak cukup! Hanya tersedia ${p.totalStock} unit.`);
+    if (!selectedProduct || !qty || Number(qty) < 0) {
+      showToast('Silakan pilih produk dan masukkan jumlah yang valid.');
       return;
     }
 
-    setTransferItems(prev => {
+    setRequestItems(prev => {
       const existing = prev.find(i => i.productId === selectedProduct);
       if (existing) {
-        if (existing.qty + qty > p.totalStock) {
-          showToast(`Stok tidak cukup! Hanya tersedia ${p.totalStock} unit.`);
-          return prev;
-        }
-        return prev.map(i => i.productId === selectedProduct ? { ...i, qty: i.qty + qty } : i);
+        return prev.map(i => i.productId === selectedProduct ? { ...i, qty: Number(qty), expiredDate: expiredDate || i.expiredDate } : i);
       }
-      return [...prev, { productId: p.id, productName: p.name, qty: qty }];
+      return [...prev, { 
+        productId: selectedProduct, 
+        productName: selectedProductName, 
+        qty: Number(qty),
+        expiredDate: expiredDate || undefined
+      }];
     });
+
     setSelectedProduct('');
-    setSelectedQty('');
+    setSelectedProductName('');
     setProductSearch('');
+    setQty('');
+    setExpiredDate('');
     setAddItemOpen(false);
   };
 
-  // Kasir: Konfirmasi terima
-  const handleConfirmReceived = async (transfer) => {
+  // Kasir: Kirim Request
+  const handleSendRequest = async () => {
+    if (requestItems.length === 0) {
+      showToast('Tambahkan minimal 1 barang ke dalam request.');
+      return;
+    }
+    
     try {
-      const receivedItems = transfer.items.map(item => ({
-        productId: item.productId,
-        qtyReceived: Number(receivedQtys[item.productId] ?? item.qtyRequested),
-      }));
-
-      await apiFetch(`/transfers/${transfer.id}/confirm`, {
-        method: 'PATCH',
-        body: { receivedItems }
+      await apiFetch('/requests', {
+        method: 'POST',
+        body: {
+          requestType,
+          items: requestItems,
+          branchId,
+          requestedById: userId || 'kasir123',
+          requestedByName: userName || 'Kasir',
+          note
+        }
       });
-
-      setConfirmingId(null);
-      setReceivedQtys({});
-      showToast('Barang diterima! Stok Cabang diperbarui.');
-      fetchTransfers();
+      
+      setRequestItems([]);
+      setNote('');
+      setActiveTab('list');
+      showToast('Request berhasil dikirim dan menunggu persetujuan.');
+      fetchRequests();
     } catch (err) {
       showToast('Gagal: ' + err.message);
     }
   };
 
-  // Filter list
-  const incomingTransfers = transfers.filter(t => t.toBranchId === branchId && t.status === 'transit');
+  // Admin: Action Approve / Reject
+  const handleAction = async (id, action) => {
+    try {
+      const body = { adminId: userId || 'admin123', adminName: userName || 'Admin' };
+      if (action === 'approve') {
+        const reqItem = requests.find(r => r.id === id);
+        if (reqItem?.requestType === 'RESTOCK') {
+           body.sourceBranchId = sourceBranchId;
+        }
+      }
 
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+      await apiFetch(`/requests/${id}/${action}`, {
+        method: 'POST',
+        body
+      });
 
-  const listTransfers = transfers.filter(t => {
-    const d = new Date(t.createdAt);
-    const isCurrentMonth = d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    if (!isCurrentMonth) return false;
-
-    if (isAdmin) return true;
-    return t.toBranchId === branchId || t.fromBranchId === branchId;
-  });
-
-  // Fungsi untuk download CSV riwayat transfer
-  const handleDownloadCSV = () => {
-    if (listTransfers.length === 0) return;
-
-    const headers = ['ID Mutasi', 'Tanggal Dibuat', 'Status', 'Dari Cabang', 'Ke Cabang', 'Dibuat Oleh', 'Dikonfirmasi Oleh', 'Tanggal Dikonfirmasi', 'Catatan', 'Rincian Barang'];
-    
-    const rows = listTransfers.map(tr => {
-      const itemsStr = tr.items.map(i => {
-        const received = i.qtyReceived !== null ? i.qtyReceived : 0;
-        return `${i.productName} (Kirim: ${i.qtyRequested}, Terima: ${received})`;
-      }).join('; ');
-      
-      return [
-        `TR-${tr.id.slice(-5).toUpperCase()}`,
-        formatDateTime(tr.createdAt).replace(/,/g, ''), 
-        tr.status,
-        getBranchName(tr.fromBranchId),
-        getBranchName(tr.toBranchId),
-        tr.initiatedByName || '-',
-        tr.confirmedByName || '-',
-        tr.confirmedAt ? formatDateTime(tr.confirmedAt).replace(/,/g, '') : '-',
-        `"${tr.note || '-'}"`,
-        `"${itemsStr}"`
-      ].join(',');
-    });
-
-    const csvContent = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const branchNameForFile = isAdmin ? 'Semua_Cabang' : getBranchName(branchId).replace(/[^a-z0-9]/gi, '_');
-    const monthName = now.toLocaleString('id-ID', { month: 'long', year: 'numeric' }).replace(' ', '_');
-    const filename = `Riwayat_Mutasi_${branchNameForFile}_${monthName}.csv`;
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      setProcessingId(null);
+      showToast(`Request berhasil di${action === 'approve' ? 'setujui' : 'tolak'}!`);
+      fetchRequests();
+    } catch (err) {
+      showToast('Gagal: ' + err.message);
+    }
   };
 
-  const TABS = isAdmin
-    ? [{ key: 'new', label: 'Transfer barang', icon: 'add_circle' }, { key: 'list', label: 'Semua', icon: 'list' }]
-    : [{ key: 'incoming', label: `Masuk (${incomingTransfers.length})`, icon: 'move_to_inbox' }, { key: 'list', label: 'Riwayat', icon: 'history' }];
+  const incomingRequests = requests.filter(r => r.status === 'pending');
+  
+  const currentMonth = selectedDate.getMonth();
+  const currentYear = selectedDate.getFullYear();
 
-  // Track sidebar toggle state dynamically
+  const listRequests = requests.filter(r => {
+    if (r.status === 'pending' && isPusatAdmin) return false;
+    const d = new Date(r.createdAt);
+    if (historyPeriod === 'bulanan') {
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    }
+    return d.getFullYear() === currentYear;
+  });
+
+  const handlePrevDate = () => {
+    const newDate = new Date(selectedDate);
+    if (historyPeriod === 'bulanan') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setFullYear(newDate.getFullYear() - 1);
+    }
+    setSelectedDate(newDate);
+  };
+
+  const handleNextDate = () => {
+    const newDate = new Date(selectedDate);
+    if (historyPeriod === 'bulanan') {
+      newDate.setMonth(newDate.getMonth() + 1);
+    } else {
+      newDate.setFullYear(newDate.getFullYear() + 1);
+    }
+    setSelectedDate(newDate);
+  };
+  
+  const formatPeriodLabel = () => {
+    if (historyPeriod === 'bulanan') {
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return `${months[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+    }
+    return `${selectedDate.getFullYear()}`;
+  };
+
+  const TABS = isPusatAdmin
+    ? [{ key: 'incoming', label: `Masuk (${incomingRequests.length})`, icon: 'inbox' }, { key: 'list', label: 'Riwayat', icon: 'history' }]
+    : isAdmin 
+      ? [{ key: 'list', label: 'Riwayat', icon: 'history' }] // Admin in branch only sees Riwayat
+      : [{ key: 'new', label: 'Buat Request', icon: 'add_circle' }, { key: 'list', label: 'Riwayat', icon: 'list' }];
+
+  // Ensure active tab is valid when switching roles/branches
+  useEffect(() => {
+    if (isAdmin && !isPusatAdmin && activeTab !== 'list') {
+      setActiveTab('list');
+    }
+  }, [isAdmin, isPusatAdmin, activeTab]);
+
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('calico_sidebar_open');
     return saved !== null ? JSON.parse(saved) : true;
@@ -279,13 +267,13 @@ export default function TransferPage() {
           >
             <span className="material-symbols-outlined !text-[24px]">menu</span>
           </button>
-          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Transfer Barang</h1>
+          <h1 className={`font-headline font-extrabold text-xl text-center w-full ${primaryText}`}>Request Produk</h1>
         </div>
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 -mx-5 px-5 gap-1">
+        <div className="flex border-b border-slate-200 -mx-5 px-5">
           {TABS.map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 pb-3 px-3 text-sm font-bold transition-all border-b-2 ${activeTab === tab.key ? `${primaryText} border-current` : 'text-slate-400 border-transparent'}`}>
+              className={`flex-1 text-center flex items-center justify-center gap-1.5 pb-3 px-3 text-sm font-bold transition-all border-b-2 ${activeTab === tab.key ? `${primaryText} border-current` : 'text-slate-400 border-transparent'}`}>
               <span className="material-symbols-outlined !text-[18px]">{tab.icon}</span>
               {tab.label}
             </button>
@@ -295,34 +283,19 @@ export default function TransferPage() {
 
       <main className="px-5 py-6 space-y-4 w-full">
 
-        {/* ── ADMIN: Form Buat Mutasi ── */}
-        {activeTab === 'new' && isAdmin && (
+        {/* ── KASIR / ADMIN CABANG: Form Buat Request ── */}
+        {activeTab === 'new' && !isPusatAdmin && (
           <div className="space-y-4">
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4">
-              <h2 className="font-headline font-bold text-slate-800">Detail Pengiriman</h2>
+              <h2 className="font-headline font-bold text-slate-800 text-center uppercase">DETAIL REQUEST</h2>
 
-              {/* From Branch */}
+              {/* Tipe Request */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Dari Cabang (Sesi Saat Ini)</label>
-                <div className="w-full px-4 py-3 bg-slate-100 border-2 border-transparent rounded-2xl text-slate-600 font-bold outline-none flex items-center justify-between cursor-not-allowed">
-                  <span>{BRANCHES.find(b => b.id === branchId)?.name || 'Cabang Tidak Diketahui'}</span>
-                  <span className="material-symbols-outlined text-slate-400 !text-[18px]">lock</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-slate-100" />
-                <span className="material-symbols-outlined text-slate-300 !text-[24px]">arrow_downward</span>
-                <div className="flex-1 h-px bg-slate-100" />
-              </div>
-
-              {/* To Branch */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ke Cabang</label>
-                <select value={toBranch} onChange={e => setToBranch(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 font-medium outline-none">
-                  <option value="" disabled>Pilih cabang tujuan</option>
-                  {BRANCHES.filter(b => b.id !== fromBranch).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Jenis Request</label>
+                <select value={requestType} onChange={e => { setRequestType(e.target.value); setRequestItems([]); }}
+                  className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-red-400 rounded-2xl text-slate-800 font-medium outline-none">
+                  <option value="RESTOCK">Restock</option>
+                  <option value="ADJUSTMENT">Penyesuaian Stok</option>
                 </select>
               </div>
 
@@ -330,8 +303,8 @@ export default function TransferPage() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Catatan (Opsional)</label>
                 <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
-                  placeholder="Restock mingguan, dll..."
-                  className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 font-medium outline-none resize-none" />
+                  placeholder={requestType === 'RESTOCK' ? "Butuh segera untuk weekend..." : "Stok rusak / salah hitung..."}
+                  className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-red-400 rounded-2xl text-slate-800 font-medium outline-none resize-none" />
               </div>
             </div>
 
@@ -345,20 +318,25 @@ export default function TransferPage() {
                 </button>
               </div>
 
-              {transferItems.length === 0 && (
+              {requestItems.length === 0 && (
                 <div className="text-center py-6 text-slate-300">
                   <span className="material-symbols-outlined !text-[36px]">shopping_bag</span>
                   <p className="text-sm mt-1">Belum ada barang ditambahkan</p>
                 </div>
               )}
 
-              {transferItems.map((item, i) => (
+              {requestItems.map((item, i) => (
                 <div key={i} className="flex items-center justify-between bg-slate-50 rounded-xl p-3">
                   <div>
                     <p className="font-semibold text-sm text-slate-800">{item.productName}</p>
-                    <p className="text-xs text-slate-400">{item.qty} unit</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                       <p className="text-xs font-bold text-slate-600 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">{item.qty} unit</p>
+                       {item.expiredDate && (
+                         <p className="text-[10px] font-medium text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Exp: {item.expiredDate}</p>
+                       )}
+                    </div>
                   </div>
-                  <button onClick={() => setTransferItems(prev => prev.filter((_, idx) => idx !== i))}
+                  <button onClick={() => setRequestItems(prev => prev.filter((_, idx) => idx !== i))}
                     className="p-1.5 bg-red-50 rounded-lg active:scale-95">
                     <span className="material-symbols-outlined text-red-400 !text-[18px]">delete</span>
                   </button>
@@ -373,7 +351,7 @@ export default function TransferPage() {
                     <div className="relative">
                       <input 
                         type="text" 
-                        placeholder="Ketik nama produk untuk mencari..."
+                        placeholder="Ketik nama produk..."
                         value={productSearch}
                         onFocus={() => setShowDropdown(true)}
                         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
@@ -381,8 +359,9 @@ export default function TransferPage() {
                           setProductSearch(e.target.value);
                           setShowDropdown(true);
                           setSelectedProduct('');
+                          setSelectedProductName('');
                         }}
-                        className="w-full px-4 py-3 pl-10 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-xl text-slate-800 text-sm outline-none"
+                        className="w-full px-4 py-3 pl-10 bg-slate-50 border-2 border-transparent focus:border-red-400 rounded-xl text-slate-800 text-sm outline-none"
                       />
                       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 !text-[18px]">search</span>
                       
@@ -395,15 +374,16 @@ export default function TransferPage() {
                               <div 
                                 key={p.id}
                                 onMouseDown={(e) => {
-                                  e.preventDefault(); // Mencegah input kehilangan fokus (onBlur) prematur
+                                  e.preventDefault();
                                   setSelectedProduct(p.id);
+                                  setSelectedProductName(p.name);
                                   setProductSearch(p.name);
                                   setShowDropdown(false);
                                 }}
-                                className="px-4 py-3 hover:bg-orange-50 cursor-pointer text-sm text-slate-700 flex justify-between items-center border-b border-slate-50 last:border-0"
+                                className="px-4 py-3 hover:bg-red-50 cursor-pointer text-sm text-slate-700 flex justify-between items-center border-b border-slate-50 last:border-0"
                               >
                                 <span className="font-semibold">{p.name}</span>
-                                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">Stok: {p.totalStock || 0}</span>
+                                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-bold">Sistem: {p.totalStock || 0}</span>
                               </div>
                             ))
                           )}
@@ -411,12 +391,25 @@ export default function TransferPage() {
                       )}
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Jumlah</label>
-                    <input type="number" value={selectedQty} onChange={e => setSelectedQty(e.target.value)}
-                      placeholder="0"
-                      className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-orange-400 rounded-2xl text-slate-800 outline-none" />
+                  
+                  <div className="flex gap-3">
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                        {requestType === 'RESTOCK' ? 'Jml Diminta' : 'Stok Real'}
+                      </label>
+                      <input type="number" value={qty} onChange={e => setQty(e.target.value)}
+                        placeholder="0" min="0"
+                        className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-red-400 rounded-2xl text-slate-800 outline-none font-bold" />
+                    </div>
+                    {requestType === 'ADJUSTMENT' && (
+                      <div className="space-y-1.5 flex-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Tgl Exp (Opsional)</label>
+                        <input type="date" value={expiredDate} onChange={e => setExpiredDate(e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-red-400 rounded-2xl text-slate-800 outline-none font-medium text-sm" />
+                      </div>
+                    )}
                   </div>
+
                   <div className="flex gap-2 pt-2">
                     <button onClick={() => { setAddItemOpen(false); setProductSearch(''); }} className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl active:scale-95">Batal</button>
                     <button onClick={handleAddItem} className={`flex-1 py-2.5 ${primaryBg} text-white font-bold rounded-xl active:scale-95`}>+ Tambah</button>
@@ -425,81 +418,86 @@ export default function TransferPage() {
               )}
             </div>
 
-            <button onClick={handleSendTransfer}
-              className={`w-full py-4 ${primaryBg} text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2`}>
-              <span className="material-symbols-outlined !text-[20px]">local_shipping</span>
-              Kirim Sekarang
+            <button onClick={handleSendRequest}
+              className={`w-full py-4 ${primaryBg} text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-md shadow-red-200`}>
+              <span className="material-symbols-outlined !text-[20px]">send</span>
+              Ajukan Request
             </button>
           </div>
         )}
 
-        {/* ── KASIR: Konfirmasi Penerimaan ── */}
-        {activeTab === 'incoming' && !isAdmin && (
+        {/* ── ADMIN PUSAT: Request Masuk ── */}
+        {activeTab === 'incoming' && isPusatAdmin && (
           <div className="space-y-3">
-            {incomingTransfers.length === 0 && (
+            {incomingRequests.length === 0 && (
               <div className="flex flex-col items-center py-16 text-slate-300">
-                <span className="material-symbols-outlined !text-[48px]">move_to_inbox</span>
-                <p className="font-bold text-slate-400 mt-2">Tidak ada barang masuk</p>
-                <p className="text-sm">Belum ada transfer yang menunggu konfirmasi</p>
+                <span className="material-symbols-outlined !text-[48px]">inbox</span>
+                <p className="font-bold text-slate-400 mt-2">Tidak ada request</p>
+                <p className="text-sm">Semua cabang aman.</p>
               </div>
             )}
-            {incomingTransfers.map(tr => (
-              <div key={tr.id} className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
-                <div className="bg-blue-50 px-4 py-3 flex justify-between items-center">
+            {incomingRequests.map(req => (
+              <div key={req.id} className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
+                <div className="bg-orange-50 px-4 py-3 flex justify-between items-start border-b border-orange-100">
                   <div>
-                    <p className="font-bold text-slate-800 text-sm">Transfer #{tr.id.slice(-5)}</p>
-                    <p className="text-xs text-slate-500">Dari: {getBranchName(tr.fromBranchId)}</p>
-                    <p className="text-xs text-slate-400">{formatDateTime(tr.createdAt)}</p>
+                    <p className="font-bold text-slate-800 text-sm">{req.requestType === 'RESTOCK' ? 'Restock' : 'Penyesuaian'} #{req.id.slice(-5)}</p>
+                    <p className="text-xs text-slate-500">Cabang: <span className="font-semibold text-slate-700">{req.branchName}</span> • Oleh: {req.requestedByName}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{formatDateTime(req.createdAt)}</p>
                   </div>
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg uppercase tracking-wide">Transit</span>
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wide shadow-sm ${req.requestType === 'RESTOCK' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}`}>
+                    {req.requestType === 'RESTOCK' ? 'Restock' : 'Penyesuaian'}
+                  </span>
                 </div>
 
-                {/* Items */}
-                <div className="p-4 space-y-2">
-                  {tr.items.map(item => (
-                    <div key={item.productId} className="flex items-center justify-between">
-                      <p className="text-sm text-slate-700">{item.productName}</p>
-                      {confirmingId === tr.id ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-slate-400">Terima:</span>
-                          <input
-                            type="number"
-                            value={receivedQtys[item.productId] ?? item.qtyRequested}
-                            onChange={e => setReceivedQtys(prev => ({ ...prev, [item.productId]: e.target.value }))}
-                            className="w-16 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm font-bold outline-none"
-                          />
-                          <span className="text-xs text-slate-400">/ {item.qtyRequested}</span>
-                        </div>
-                      ) : (
-                        <span className="font-bold text-sm text-slate-900">{item.qtyRequested} unit</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {tr.note && (
-                  <div className="border-t border-slate-50 px-4 py-2">
-                    <p className="text-xs text-slate-400">{tr.note}</p>
-                  </div>
-                )}
-
-                <div className="border-t border-slate-200 p-4 space-y-2">
-                  {confirmingId !== tr.id ? (
-                    <button onClick={() => setConfirmingId(tr.id)}
-                      className="w-full py-3 bg-green-600 text-white font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                      <span className="material-symbols-outlined !text-[20px]">check_circle</span>
-                      Konfirmasi Penerimaan
-                    </button>
-                  ) : (
+                <div className="p-4 space-y-3">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Daftar Barang</p>
                     <div className="space-y-2">
-                      <p className="text-xs text-slate-500 text-center">Masukkan qty yang benar-benar diterima. Jika ada selisih, sistem akan mencatat laporan.</p>
+                      {req.items.map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                          <div>
+                            <span className="text-sm font-semibold text-slate-700 block">{item.productName}</span>
+                            {item.expiredDate && <span className="text-[10px] text-orange-500 font-medium">Exp: {item.expiredDate}</span>}
+                          </div>
+                          <span className="font-extrabold text-slate-800 bg-white px-2 py-1 rounded shadow-sm text-sm border border-slate-100">{item.qty} <span className="text-xs font-medium text-slate-500">unit</span></span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {req.note && (
+                    <div className="text-xs text-slate-600 italic bg-yellow-50 p-3 rounded-xl border border-yellow-100 flex gap-2">
+                      <span className="material-symbols-outlined !text-[16px] text-yellow-600">info</span>
+                      "{req.note}"
+                    </div>
+                  )}
+
+                  {processingId === req.id ? (
+                    <div className="bg-slate-100 p-3 rounded-xl space-y-3 mt-3 animate-fade-in border border-slate-200">
+                      {req.requestType === 'RESTOCK' && (
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase">Ambil Dari Cabang</label>
+                          <select value={sourceBranchId} onChange={e => setSourceBranchId(e.target.value)}
+                            className="w-full p-2 rounded-lg border-none text-sm font-medium outline-none text-slate-700 bg-white shadow-sm">
+                            {BRANCHES.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                          </select>
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-500 text-center font-medium">Anda yakin ingin {req.requestType === 'RESTOCK' ? 'mengirim stok' : 'menimpa stok cabang ini'}?</p>
                       <div className="flex gap-2">
-                        <button onClick={() => setConfirmingId(null)} className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl active:scale-95">Batal</button>
-                        <button onClick={() => handleConfirmReceived(tr)}
-                          className="flex-1 py-3 bg-green-600 text-white font-bold rounded-2xl active:scale-95 transition-all">
-                          ✓ Simpan
+                        <button onClick={() => setProcessingId(null)} className="flex-1 py-2.5 bg-white text-slate-600 font-bold rounded-xl shadow-sm text-sm active:scale-95 transition-all">Batal</button>
+                        <button onClick={() => handleAction(req.id, 'approve')}
+                          className="flex-1 py-2.5 bg-green-600 text-white font-bold rounded-xl shadow-sm text-sm active:scale-95 transition-all">
+                          Ya, Setujui
                         </button>
                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 pt-2 border-t border-slate-100 mt-2">
+                      <button onClick={() => handleAction(req.id, 'reject')}
+                        className="flex-1 py-2.5 bg-red-50 text-red-600 font-bold rounded-xl text-sm active:scale-95 transition-all hover:bg-red-100">Tolak</button>
+                      <button onClick={() => setProcessingId(req.id)}
+                        className="flex-1 py-2.5 bg-green-600 text-white font-bold rounded-xl text-sm active:scale-95 transition-all shadow-md shadow-green-200 hover:bg-green-700">Setujui</button>
                     </div>
                   )}
                 </div>
@@ -511,126 +509,87 @@ export default function TransferPage() {
         {/* ── List / Riwayat ── */}
         {activeTab === 'list' && (
           <div className="space-y-4">
-            {/* Header Riwayat & Tombol Unduh */}
-            <div className="flex items-center justify-between">
-              <h2 className="font-headline font-bold text-slate-800">Riwayat Bulan Ini</h2>
-              {isAdmin && listTransfers.length > 0 && (
-                <button
-                  onClick={handleDownloadCSV}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl ${primaryLight} ${primaryText} text-[11px] font-bold active:scale-95 transition-all`}
-                >
-                  <span className="material-symbols-outlined !text-[16px]">download</span>
-                  Unduh (CSV)
-                </button>
-              )}
+            
+            {/* Tab Filter Bulanan / Tahunan */}
+            <div className="flex w-full pt-2 border-b border-slate-200">
+              <button 
+                onClick={() => { setHistoryPeriod('bulanan'); setSelectedDate(new Date()); }}
+                className={`flex-1 text-center py-2 text-sm font-bold rounded-t-xl border border-b-0 transition-all ${historyPeriod === 'bulanan' ? 'text-[#D35400] border-slate-200 bg-white relative z-10 translate-y-[1px]' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+              >
+                Bulanan
+              </button>
+              <button 
+                onClick={() => { setHistoryPeriod('tahunan'); setSelectedDate(new Date()); }}
+                className={`flex-1 text-center py-2 text-sm font-bold rounded-t-xl border border-b-0 transition-all ${historyPeriod === 'tahunan' ? 'text-[#D35400] border-slate-200 bg-white relative z-10 translate-y-[1px]' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+              >
+                Tahunan
+              </button>
             </div>
 
-            {listTransfers.length === 0 && (
+            {/* Date Selector */}
+            <div className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl py-3 px-4 shadow-sm mb-4">
+              <button 
+                onClick={handlePrevDate}
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-slate-100 active:scale-95 transition-all text-slate-600 font-bold border border-slate-100"
+              >
+                <span className="material-symbols-outlined !text-[16px]">chevron_left</span>
+              </button>
+              <div className="text-center">
+                <p className="font-bold text-[#D35400] text-sm leading-tight">{formatPeriodLabel()}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{historyPeriod}</p>
+              </div>
+              <button 
+                onClick={handleNextDate}
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-xl hover:bg-slate-100 active:scale-95 transition-all text-slate-600 font-bold border border-slate-100"
+              >
+                <span className="material-symbols-outlined !text-[16px]">chevron_right</span>
+              </button>
+            </div>
+
+            {listRequests.length === 0 && (
               <div className="flex flex-col items-center py-16 text-slate-300">
                 <span className="material-symbols-outlined !text-[48px]">history</span>
-                <p className="font-bold text-slate-400 mt-2">Belum ada riwayat mutasi bulan ini</p>
+                <p className="font-bold text-slate-400 mt-2">Belum ada riwayat request</p>
               </div>
             )}
-            {listTransfers.map(tr => {
-              const cfg = STATUS_CONFIG[tr.status] || STATUS_CONFIG.transit;
+            {listRequests.map(req => {
+              const cfg = STATUS_CONFIG[req.status] || STATUS_CONFIG.pending;
               return (
-                <div key={tr.id} className={`bg-white rounded-2xl border ${cfg.border} shadow-sm flex flex-col overflow-hidden transition-all hover:shadow-md`}>
+                <div key={req.id} className={`bg-white rounded-2xl border ${cfg.border} shadow-sm flex flex-col overflow-hidden`}>
                   
-                  {/* Header: ID, Waktu, Status */}
-                  <div className="flex justify-between items-start px-5 py-4 border-b border-slate-50 bg-slate-50/50">
+                  <div className={`flex justify-between items-start px-4 py-3 border-b border-slate-50 ${cfg.bg}`}>
                     <div>
-                      <p className="font-bold text-slate-800 text-sm">Mutasi #{tr.id.slice(-5).toUpperCase()}</p>
-                      <p className="text-[11px] text-slate-400 font-medium">{formatDateTime(tr.createdAt)}</p>
+                      <p className="font-bold text-slate-800 text-sm">{req.requestType === 'RESTOCK' ? 'Restock' : 'Penyesuaian'} #{req.id.slice(-5)}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">{formatDateTime(req.createdAt)}</p>
                     </div>
-                    <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg ${cfg.bg} ${cfg.color}`}>
-                      <span className="material-symbols-outlined !text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>{cfg.icon}</span>
+                    <div className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-lg bg-white shadow-sm ${cfg.color}`}>
+                      <span className="material-symbols-outlined !text-[12px]">{cfg.icon}</span>
                       {cfg.label}
                     </div>
                   </div>
 
-                  {/* Route Timeline */}
-                  <div className="px-5 py-5 flex items-stretch gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border-2 border-white shadow-sm z-10">
-                        <span className="material-symbols-outlined text-slate-500 !text-[16px]">storefront</span>
-                      </div>
-                      <div className="w-0.5 flex-1 bg-slate-200 my-1 rounded-full" />
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 border-white shadow-sm z-10 ${tr.status === 'transit' ? 'bg-blue-100' : 'bg-green-100'}`}>
-                        <span className={`material-symbols-outlined !text-[16px] ${tr.status === 'transit' ? 'text-blue-500' : 'text-green-600'}`}>
-                          {tr.status === 'transit' ? 'local_shipping' : 'home_pin'}
-                        </span>
-                      </div>
+                  <div className="px-4 py-3 space-y-2">
+                    <div className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                      <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">{req.requestType === 'RESTOCK' ? 'Restock' : 'Penyesuaian'}</span>
+                      {isPusatAdmin && (
+                        <span className="text-xs text-slate-500 font-medium">Cabang: <span className="font-bold text-slate-700">{req.branchName}</span></span>
+                      )}
                     </div>
-                    <div className="flex-1 flex flex-col justify-between py-1">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dikirim Dari</p>
-                        <p className="font-bold text-slate-800 text-sm">{getBranchName(tr.fromBranchId)}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tujuan</p>
-                        <p className="font-bold text-slate-800 text-sm">{getBranchName(tr.toBranchId)}</p>
-                      </div>
+                    
+                    <div className="space-y-1.5 pt-1">
+                      {req.items.map((item, idx) => (
+                         <div key={idx} className="flex justify-between items-center text-sm">
+                           <span className="text-slate-700 font-medium">{item.productName}</span>
+                           <span className="font-extrabold text-slate-800 text-xs">{item.qty} unit</span>
+                         </div>
+                      ))}
+                    </div>
+                    
+                    <div className="text-[11px] text-slate-400 pt-3 border-t border-slate-100 flex justify-between mt-2">
+                       <span>Oleh: {req.requestedByName}</span>
+                       {req.resolvedByName && <span className="font-semibold text-slate-500">Res: {req.resolvedByName}</span>}
                     </div>
                   </div>
-
-                  {/* Divider */}
-                  <div className="mx-5 border-t-2 border-dashed border-slate-200" />
-
-                  {/* Items */}
-                  <div className="px-5 py-4 space-y-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rincian Barang</p>
-                    <div className="space-y-2.5">
-                      {tr.items.map(item => {
-                        const isDiscrepancy = item.qtyReceived !== null && item.qtyReceived !== item.qtyRequested;
-                        return (
-                          <div key={item.productId} className="flex justify-between items-start text-sm">
-                            <span className="text-slate-700 font-medium">{item.productName}</span>
-                            <div className="text-right shrink-0 ml-4">
-                              {item.qtyReceived !== null ? (
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <span className={`font-bold text-sm ${isDiscrepancy ? 'text-red-600' : 'text-green-600'}`}>
-                                    {item.qtyReceived}
-                                  </span>
-                                  <span className="text-[11px] text-slate-400 font-medium">/ {item.qtyRequested} unit</span>
-                                </div>
-                              ) : (
-                                <span className="font-bold text-slate-800">{item.qtyRequested} unit</span>
-                              )}
-                              {isDiscrepancy && (
-                                <p className="text-[10px] text-red-500 font-bold mt-0.5 bg-red-50 inline-block px-1.5 py-0.5 rounded">
-                                  Selisih: {Math.abs(item.qtyRequested - item.qtyReceived)}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Catatan & Konfirmasi */}
-                  {(tr.note || tr.confirmedAt || tr.status === 'transit') && (
-                    <div className="bg-slate-50 px-5 py-3.5 text-xs space-y-2 border-t border-slate-200">
-                      {tr.note && (
-                        <div className="flex gap-2">
-                          <span className="material-symbols-outlined text-slate-400 !text-[14px]">edit_document</span>
-                          <p className="text-slate-600 italic">"{tr.note}"</p>
-                        </div>
-                      )}
-                      {tr.confirmedAt && (
-                        <div className="flex justify-between items-center text-slate-400 pt-1">
-                          <p>Diterima oleh <span className="font-bold text-slate-600">{tr.confirmedByName}</span></p>
-                          <p>{formatDateTime(tr.confirmedAt).split(',')[0]}</p>
-                        </div>
-                      )}
-                      {tr.status === 'transit' && isAdmin && (
-                        <div className="flex items-center justify-center gap-1.5 text-blue-500 pt-1">
-                          <span className="material-symbols-outlined !text-[14px] animate-pulse">hourglass_empty</span>
-                          <p className="font-semibold">Menunggu konfirmasi kasir tujuan</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                 </div>
               );

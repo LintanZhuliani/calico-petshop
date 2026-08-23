@@ -372,7 +372,7 @@ export default function PenjualanPage() {
           >
             <span className="material-symbols-outlined !text-[24px]">menu</span>
           </button>
-          <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Penjualan & Analitik</h1>
+          <h1 className={`font-headline font-extrabold text-xl text-center w-full ${primaryText}`}>Penjualan & Analitik</h1>
         </div>
         
         {isAdmin ? (

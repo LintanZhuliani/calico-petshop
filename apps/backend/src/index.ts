@@ -13,7 +13,6 @@ import { createServer } from "http";
 import { initSocket } from "./lib/socket.js";
 import { initCronJobs } from "./cron/expiryAlerts.js";
 import { db } from "./db/index.js";
-
 // Initialize Background Cron Jobs
 initCronJobs();
 
@@ -24,6 +23,7 @@ import transactionRoutes from "./routes/transaction.routes.js";
 import transferRoutes from "./routes/transfer.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { reportRoutes } from "./routes/report.routes.js";
+import { productRequestRouter } from "./routes/product-request.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -96,7 +96,7 @@ app.post("/api/auth/sign-in/email", async (req, res) => {
     
     // Verify password using better-auth utils
     const { verifyPassword } = await import("@better-auth/utils/password");
-    const isValid = await verifyPassword(credentialAccount.password, password);
+    const isValid = await verifyPassword(credentialAccount.password ?? '', password);
     
     if (!isValid) {
       return res.status(401).json({ message: "Invalid email or password", code: "INVALID_EMAIL_OR_PASSWORD" });
@@ -176,6 +176,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/requests", productRequestRouter);
 
 // ── Health Check ──
 app.get("/api/health", (req, res) => {
@@ -202,7 +203,7 @@ app.post("/api/debug/verify", async (req, res) => {
     const isValid = await scrypt.verify(req.body.hash, req.body.password);
     res.json({ isValid });
   } catch (e) {
-    res.status(500).json({ error: String(e), stack: e.stack });
+    res.status(500).json({ error: String(e), stack: (e as Error).stack });
   }
 });
 
@@ -213,7 +214,7 @@ app.get("/api/debug/internal", async (req, res) => {
     const user = await db.select().from(schema.user).where(eq(schema.user.email, "lintanzhuliani840@gmail.com"));
     res.json({ user, type: typeof schema.user.email });
   } catch (e) {
-    res.status(500).json({ error: String(e), stack: e.stack });
+    res.status(500).json({ error: String(e), stack: (e as Error).stack });
   }
 });
 app.get("/api/debug/adapter", async (req, res) => {
@@ -222,7 +223,7 @@ app.get("/api/debug/adapter", async (req, res) => {
     const user = await internalAdapter.findUserByEmail("lintanzhuliani840@gmail.com", { includeAccounts: true });
     res.json({ user });
   } catch (e) {
-    res.status(500).json({ error: String(e), stack: e.stack });
+    res.status(500).json({ error: String(e), stack: (e as Error).stack });
   }
 });
 

@@ -14,6 +14,18 @@ export function generateId(prefix: string = ""): string {
 }
 
 /**
+ * Generate a short alphanumeric ID with an optional prefix.
+ */
+export function generateShortId(prefix: string = ""): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let rand = '';
+  for(let i=0; i<6; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return prefix ? `${prefix}-${rand}` : rand;
+}
+
+/**
  * Generate a short transaction ID (e.g., CPF07261114214)
  */
 export function generateTxId(): string {

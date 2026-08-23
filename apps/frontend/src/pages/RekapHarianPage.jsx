@@ -238,9 +238,7 @@ export default function RekapHarianPage() {
           <span className="material-symbols-outlined !text-[24px]">menu</span>
         </button>
 
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-50 border border-slate-200 active:scale-95 transition-all">
-          <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
-        </button>
+
         <div>
           <h1 className="font-headline font-extrabold text-lg text-slate-800">Rekap Kasir Harian</h1>
           <p className="text-xs text-slate-400">{branchName}</p>

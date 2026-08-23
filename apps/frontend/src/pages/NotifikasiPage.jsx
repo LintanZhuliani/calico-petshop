@@ -61,18 +61,18 @@ export default function NotifikasiPage() {
       {/* Header */}
       <header className="bg-white sticky top-0 z-40 border-b border-slate-200 px-5 py-4 flex items-center justify-between relative">
         <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-xl bg-slate-50 border border-slate-200 active:scale-95 transition-all relative z-10"
+          onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+          className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center shrink-0"
         >
-          <span className="material-symbols-outlined text-slate-500 !text-[22px]">arrow_back</span>
+          <span className="material-symbols-outlined !text-[24px]">menu</span>
         </button>
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="flex-1 text-center">
           <h1 className={`font-headline font-extrabold text-xl leading-tight ${primaryText}`}>
             Notifikasi
           </h1>
           <p className="text-xs text-slate-400">Peringatan Stok & Kadaluarsa</p>
         </div>
-        <div className="w-10"></div> {/* Spacer to keep flex balance */}
+        <div className="md:hidden w-10 shrink-0"></div>
       </header>
 
       <main className="px-5 py-6 w-full space-y-6">

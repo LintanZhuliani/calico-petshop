@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
       <main className="px-5 py-6 space-y-4 w-full">
         {/* ── Greeting ── */}
-        <section className="text-center md:text-left md:mt-4">
+        <section className="text-center mt-4">
           <h1 className={`text-2xl md:text-3xl font-extrabold font-headline ${primaryText} leading-tight`}>
             {isAdmin
               ? (BRANCHES.find(b => b.id === dashboardBranch)?.name || 'Semua Cabang')

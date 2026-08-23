@@ -221,29 +221,28 @@ export default function RiwayatPage() {
     }`}>
       {/* Header */}
       <header className="bg-white pt-4 sticky top-0 z-40 flex flex-col">
-        <div className="flex items-center justify-between gap-3 px-5 mb-3">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
-              className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-[24px]">menu</span>
-            </button>
-            <div>
-              <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Riwayat Transaksi</h1>
-              <p className="text-sm text-slate-400">Daftar semua transaksi yang telah dilakukan</p>
-            </div>
+        <div className="flex items-center gap-3 px-5 mb-3">
+          <button 
+            onClick={() => window.dispatchEvent(new Event('mobile-drawer-toggle'))}
+            className="md:hidden p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center shrink-0"
+          >
+            <span className="material-symbols-outlined !text-[24px]">menu</span>
+          </button>
+          <div className="flex-1 text-center">
+            <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Riwayat Transaksi</h1>
           </div>
+          {/* Spacer to balance hamburger so title stays centered */}
+          <div className="md:hidden w-10 shrink-0"></div>
         </div>
 
         {isAdmin ? (
           <>
-            <div className="flex gap-1 border-b-2 border-slate-200 px-5 mt-auto">
+            <div className="flex w-full border-b-2 border-slate-200 px-5 mt-auto">
               {['harian', 'bulanan', 'tahunan'].map(type => (
                 <button
                   key={type}
                   onClick={() => setReportType(type)}
-                  className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
+                  className={`flex-1 text-center py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
                     reportType === type 
                       ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
                       : `border-transparent text-slate-500 hover:bg-slate-50`
@@ -287,6 +286,32 @@ export default function RiwayatPage() {
             <span className="material-symbols-outlined !text-[20px] text-slate-600">chevron_right</span>
           </button>
         </div>
+
+        {/* ── Ringkasan (Kasir only) ── */}
+        {!isAdmin && (() => {
+          const totalPenghasilan = filteredData.reduce((s, tx) => s + (tx.total || 0), 0);
+          const totalTunai = filteredData.filter(tx => tx.paymentMethod === 'Tunai').reduce((s, tx) => s + (tx.total || 0), 0);
+          const totalNonTunai = filteredData.filter(tx => tx.paymentMethod !== 'Tunai').reduce((s, tx) => s + (tx.total || 0), 0);
+          return (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col items-center text-center">
+                <span className="material-symbols-outlined text-slate-400 !text-[22px] mb-1">payments</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Penghasilan</p>
+                <p className={`font-extrabold text-sm leading-tight ${primaryText}`}>{formatRupiah(totalPenghasilan)}</p>
+              </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col items-center text-center">
+                <span className="material-symbols-outlined text-slate-400 !text-[22px] mb-1">money</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tunai</p>
+                <p className="font-extrabold text-sm leading-tight text-green-600">{formatRupiah(totalTunai)}</p>
+              </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col items-center text-center">
+                <span className="material-symbols-outlined text-slate-400 !text-[22px] mb-1">credit_card</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Transfer</p>
+                <p className="font-extrabold text-sm leading-tight text-blue-600">{formatRupiah(totalNonTunai)}</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Daftar Transaksi */}
         {loading ? (

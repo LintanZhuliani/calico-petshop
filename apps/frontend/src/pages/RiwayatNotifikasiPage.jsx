@@ -101,7 +101,7 @@ export default function RiwayatNotifikasiPage() {
             <span className="material-symbols-outlined !text-[24px]">menu</span>
           </button>
           <div>
-            <h1 className={`font-headline font-extrabold text-xl leading-tight ${primaryText}`}>Riwayat Notifikasi</h1>
+            <h1 className={`font-headline font-extrabold text-xl leading-tight text-center w-full ${primaryText}`}>Riwayat Notifikasi</h1>
             <p className="text-sm text-slate-400">Log Peringatan Sistem</p>
           </div>
         </div>

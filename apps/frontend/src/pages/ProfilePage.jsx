@@ -5,6 +5,7 @@ import { BRANCHES } from '../data/mockData';
 import { formatRupiah, formatDateTime } from '../utils/formatters';
 import { authClient } from '../lib/auth-client';
 import { useSession, clearSession } from '../lib/useSession';
+import { socket } from '../lib/socket';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -76,6 +77,8 @@ export default function ProfilePage() {
       fetchUsers();
     }
   }, [activeModal]);
+
+
 
   const branchName = BRANCHES.find(b => b.id === branchId)?.name || branchId;
 
@@ -254,7 +257,7 @@ export default function ProfilePage() {
         >
           <span className="material-symbols-outlined !text-[24px]">menu</span>
         </button>
-        <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>Profil</h1>
+        <h1 className={`font-headline font-extrabold text-xl text-center w-full ${primaryText}`}>Profil</h1>
       </header>
 
       <main className="px-5 py-6 space-y-4 w-full">

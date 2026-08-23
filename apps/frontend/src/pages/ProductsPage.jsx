@@ -987,7 +987,7 @@ export default function ProductsPage() {
                 >
                   <span className="material-symbols-outlined !text-[24px]">menu</span>
                 </button>
-                <h1 className={`font-headline font-extrabold text-xl ${primaryText}`}>
+                <h1 className={`font-headline font-extrabold text-xl text-center w-full ${primaryText}`}>
                   {isAdmin ? 'Produk (Admin)' : 'Kasir POS'}
                 </h1>
               </div>

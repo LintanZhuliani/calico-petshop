@@ -52,7 +52,7 @@ export default function BottomNav() {
     allMenus.push({ path: '/kasir', icon: 'shopping_cart_checkout', label: 'Checkout' });
     allMenus.push({ path: '/pesanan', icon: 'inventory_2', label: 'Daftar Pesanan' });
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
-    allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Transfer' });
+    allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Request' });
     allMenus.push({ path: '/products', icon: 'category', label: 'Kelola Produk' });
     allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/riwayat-notifikasi', icon: 'history', label: 'Riwayat Notifikasi' });
@@ -62,7 +62,7 @@ export default function BottomNav() {
     allMenus.push({ path: '/products', icon: 'category', label: 'Produk' });
     allMenus.push({ path: '/pesanan', icon: 'inventory_2', label: 'Daftar Pesanan' });
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
-    allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Transfer' });
+    allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Request' });
     allMenus.push({ path: '/rekap', icon: 'point_of_sale', label: 'Tutup Kasir' });
     allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/riwayat-notifikasi', icon: 'history', label: 'Riwayat Notifikasi' });

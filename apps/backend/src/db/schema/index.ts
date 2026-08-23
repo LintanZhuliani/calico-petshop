@@ -37,3 +37,10 @@ export {
 } from "./transfer.js";
 
 export { customer, customerRelations } from "./customer.js";
+
+export {
+  requestTypeEnum,
+  requestStatusEnum,
+  productRequest,
+  productRequestRelations,
+} from "./request.js";
