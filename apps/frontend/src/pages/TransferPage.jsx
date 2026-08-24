@@ -30,6 +30,7 @@ export default function RequestPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [requests, setRequests] = useState([]);
   const [products, setProducts] = useState([]);
+  const [pusatProducts, setPusatProducts] = useState([]);
   const [toast, setToast] = useState('');
 
   // Form state (Kasir — buat request)
@@ -70,6 +71,11 @@ export default function RequestPage() {
     try {
       const data = await apiFetch(`/products?branchId=${branchId}`);
       setProducts(data || []);
+      
+      if (branchId !== 'pusat') {
+        const dataPusat = await apiFetch('/products?branchId=pusat');
+        setPusatProducts(dataPusat || []);
+      }
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }
@@ -102,6 +108,21 @@ export default function RequestPage() {
     if (!selectedProduct || !qty || Number(qty) < 0) {
       showToast('Silakan pilih produk dan masukkan jumlah yang valid.');
       return;
+    }
+
+    if (requestType === 'RESTOCK' && branchId !== 'pusat') {
+      const p = pusatProducts.find(x => x.id === selectedProduct);
+      const stockPusat = p ? (p.totalStock || 0) : 0;
+      
+      if (Number(qty) > stockPusat) {
+        const msg = stockPusat === 0 
+          ? `⚠️ Stok barang ini sedang KOSONG di Pusat.`
+          : `⚠️ Stok di Pusat tidak mencukupi!\n(Hanya tersedia ${stockPusat} unit).`;
+          
+        if (!window.confirm(`${msg}\n\nApakah Anda yakin ingin tetap menambahkan produk ini ke request?`)) {
+          return;
+        }
+      }
     }
 
     setRequestItems(prev => {

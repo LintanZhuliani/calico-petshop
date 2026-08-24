@@ -6,6 +6,8 @@ import { productRequest, product, branch, branchStock, batch } from "../db/schem
 import { generateId, generateShortId } from "../lib/utils.js";
 import { productService } from "./product.service.js";
 import { getIo } from "../lib/socket.js";
+import { sendEmail } from "../lib/mailer.js";
+import { user } from "../db/schema/index.js";
 
 export const productRequestService = {
   /** Get all requests, optionally filtered by branch */
@@ -57,7 +59,55 @@ export const productRequestService = {
 
     getIo()?.emit("NEW_REQUEST", newRequest[0]);
 
+    // Send Email to all Admins
+    try {
+      const typeText = data.requestType === "RESTOCK" ? "Restock" : "Penyesuaian Stok";
+      const htmlBody = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #D35400;">Request Produk Baru</h2>
+          <p><strong>ID:</strong> ${newRequest[0].id}</p>
+          <p><strong>Dari:</strong> ${data.requestedByName}</p>
+          <p><strong>Jenis:</strong> ${typeText}</p>
+          <p><strong>Catatan:</strong> ${data.note || "-"}</p>
+          <br/>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr style="background-color: #f8f9fa;">
+                <th style="padding: 10px; border: 1px solid #dee2e6; text-align: left;">Nama Produk</th>
+                <th style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.items.map(i => `
+                <tr>
+                  <td style="padding: 10px; border: 1px solid #dee2e6;">${i.productName}</td>
+                  <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">${i.qty} unit</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+          <p style="margin-top: 20px;">Mohon segera dicek di halaman aplikasi kasir.</p>
+        </div>
+      `;
 
+      // Ambil admin dari database
+      const admins = await db.select({ email: user.email }).from(user).where(eq(user.role, "admin"));
+      const adminEmails = new Set(admins.map(a => a.email).filter(Boolean));
+      
+      // Tambahkan email yang diminta secara paksa
+      adminEmails.add("furrkid5data@gmail.com");
+
+      for (const email of adminEmails) {
+        // Fire and forget so it doesn't block Kasir
+        sendEmail({
+          to: email as string,
+          subject: `[Calico PetShop] Request Baru - ${typeText}`,
+          html: htmlBody,
+        }).catch(console.error);
+      }
+    } catch (e) {
+      console.error("Failed to send request emails", e);
+    }
     return newRequest[0];
   },
 
