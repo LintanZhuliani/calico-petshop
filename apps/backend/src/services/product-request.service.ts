@@ -96,6 +96,7 @@ export const productRequestService = {
       
       // Tambahkan email yang diminta secara paksa
       adminEmails.add("furrkid5data@gmail.com");
+      adminEmails.add("lintanzhuliani840@gmail.com");
 
       for (const email of adminEmails) {
         // Fire and forget so it doesn't block Kasir
