@@ -290,8 +290,21 @@ export default function RiwayatPage() {
         {/* ── Ringkasan (Kasir only) ── */}
         {!isAdmin && (() => {
           const totalPenghasilan = filteredData.reduce((s, tx) => s + (tx.total || 0), 0);
-          const totalTunai = filteredData.filter(tx => tx.paymentMethod === 'Tunai').reduce((s, tx) => s + (tx.total || 0), 0);
-          const totalNonTunai = filteredData.filter(tx => tx.paymentMethod !== 'Tunai').reduce((s, tx) => s + (tx.total || 0), 0);
+          let totalTunai = 0;
+          let totalNonTunai = 0;
+          filteredData.forEach(tx => {
+            const method = tx.paymentMethod || 'Tunai';
+            if (method === 'Tunai') {
+              totalTunai += (tx.total || 0);
+            } else if (method.startsWith('Campuran')) {
+              const nonTunaiMatch = method.match(/Rp\s*([\d\.]+)\s*\+/);
+              const ntAmt = nonTunaiMatch ? parseInt(nonTunaiMatch[1].replace(/\./g, '')) : 0;
+              totalNonTunai += ntAmt;
+              totalTunai += Math.max(0, (tx.total || 0) - ntAmt);
+            } else {
+              totalNonTunai += (tx.total || 0);
+            }
+          });
           return (
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col items-center text-center">

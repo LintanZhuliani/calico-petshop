@@ -504,11 +504,74 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
         </div>
       )}
 
+      {payMethod === 'campuran' && (
+        <div className="space-y-3">
+          {/* Pilih Jenis Non-Tunai */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Jenis Non-Tunai</p>
+            <div className="grid grid-cols-3 gap-2.5">
+              {NON_TUNAI_OPTS.map(opt => (
+                <button key={opt.key} onClick={() => setSplitNonTunaiType(opt.key)} className={`flex flex-col items-center p-3 rounded-xl border ${splitNonTunaiType === opt.key ? 'border-red-400 bg-red-50 text-red-600' : 'bg-slate-50 text-slate-500'}`}>
+                  <span className="material-symbols-outlined">{opt.icon}</span>
+                  <span className="text-xs font-bold mt-1">{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Input Nominal Non-Tunai */}
+          <InputField 
+            label={`Nominal ${({ qris: 'QRIS', transfer: 'Transfer', edc: 'EDC' })[splitNonTunaiType]}`} 
+            type="number" 
+            value={splitNonTunai} 
+            onChange={setSplitNonTunai} 
+            placeholder="Masukkan nominal non-tunai" 
+          />
+
+          {/* Sisa yang harus dibayar tunai */}
+          {splitNonTunaiAmt > 0 && (
+            <div className="bg-blue-50 rounded-2xl p-3 text-center">
+              <p className="text-[10px] font-bold text-blue-400 uppercase">Sisa Bayar Tunai</p>
+              <p className="text-lg font-extrabold text-blue-600">{formatRupiah(Math.max(0, sisaCash))}</p>
+            </div>
+          )}
+
+          {/* Input Uang Tunai */}
+          <InputField 
+            label="Uang Tunai Dibayar" 
+            type="number" 
+            value={splitCash} 
+            onChange={setSplitCash} 
+            placeholder={sisaCash > 0 ? String(sisaCash) : '0'} 
+          />
+
+          {/* Quick Pay untuk sisa tunai */}
+          {sisaCash > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {[...new Set([sisaCash, Math.ceil(sisaCash / 10000) * 10000 + 10000, Math.ceil(sisaCash / 50000) * 50000, Math.ceil(sisaCash / 100000) * 100000])].filter(v => v >= sisaCash).map(p => (
+                <button key={p} onClick={() => setSplitCash(String(p))} className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700">{formatRupiah(p)}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Kembalian / Kurang */}
+          {splitCash && (
+            <div className={`rounded-2xl p-4 text-center ${splitChange >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+              <p className="text-xs font-bold text-slate-500 uppercase">{splitChange >= 0 ? 'Kembalian' : 'Kurang'}</p>
+              <p className={`text-2xl font-extrabold ${splitChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatRupiah(Math.abs(splitChange))}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex gap-3 pt-4 border-t mt-4">
         <button onClick={() => setStep(1)} className="flex-1 py-4 bg-slate-100 font-bold rounded-2xl text-slate-600 border">Kembali</button>
         <button 
           onClick={handleSubmit} 
-          disabled={payMethod === 'tunai' && (paid === '' || change < 0)}
+          disabled={
+            (payMethod === 'tunai' && (paid === '' || change < 0)) ||
+            (payMethod === 'campuran' && (splitNonTunai === '' || splitCash === '' || splitNonTunaiAmt <= 0 || splitChange < 0))
+          }
           className={`flex-1 py-4 ${primaryBg} text-white font-bold rounded-2xl disabled:opacity-50`}
         >
           Bayar
@@ -516,6 +579,7 @@ export default function CheckoutModal({ isAdmin, cart, onClose, onConfirm }) {
       </div>
     </div>
   );
+
 
   const renderCustomerModal = () => {
     // Group customers by initial
