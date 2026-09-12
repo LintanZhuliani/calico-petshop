@@ -201,7 +201,6 @@ export default function ProfilePage() {
     { id: 'branches', icon: 'store', label: 'Kelola Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'riwayat_notifikasi', icon: 'history', label: 'Riwayat Notifikasi', desc: 'Log hapus barang & kadaluarsa', color: primaryText },
-    { id: 'riwayat_rekap', icon: 'receipt', label: 'Riwayat Tutup Kasir', desc: 'Lihat arsip rekap shift per bulan', color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
     { id: 'notif', icon: 'notifications', label: 'Preferensi Notifikasi', desc: 'Atur alert stok & expired', color: primaryText },
     { id: 'help', icon: 'help', label: 'Bantuan & Panduan', desc: 'Cara pakai aplikasi', color: primaryText },
