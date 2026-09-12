@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { apiFetch } from '../lib/api';
 import { useSession } from '../lib/useSession';
 import { formatRupiah } from '../utils/formatters';
 import { printReceipt } from '../utils/printer';
+import { exportToExcel } from '../utils/export';
+import TransactionReceiptModal from '../components/TransactionReceiptModal';
+import DailyCashierDetailModal from '../components/DailyCashierDetailModal';
 
 const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -20,6 +23,7 @@ const BRANCHES = [
 
 export default function RiwayatPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { role, branchName: branchId } = useSession();
   const isAdmin = role === 'admin';
 
@@ -39,23 +43,22 @@ export default function RiwayatPage() {
   const [selectedTx, setSelectedTx] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedItemDetail, setSelectedItemDetail] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [expandedMonths, setExpandedMonths] = useState({});
 
-  const fetchTransactions = () => {
+  const fetchData = () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (isAdmin) {
-      // Admin fetches ALL branches, filtering is done client-side
       params.set('branchId', 'all');
     } else {
-      // Kasir: fetch only their own branch
       params.set('branchId', branchId || 'pusat');
     }
     
     apiFetch(`/transactions?${params}`)
-      .then(data => {
-        let txs = Array.isArray(data) ? data : [];
+      .then(txData => {
+        let txs = Array.isArray(txData) ? txData : [];
         
-        // Kasir only sees their own transactions (filter by cashier name)
         if (!isAdmin) {
           const { userName } = JSON.parse(localStorage.getItem('calico_session')) || {};
           if (userName) {
@@ -63,7 +66,6 @@ export default function RiwayatPage() {
           }
         }
         
-        // Sort descending by date
         txs.sort((a, b) => new Date(b.date) - new Date(a.date));
         setTransactions(txs);
         
@@ -81,12 +83,12 @@ export default function RiwayatPage() {
           window.history.replaceState({ ...location.state, autoOpenLatest: undefined }, document.title);
         }
       })
-      .catch(err => console.error('Failed to load transactions:', err))
+      .catch(err => console.error('Failed to load data:', err))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchTransactions();
+    fetchData();
   }, [isAdmin, branchId]);
 
   // Navigasi Tanggal / Bulan / Tahun
@@ -126,11 +128,69 @@ export default function RiwayatPage() {
       } else {
         matchDate = true;
       }
-      // Admin: filter by selected branch
       const matchBranch = !isAdmin || filterBranch === 'semua' || tx.branchId === filterBranch;
       return matchDate && matchBranch;
     });
   }, [transactions, selectedDate, reportType, filterBranch, isAdmin]);
+
+  const groupedTransactions = useMemo(() => {
+    if (reportType !== 'bulanan') return {};
+    const groups = {};
+    filteredData.forEach(tx => {
+      const d = new Date(tx.date);
+      const dateKey = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      if (!groups[dateKey]) groups[dateKey] = {};
+      
+      const cashier = tx.cashierName || 'Admin';
+      if (!groups[dateKey][cashier]) {
+        groups[dateKey][cashier] = {
+           dateKey,
+           cashierName: cashier,
+           totalCash: 0,
+           transactions: [],
+           latestTime: tx.date
+        };
+      }
+      groups[dateKey][cashier].totalCash += tx.total;
+      groups[dateKey][cashier].transactions.push(tx);
+      if (new Date(tx.date) > new Date(groups[dateKey][cashier].latestTime)) {
+        groups[dateKey][cashier].latestTime = tx.date;
+      }
+    });
+    return groups;
+  }, [filteredData, reportType]);
+
+  const groupedTransactionsYearly = useMemo(() => {
+    if (reportType !== 'tahunan') return {};
+    const groups = {};
+    filteredData.forEach(tx => {
+      const d = new Date(tx.date);
+      const monthKey = `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+      if (!groups[monthKey]) groups[monthKey] = { totalCash: 0, days: {} };
+      
+      groups[monthKey].totalCash += tx.total;
+
+      const dateKey = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      if (!groups[monthKey].days[dateKey]) groups[monthKey].days[dateKey] = {};
+      
+      const cashier = tx.cashierName || 'Admin';
+      if (!groups[monthKey].days[dateKey][cashier]) {
+        groups[monthKey].days[dateKey][cashier] = {
+           dateKey,
+           cashierName: cashier,
+           totalCash: 0,
+           transactions: [],
+           latestTime: tx.date
+        };
+      }
+      groups[monthKey].days[dateKey][cashier].totalCash += tx.total;
+      groups[monthKey].days[dateKey][cashier].transactions.push(tx);
+      if (new Date(tx.date) > new Date(groups[monthKey].days[dateKey][cashier].latestTime)) {
+        groups[monthKey].days[dateKey][cashier].latestTime = tx.date;
+      }
+    });
+    return groups;
+  }, [filteredData, reportType]);
 
   const handleDeleteTransaction = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus transaksi ini? Stok akan dikembalikan otomatis.")) return;
@@ -235,40 +295,37 @@ export default function RiwayatPage() {
           <div className="md:hidden w-10 shrink-0"></div>
         </div>
 
-        {isAdmin ? (
-          <>
-            <div className="flex w-full border-b-2 border-slate-200 px-5 mt-auto">
-              {['harian', 'bulanan', 'tahunan'].map(type => (
-                <button
-                  key={type}
-                  onClick={() => setReportType(type)}
-                  className={`flex-1 text-center py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
-                    reportType === type 
-                      ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
-                      : `border-transparent text-slate-500 hover:bg-slate-50`
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
+        <div className="flex w-full border-b-2 border-slate-200 px-5 mt-auto">
+          {['harian', 'bulanan', 'tahunan'].map(type => (
+            <button
+              key={type}
+              onClick={() => setReportType(type)}
+              className={`flex-1 text-center py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
+                reportType === type 
+                  ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
+                  : `border-transparent text-slate-500 hover:bg-slate-50`
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+        
+        {isAdmin && (
+          <div className="flex items-center gap-2 px-5 py-2 border-b border-slate-100">
             {/* Branch filter dropdown for admin */}
-            <div className="flex items-center gap-2 px-5 py-2 border-b border-slate-100">
-              <span className="material-symbols-outlined !text-[16px] text-slate-400">storefront</span>
-              <select
-                id="riwayat-branch-filter"
-                value={filterBranch}
-                onChange={e => setFilterBranch(e.target.value)}
-                className="text-sm font-semibold text-slate-600 bg-transparent border-none outline-none cursor-pointer"
-              >
-                {BRANCHES.map(b => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
-                ))}
-              </select>
-            </div>
-          </>
-        ) : (
-          <div className="border-b-2 border-slate-200 w-full" />
+            <span className="material-symbols-outlined !text-[16px] text-slate-400">storefront</span>
+            <select
+              id="riwayat-branch-filter"
+              value={filterBranch}
+              onChange={e => setFilterBranch(e.target.value)}
+              className="text-sm font-semibold text-slate-600 bg-transparent border-none outline-none cursor-pointer"
+            >
+              {BRANCHES.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
         )}
       </header>
 
@@ -280,12 +337,19 @@ export default function RiwayatPage() {
           </button>
           <div className="text-center">
             <p className={`font-headline font-extrabold text-lg ${primaryText}`}>{dateLabel}</p>
-            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">{reportType}</p>
           </div>
           <button onClick={handleNext} className="p-2 bg-slate-100 rounded-xl active:scale-90 transition-transform">
             <span className="material-symbols-outlined !text-[20px] text-slate-600">chevron_right</span>
           </button>
         </div>
+
+        <button 
+          onClick={() => exportToExcel(filteredData, dateLabel)}
+          className="w-full bg-green-50 text-green-700 border border-green-200 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all text-sm"
+        >
+          <span className="material-symbols-outlined !text-[20px]">download</span>
+          Unduh Laporan (Excel)
+        </button>
 
         {/* ── Ringkasan (Kasir only) ── */}
         {!isAdmin && (() => {
@@ -326,10 +390,112 @@ export default function RiwayatPage() {
           );
         })()}
 
-        {/* Daftar Transaksi */}
+        {/* Daftar Transaksi atau Tutup Kasir */}
         {loading ? (
           <div className="flex justify-center py-20">
             <div className={`w-10 h-10 border-4 border-slate-200 border-t-[#D35400] rounded-full animate-spin`}></div>
+          </div>
+        ) : reportType === 'bulanan' ? (
+          <div className="mt-2 space-y-6">
+            {Object.keys(groupedTransactions).length === 0 ? (
+              <p className="text-center text-sm text-slate-400 py-6 bg-white rounded-2xl border border-slate-200 shadow-sm">Belum ada transaksi di bulan ini</p>
+            ) : (
+              Object.keys(groupedTransactions).map(dateKey => (
+                <div key={dateKey}>
+                  <h3 className="font-bold text-slate-600 mb-3 ml-2 text-sm">{dateKey}</h3>
+                  <div className="space-y-3">
+                    {Object.values(groupedTransactions[dateKey]).map(group => (
+                      <button 
+                        key={group.cashierName}
+                        onClick={() => setSelectedGroup(group)}
+                        className="w-full text-left bg-white border border-slate-200 p-4 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center border-2 border-white shadow-sm">
+                            <span className="material-symbols-outlined text-orange-600 !text-[24px]">person</span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800">{group.cashierName}</p>
+                            <p className="text-xs text-slate-500">Staff Kasir</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            <p className="text-xs text-slate-500 mb-0.5">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p className="font-bold text-emerald-600">+{formatRupiah(group.totalCash)}</p>
+                          </div>
+                          <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : reportType === 'tahunan' ? (
+          <div className="mt-2 space-y-4">
+            {Object.keys(groupedTransactionsYearly).length === 0 ? (
+              <p className="text-center text-sm text-slate-400 py-6 bg-white rounded-2xl border border-slate-200 shadow-sm">Belum ada transaksi di tahun ini</p>
+            ) : (
+              Object.keys(groupedTransactionsYearly).map(monthKey => {
+                const monthData = groupedTransactionsYearly[monthKey];
+                const isExpanded = expandedMonths[monthKey];
+                return (
+                  <div key={monthKey} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <button 
+                      onClick={() => setExpandedMonths(prev => ({...prev, [monthKey]: !prev[monthKey]}))}
+                      className="w-full p-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex flex-col items-start">
+                        <span className="font-bold text-slate-700">{monthKey}</span>
+                        <span className="text-xs text-slate-500 font-medium">{Object.keys(monthData.days).length} Hari Aktif</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-extrabold text-emerald-600">+{formatRupiah(monthData.totalCash)}</span>
+                        <span className={`material-symbols-outlined text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}>chevron_right</span>
+                      </div>
+                    </button>
+                    
+                    {isExpanded && (
+                      <div className="p-4 pt-2 space-y-6 bg-white">
+                        {Object.keys(monthData.days).map(dateKey => (
+                          <div key={dateKey}>
+                            <h3 className="font-bold text-slate-600 mb-3 ml-2 text-sm">{dateKey}</h3>
+                            <div className="space-y-3">
+                              {Object.values(monthData.days[dateKey]).map(group => (
+                                <button 
+                                  key={group.cashierName}
+                                  onClick={() => setSelectedGroup(group)}
+                                  className="w-full text-left bg-white border border-slate-200 p-4 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98]"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center border-2 border-white shadow-sm">
+                                      <span className="material-symbols-outlined text-orange-600 !text-[24px]">person</span>
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-slate-800">{group.cashierName}</p>
+                                      <p className="text-xs text-slate-500">Staff Kasir</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-right">
+                                      <p className="text-xs text-slate-500 mb-0.5">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                                      <p className="font-bold text-emerald-600">+{formatRupiah(group.totalCash)}</p>
+                                    </div>
+                                    <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-2">
@@ -380,163 +546,20 @@ export default function RiwayatPage() {
 
       {/* Modal Detail Transaksi */}
       {isDetailOpen && selectedTx && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-slate-50 overflow-hidden font-body animate-in fade-in slide-in-from-bottom-4 duration-200">
-          {/* Header Modal */}
-          <header className="bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <button onClick={() => setIsDetailOpen(false)} className={`p-2 -ml-2 rounded-xl active:bg-slate-100 ${primaryText} transition-colors shrink-0`}>
-                <span className="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
-              </button>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] md:text-sm font-normal text-slate-500 leading-none mb-1">ID Transaksi:</span> 
-                <span className="font-bold text-slate-800 text-xs md:text-lg uppercase tracking-wide truncate">{selectedTx.id.toUpperCase()}</span>
-              </div>
-            </div>
-            <button onClick={() => navigator.clipboard.writeText(selectedTx.id)} className="text-slate-400 p-2 hover:text-slate-600 active:scale-90 transition-transform shrink-0 ml-2 bg-slate-50 rounded-xl">
-              <span className="material-symbols-outlined !text-[20px]">content_copy</span>
-            </button>
-          </header>
+        <TransactionReceiptModal 
+          transaction={selectedTx}
+          onClose={() => setIsDetailOpen(false)}
+          onDelete={handleDeleteTransaction}
+        />
+      )}
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            {/* Rincian Transaksi */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-              <h2 className="font-extrabold text-slate-800 text-lg mb-4">Rincian Transaksi</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Dibuat Oleh</span>
-                  <span className="font-bold text-slate-800">{selectedTx.cashierName || 'Admin'}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Pembayaran</span>
-                  <span className="font-bold text-slate-800">{selectedTx.paymentMethod || 'Tunai'}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Tanggal Transaksi</span>
-                  <span className="font-bold text-slate-800">{new Date(selectedTx.date).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':')}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Pesanan */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-              <h2 className="font-extrabold text-slate-800 text-lg mb-4">Pesanan</h2>
-              
-              <div className="space-y-2 mb-4 mt-2">
-                {(selectedTx.items || []).map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => setSelectedItemDetail(item)}
-                    className="flex justify-between items-start text-sm border-b border-slate-50 pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors rounded-xl p-2 -mx-2"
-                  >
-                    <div className="flex-1 pr-4 min-w-0">
-                      <p className="font-semibold text-slate-800 leading-tight">{item.productName}</p>
-                      <p className="text-xs text-slate-500 mt-1.5">{item.qty} x {formatRupiah(item.price)}</p>
-                    </div>
-                    <span className="font-extrabold text-slate-800 shrink-0">{formatRupiah(item.price * item.qty)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-slate-200 pt-3 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Total Pesanan</span>
-                  <span className="font-bold text-slate-800">{formatRupiah((selectedTx.items || []).reduce((s, i) => s + i.price * i.qty, 0))}</span>
-                </div>
-                {selectedTx.additionalFeesDetails && (() => {
-                  try {
-                    const fees = JSON.parse(selectedTx.additionalFeesDetails);
-                    return fees.map((fee, idx) => {
-                      if (!fee.name || !fee.amount) return null;
-                      const label = fee.name.startsWith('Diskon') ? fee.name : `Biaya: ${fee.name}`;
-                      const amountNum = Number(fee.amount);
-                      return (
-                        <div key={idx} className="flex justify-between">
-                          <span className="text-slate-500">{label}</span>
-                          <span className={`font-bold ${amountNum < 0 ? 'text-red-500' : 'text-slate-800'}`}>
-                            {amountNum < 0 ? '-' : ''}{formatRupiah(Math.abs(amountNum))}
-                          </span>
-                        </div>
-                      );
-                    });
-                  } catch (e) {
-                    return null;
-                  }
-                })()}
-                <div className="flex justify-between pt-1">
-                  <span className="font-extrabold text-slate-900 text-base">Total</span>
-                  <span className="font-extrabold text-slate-900 text-base">{formatRupiah(selectedTx.total)}</span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Bayar</span>
-                  <span className="font-bold text-slate-700">{formatRupiah(selectedTx.paid || selectedTx.total)}</span>
-                </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Kembali</span>
-                  <span className="font-bold text-slate-700">{formatRupiah(selectedTx.change || 0)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Modal Footer Actions */}
-          <div className="bg-white border-t border-slate-200 p-4 pb-8 flex items-center gap-3 shrink-0">
-            <button 
-              onClick={() => handlePrintReceipt(selectedTx)}
-              className={`flex-1 ${primaryBg} hover:opacity-90 active:scale-[0.98] transition-all text-white font-bold py-3.5 rounded-2xl shadow-md text-center`}
-            >
-              Cetak Struk
-            </button>
-            
-            {isAdmin && (
-              <div className="relative group">
-                <button 
-                  className={`p-3.5 border-2 ${primaryText} border-current hover:bg-slate-50 rounded-2xl flex items-center justify-center active:scale-[0.98] transition-all`}
-                  onClick={(e) => {
-                    const menu = e.currentTarget.nextElementSibling;
-                    menu.classList.toggle('hidden');
-                  }}
-                >
-                  <span className="material-symbols-outlined !text-[20px]">more_vert</span>
-                </button>
-                {/* Popover Menu */}
-                <div className="hidden absolute bottom-full right-0 mb-2 w-32 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
-                  <button 
-                    onClick={() => handleDeleteTransaction(selectedTx.id)}
-                    className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              </div>
-            )}
-            {/* Pop up detail produk */}
-            {selectedItemDetail && (
-              <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedItemDetail(null)}>
-                <div className="bg-white rounded-[32px] w-full max-w-xs overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 relative" onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setSelectedItemDetail(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 transition-colors">
-                    <span className="material-symbols-outlined !text-[20px]">close</span>
-                  </button>
-                  <div className="p-6 flex flex-col items-center text-center">
-                    <div className={`w-16 h-16 rounded-3xl ${primaryLight} flex items-center justify-center mb-4 ${primaryText} shadow-sm`}>
-                      <span className="material-symbols-outlined !text-[32px]">shopping_bag</span>
-                    </div>
-                    <h3 className="font-bold text-slate-800 text-xl mb-4 leading-tight w-full">{selectedItemDetail.productName}</h3>
-                    <div className="space-y-4 bg-slate-50 rounded-2xl p-4">
-                      <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                        <span className="text-slate-500 font-medium flex items-center gap-1">Harga Modal</span>
-                        <span className="font-extrabold text-slate-800">{formatRupiah(selectedItemDetail.buyPrice || 0)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500 font-medium">Jumlah Beli</span>
-                        <span className="font-bold text-slate-800">{selectedItemDetail.qty} Item</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* Modal Detail Rekap Harian per Kasir */}
+      {selectedGroup && (
+        <DailyCashierDetailModal 
+          group={selectedGroup}
+          onClose={() => setSelectedGroup(null)}
+          onDeleteTx={handleDeleteTransaction}
+        />
       )}
 
       <BottomNav />

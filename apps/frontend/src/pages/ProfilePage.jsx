@@ -201,6 +201,7 @@ export default function ProfilePage() {
     { id: 'branches', icon: 'store', label: 'Kelola Cabang', desc: 'Pilih & ganti cabang aktif', color: primaryText },
     { id: 'laporan', icon: 'receipt_long', label: 'Riwayat Transaksi', desc: `${todayTxCount} transaksi hari ini`, color: primaryText },
     { id: 'riwayat_notifikasi', icon: 'history', label: 'Riwayat Notifikasi', desc: 'Log hapus barang & kadaluarsa', color: primaryText },
+    { id: 'riwayat_rekap', icon: 'receipt', label: 'Riwayat Tutup Kasir', desc: 'Lihat arsip rekap shift per bulan', color: primaryText },
     { id: 'password', icon: 'lock', label: 'Ganti Password', desc: 'Perbarui keamanan akun', color: primaryText },
     { id: 'notif', icon: 'notifications', label: 'Preferensi Notifikasi', desc: 'Atur alert stok & expired', color: primaryText },
     { id: 'help', icon: 'help', label: 'Bantuan & Panduan', desc: 'Cara pakai aplikasi', color: primaryText },
@@ -302,11 +303,14 @@ export default function ProfilePage() {
                 <span className="material-symbols-outlined text-slate-300 !text-[20px]">chevron_right</span>
               </>
             );
-            if (isLaporan || item.id === 'riwayat_notifikasi') {
+            if (isLaporan || item.id === 'riwayat_notifikasi' || item.id === 'riwayat_rekap') {
+              let toPath = "/riwayat";
+              if (item.id === 'riwayat_notifikasi') toPath = "/riwayat-notifikasi";
+              if (item.id === 'riwayat_rekap') toPath = "/riwayat-rekap";
               return (
                 <Link
                   key={i}
-                  to={isLaporan ? "/riwayat" : "/riwayat-notifikasi"}
+                  to={toPath}
                   className="w-full flex items-center gap-3.5 px-5 py-4 text-left active:bg-slate-50 transition-colors"
                 >
                   {inner}
@@ -375,8 +379,8 @@ export default function ProfilePage() {
 
         {/* Dynamic Modals */}
         {activeModal && activeModal !== 'logout' && activeModal !== 'edit_profile' && (
-          <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-6 transition-opacity">
-            <div className="bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pb-24 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-6 transition-opacity">
+            <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto flex flex-col">
               <div className="flex items-center relative mb-5 shrink-0">
                 <h3 className="font-headline font-bold text-slate-900 text-lg text-center w-full">
                   {MENU_ITEMS.find(m => m.id === activeModal)?.label || 'Modal'}

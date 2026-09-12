@@ -44,3 +44,5 @@ export {
   productRequest,
   productRequestRelations,
 } from "./request.js";
+
+export { rekapKasir, rekapKasirRelations } from "./rekap.js";

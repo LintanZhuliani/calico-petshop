@@ -24,6 +24,7 @@ import transferRoutes from "./routes/transfer.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { reportRoutes } from "./routes/report.routes.js";
 import { productRequestRouter } from "./routes/product-request.routes.js";
+import rekapRoutes from "./routes/rekap.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -177,6 +178,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/requests", productRequestRouter);
+app.use("/api/rekap", rekapRoutes);
 
 // ── Health Check ──
 app.get("/api/health", (req, res) => {

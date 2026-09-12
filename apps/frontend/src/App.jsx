@@ -16,6 +16,8 @@ import DaftarPesananPage from "./pages/DaftarPesananPage";
 import RekapHarianPage from "./pages/RekapHarianPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotifikasiPage from "./pages/NotifikasiPage";
+import RiwayatRekapPage from "./pages/RiwayatRekapPage";
+import DetailRekapPage from "./pages/DetailRekapPage";
 
 export default function App() {
   return (
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="/notifikasi" element={<NotifikasiPage />} />
         <Route path="/riwayat-notifikasi" element={<RiwayatNotifikasiPage />} />
         <Route path="/rekap" element={<RekapHarianPage />} />
+        <Route path="/riwayat-rekap" element={<RiwayatRekapPage />} />
+        <Route path="/riwayat-rekap/:id" element={<DetailRekapPage />} />
       </Routes>
     </BrowserRouter>
   );

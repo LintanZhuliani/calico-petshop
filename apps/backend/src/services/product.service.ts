@@ -3,7 +3,7 @@
 // Includes FEFO (First Expired, First Out) logic
 // ===================================================
 
-import { eq, and, like, sql, isNull, lte, gte, inArray } from "drizzle-orm";
+import { eq, and, like, sql, isNull, lte, gte, inArray, desc } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   product,
@@ -202,7 +202,21 @@ export const productService = {
       data.image = await uploadBase64Image(data.image);
     }
 
-    const id = generateId("p");
+    const [latest] = await db
+      .select({ id: product.id })
+      .from(product)
+      .where(like(product.id, "PRD-%"))
+      .orderBy(desc(product.id))
+      .limit(1);
+
+    let nextNum = 1;
+    if (latest && latest.id) {
+      const numPart = latest.id.split("-")[1];
+      if (numPart && !isNaN(Number(numPart))) {
+        nextNum = Number(numPart) + 1;
+      }
+    }
+    const id = `PRD-${String(nextNum).padStart(3, '0')}`;
     const results = await db.transaction(async (tx) => {
       // Auto-create category if not exists
       if (data.category) {

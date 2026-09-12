@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { db } from "../db/index.js";
-import { user } from "../db/schema/index.js";
+import { user, account, session } from "../db/schema/index.js";
+import { eq } from "drizzle-orm";
+import { Scrypt } from "oslo/password";
+import { generateId } from "../lib/utils.js";
 
 const router = Router();
 
@@ -48,18 +51,31 @@ router.post("/invite", requireAuth, requireAdmin, async (req, res, next) => {
     const shortName = rawName.replace(/[0-9]/g, '').slice(0, 8);
     const generatedPassword = `${shortName}${suffix}`;
 
-    // Call Better Auth's programmatic signup API
-    const result = await auth.api.signUpEmail({
-      body: {
-        email: email.toLowerCase(),
-        password: generatedPassword,
-        name: name,
-        role: "kasir", // Default role for invited employees
-        branchId: branchId
-      }
+    // Insert directly into db to prevent Internal Server Error from auth.api
+    // and to prevent logging out the admin (which signUpEmail does by setting a new cookie)
+    const scrypt = new Scrypt({ N: 16384, r: 16, p: 1, dkLen: 64 });
+    const hashedPassword = await scrypt.hash(generatedPassword);
+    
+    const newUserId = generateId().replace(/-/g, '').substring(0, 32); // Better Auth expects max 32 chars usually, but UUID without dashes is 32
+
+    const newUserResult = await db.insert(user).values({
+      id: newUserId,
+      email: email.toLowerCase(),
+      name: name,
+      role: "kasir",
+      branchId: branchId,
+      emailVerified: false
+    }).returning();
+
+    await db.insert(account).values({
+      id: generateId().replace(/-/g, '').substring(0, 32),
+      accountId: newUserId,
+      providerId: "credential",
+      userId: newUserId,
+      password: hashedPassword
     });
 
-
+    const result = newUserResult[0];
     res.status(201).json({ 
       message: "User invited successfully", 
       user: result,
@@ -81,9 +97,20 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
       return;
     }
 
-    // Delete sessions and accounts first due to foreign key constraints, then delete user
-    const { session, account } = await import("../db/schema/index.js");
-    const { eq } = await import("drizzle-orm");
+    // Reassign all records that reference this user to the admin's ID to preserve history
+    // and avoid foreign key constraint violations during deletion.
+    const adminId = req.user!.id;
+    const { transaction } = await import("../db/schema/transaction.js");
+    const { rekap } = await import("../db/schema/rekap.js");
+    const { request } = await import("../db/schema/request.js");
+    const { transfer } = await import("../db/schema/transfer.js");
+
+    await db.update(transaction).set({ cashierId: adminId }).where(eq(transaction.cashierId, userId));
+    await db.update(rekap).set({ userId: adminId }).where(eq(rekap.userId, userId));
+    await db.update(request).set({ createdBy: adminId }).where(eq(request.createdBy, userId));
+    await db.update(request).set({ approvedBy: adminId }).where(eq(request.approvedBy, userId));
+    await db.update(transfer).set({ userId: adminId }).where(eq(transfer.userId, userId));
+    await db.update(transfer).set({ confirmedById: adminId }).where(eq(transfer.confirmedById, userId));
 
     await db.delete(session).where(eq(session.userId, userId));
     await db.delete(account).where(eq(account.userId, userId));

@@ -421,15 +421,39 @@ export default function RekapHarianPage() {
           
           {role !== 'admin' && (
             <button 
-              onClick={() => {
-                if (window.confirm("Apakah Anda yakin ingin Tutup Kasir? Laporan akan disalin dan semua perhitungan rekap akan di-reset (0) untuk shift berikutnya hari ini.")) {
-                  copyToClipboard();
-                  setModalAwal('');
-                  setUangFisik('');
-                  setPengeluaran([]);
-                  const now = new Date().toISOString();
-                  localStorage.setItem(`calico_last_closed_at_${userName}`, now);
-                  setLastClosedAt(now);
+              onClick={async () => {
+                if (window.confirm("Apakah Anda yakin ingin Tutup Kasir? Laporan akan disalin dan direkam ke riwayat sistem, serta semua perhitungan rekap akan di-reset (0) untuk shift berikutnya hari ini.")) {
+                  try {
+                    const now = new Date().toISOString();
+                    const payload = {
+                      branchId,
+                      startTime: lastClosedAt || new Date(new Date().setHours(0,0,0,0)).toISOString(),
+                      endTime: now,
+                      modalAwal: valModalAwal,
+                      totalCash: stats.grandCash,
+                      totalNonCash: stats.grandQR + stats.grandTransfer + stats.grandEDC,
+                      totalRevenue: stats.grandTotal,
+                      totalTransactions: transactions.length,
+                      uangFisik: valUangFisik,
+                      selisih: selisih,
+                      pengeluaran: pengeluaran
+                    };
+
+                    await apiFetch('/rekap', {
+                      method: 'POST',
+                      body: JSON.stringify(payload)
+                    });
+
+                    copyToClipboard();
+                    setModalAwal('');
+                    setUangFisik('');
+                    setPengeluaran([]);
+                    localStorage.setItem(`calico_last_closed_at_${userName}`, now);
+                    setLastClosedAt(now);
+                    alert("Tutup Kasir berhasil disimpan ke sistem!");
+                  } catch (err) {
+                    alert("Gagal menyimpan tutup kasir ke sistem: " + err.message);
+                  }
                 }
               }}
               className="w-full bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-300 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm mt-2"
