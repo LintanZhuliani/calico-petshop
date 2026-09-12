@@ -314,12 +314,12 @@ export default function DaftarPesananPage() {
         </div>
         
         {/* Tabs */}
-        <div className="flex w-full mt-4 border-b pb-2">
+        <div className="flex w-full mt-4 border-b pb-2 overflow-x-auto scrollbar-hide gap-2 sm:gap-6">
           {['Riwayat Pesanan', 'Pesanan Baru', 'Piutang', 'Belum Dibayar', 'Sudah Dibayar'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 text-center font-bold pb-2 relative transition-colors ${activeTab === tab ? primaryText : 'text-slate-400'}`}
+              className={`shrink-0 px-2 sm:px-4 whitespace-nowrap text-center font-bold pb-2 relative transition-colors ${activeTab === tab ? primaryText : 'text-slate-400'}`}
             >
               {tab}
               {activeTab === tab && (
