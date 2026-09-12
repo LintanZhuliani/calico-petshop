@@ -101,12 +101,12 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
     // and avoid foreign key constraint violations during deletion.
     const adminId = req.user!.id;
     const { transaction } = await import("../db/schema/transaction.js");
-    const { rekap } = await import("../db/schema/rekap.js");
+    const { rekapKasir } = await import("../db/schema/rekap.js");
     const { productRequest } = await import("../db/schema/request.js");
     const { transfer } = await import("../db/schema/transfer.js");
 
     await db.update(transaction).set({ cashierId: adminId }).where(eq(transaction.cashierId, userId));
-    await db.update(rekap).set({ userId: adminId }).where(eq(rekap.userId, userId));
+    await db.update(rekapKasir).set({ userId: adminId }).where(eq(rekapKasir.userId, userId));
     await db.update(productRequest).set({ requestedById: adminId }).where(eq(productRequest.requestedById, userId));
     await db.update(productRequest).set({ resolvedById: adminId }).where(eq(productRequest.resolvedById, userId));
     await db.update(transfer).set({ initiatedById: adminId }).where(eq(transfer.initiatedById, userId));
