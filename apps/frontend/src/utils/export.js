@@ -6,8 +6,10 @@ export const exportToExcel = async (transactions, dateLabel) => {
   const worksheet = workbook.addWorksheet('Riwayat Transaksi');
 
   worksheet.columns = [
+    { header: 'No', key: 'no', width: 5 },
+    { header: 'Tanggal', key: 'tanggal', width: 15 },
+    { header: 'Waktu', key: 'waktu', width: 10 },
     { header: 'ID Transaksi', key: 'id_transaksi', width: 20 },
-    { header: 'Tanggal Transaksi', key: 'tanggal_transaksi', width: 25 },
     { header: 'Kode Barang', key: 'kode_barang', width: 15 },
     { header: 'Nama Barang', key: 'nama_barang', width: 40 },
     { header: 'Jumlah Pembelian', key: 'jumlah_pembelian', width: 18 },
@@ -25,17 +27,21 @@ export const exportToExcel = async (transactions, dateLabel) => {
   worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' }, bold: true };
 
   let grandTotal = 0;
+  let rowNo = 1;
 
   transactions.forEach(tx => {
     const txDate = new Date(tx.date);
-    const dateStr = `${String(txDate.getDate()).padStart(2, '0')}-${String(txDate.getMonth() + 1).padStart(2, '0')}-${txDate.getFullYear()} (${String(txDate.getHours()).padStart(2, '0')}:${String(txDate.getMinutes()).padStart(2, '0')})`;
+    const dateStr = `${String(txDate.getDate()).padStart(2, '0')}/${String(txDate.getMonth() + 1).padStart(2, '0')}/${txDate.getFullYear()}`;
+    const timeStr = `${String(txDate.getHours()).padStart(2, '0')}.${String(txDate.getMinutes()).padStart(2, '0')}`;
     
     if (tx.items && tx.items.length > 0) {
       tx.items.forEach(item => {
         const rowTotal = item.qty * item.price;
         worksheet.addRow({
+          no: rowNo++,
+          tanggal: dateStr,
+          waktu: timeStr,
           id_transaksi: tx.id.toUpperCase(),
-          tanggal_transaksi: dateStr,
           kode_barang: item.productId,
           nama_barang: item.productName || item.name,
           jumlah_pembelian: item.qty,
@@ -47,8 +53,10 @@ export const exportToExcel = async (transactions, dateLabel) => {
     } else {
       // In case there are transactions without items (e.g. old data or manual entry)
       worksheet.addRow({
+        no: rowNo++,
+        tanggal: dateStr,
+        waktu: timeStr,
         id_transaksi: tx.id.toUpperCase(),
-        tanggal_transaksi: dateStr,
         kode_barang: '-',
         nama_barang: '-',
         jumlah_pembelian: '-',
