@@ -28,7 +28,7 @@ export const exportToExcel = async (transactions, dateLabel) => {
 
   transactions.forEach(tx => {
     const txDate = new Date(tx.date);
-    const dateStr = `${String(txDate.getDate()).padStart(2, '0')}-${String(txDate.getMonth() + 1).padStart(2, '0')}-${txDate.getFullYear()} ${String(txDate.getHours()).padStart(2, '0')}:${String(txDate.getMinutes()).padStart(2, '0')}`;
+    const dateStr = `${String(txDate.getDate()).padStart(2, '0')}-${String(txDate.getMonth() + 1).padStart(2, '0')}-${txDate.getFullYear()} (${String(txDate.getHours()).padStart(2, '0')}:${String(txDate.getMinutes()).padStart(2, '0')})`;
     
     if (tx.items && tx.items.length > 0) {
       tx.items.forEach(item => {
