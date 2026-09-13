@@ -175,6 +175,19 @@ export default function PenjualanPage() {
     return Object.values(map).sort((a, b) => b.qty - a.qty).slice(0, 5);
   }, [filteredData]);
 
+  // Produk kurang laris (jarang dibeli)
+  const bottomProducts = useMemo(() => {
+    const map = {};
+    filteredData.forEach(tx => {
+      tx.items?.forEach(item => {
+        if (!map[item.productName]) map[item.productName] = { name: item.productName, qty: 0, revenue: 0 };
+        map[item.productName].qty += item.qty;
+        map[item.productName].revenue += item.qty * item.price;
+      });
+    });
+    return Object.values(map).sort((a, b) => a.qty - b.qty).slice(0, 5);
+  }, [filteredData]);
+
   // Penjualan per cabang
   const branchSales = useMemo(() => {
     const map = {};
@@ -532,6 +545,32 @@ export default function PenjualanPage() {
                     <p className="text-[11px] text-slate-400 mt-0.5">{p.qty} item terjual</p>
                   </div>
                   <p className={`text-sm font-bold ${primaryText}`}>{formatRupiah(p.revenue)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Produk Kurang Laris */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mt-4">
+          <p className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+            <span className="material-symbols-outlined !text-[18px] text-slate-400">trending_down</span>
+            Produk Kurang Laris
+          </p>
+          {bottomProducts.length === 0 ? (
+            <p className="text-center text-sm text-slate-400 py-4">Belum ada data</p>
+          ) : (
+            <div className="space-y-2.5 mt-2">
+              {bottomProducts.map((p, i) => (
+                <div key={i} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/50">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm bg-slate-100 text-slate-500">
+                    {i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{p.name}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{p.qty} item terjual</p>
+                  </div>
+                  <p className="text-sm font-bold text-slate-500">{formatRupiah(p.revenue)}</p>
                 </div>
               ))}
             </div>
