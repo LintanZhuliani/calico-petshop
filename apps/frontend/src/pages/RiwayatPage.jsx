@@ -348,10 +348,10 @@ export default function RiwayatPage() {
 
         <button 
           onClick={() => exportToExcel(filteredData, dateLabel)}
-          className="w-full bg-green-50 text-green-700 border border-green-200 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all text-sm"
+          className={`w-full ${primaryBg} text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all text-sm shadow-sm`}
         >
           <span className="material-symbols-outlined !text-[20px]">download</span>
-          Unduh Laporan (Excel)
+          Unduh Excel
         </button>
 
         {/* ── Ringkasan (Kasir only) ── */}
