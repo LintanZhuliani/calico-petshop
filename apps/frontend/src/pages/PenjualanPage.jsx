@@ -446,12 +446,12 @@ export default function PenjualanPage() {
         <div className="grid grid-cols-2 gap-3">
           {/* Card: Total Pendapatan */}
           <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${primaryLight}`}>
-              <span className={`material-symbols-outlined !text-[20px] ${primaryText}`} style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-emerald-50">
+              <span className="material-symbols-outlined !text-[20px] text-emerald-600" style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Total Pendapatan</p>
-              <p className={`font-extrabold font-headline text-base leading-tight ${primaryText}`}>{formatRupiah(totalPendapatan)}</p>
+              <p className="font-extrabold font-headline text-base leading-tight text-emerald-600">{formatRupiah(totalPendapatan)}</p>
               <div className="flex gap-2 mt-1">
                 <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">Tunai: {formatRupiah(totalTunai)}</span>
                 <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">Non-Tunai: {formatRupiah(totalNonTunai)}</span>
@@ -462,14 +462,14 @@ export default function PenjualanPage() {
           {/* Card: Laba Kotor (Admin) / Rata-rata (Kasir) */}
           {isAdmin ? (
             <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-yellow-50">
-                <span className="material-symbols-outlined !text-[20px] text-yellow-600" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2 bg-green-50">
+                <span className="material-symbols-outlined !text-[20px] text-green-600" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
-                  Laba Kotor <span className="material-symbols-outlined !text-[12px] text-yellow-600">lock</span>
+                  Laba Kotor <span className="material-symbols-outlined !text-[12px] text-green-600">lock</span>
                 </p>
-                <p className="font-extrabold font-headline text-base leading-tight text-yellow-600">{formatRupiah(totalKeuntungan)}</p>
+                <p className="font-extrabold font-headline text-base leading-tight text-green-600">{formatRupiah(totalKeuntungan)}</p>
               </div>
             </div>
           ) : (
