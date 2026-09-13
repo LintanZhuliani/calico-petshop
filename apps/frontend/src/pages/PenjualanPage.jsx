@@ -395,10 +395,10 @@ export default function PenjualanPage() {
                 <button
                   key={type}
                   onClick={() => setReportType(type)}
-                  className={`px-6 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-t-xl border-2 -mb-[2px] ${
+                  className={`px-6 py-2.5 text-sm font-bold uppercase transition-all duration-200 rounded-t-xl border-2 -mb-[2px] tracking-wide ${
                     reportType === type 
-                      ? `bg-white border-slate-200 border-b-white z-10 ${primaryText}` 
-                      : `border-transparent text-slate-500 hover:bg-slate-50`
+                      ? `bg-white border-slate-200 border-b-white z-10 text-slate-800` 
+                      : `border-transparent text-slate-400 hover:text-slate-500 hover:bg-slate-50`
                   }`}
                 >
                   {type}
