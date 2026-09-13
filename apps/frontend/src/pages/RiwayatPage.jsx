@@ -411,23 +411,23 @@ export default function RiwayatPage() {
                       <button 
                         key={group.cashierName}
                         onClick={() => setSelectedGroup(group)}
-                        className="w-full text-left bg-white border border-slate-200 p-4 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98]"
+                        className="w-full text-left bg-white border border-slate-200 p-4 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98] gap-2"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center border-2 border-white shadow-sm">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center border-2 border-white shadow-sm shrink-0">
                             <span className="material-symbols-outlined text-orange-600 !text-[24px]">person</span>
                           </div>
-                          <div>
-                            <p className="font-bold text-slate-800">{group.cashierName}</p>
-                            <p className="text-xs text-slate-500">Staff Kasir</p>
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-800 truncate">{group.cashierName}</p>
+                            <p className="text-xs text-slate-500 truncate">Staff Kasir</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           <div className="text-right">
-                            <p className="text-xs text-slate-500 mb-0.5">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
-                            <p className="font-bold text-emerald-600">+{formatRupiah(group.totalCash)}</p>
+                            <p className="text-[11px] text-slate-500 mb-0.5 whitespace-nowrap">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p className="font-bold text-emerald-600 text-sm whitespace-nowrap">+{formatRupiah(group.totalCash)}</p>
                           </div>
-                          <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                          <span className="material-symbols-outlined text-slate-400 shrink-0">chevron_right</span>
                         </div>
                       </button>
                     ))}
@@ -470,20 +470,20 @@ export default function RiwayatPage() {
                             <div key={cashierKey} className="border border-slate-200 rounded-xl overflow-hidden">
                               <button 
                                 onClick={() => setExpandedNodes(prev => ({...prev, [cashierNodeId]: !prev[cashierNodeId]}))}
-                                className="w-full p-3 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors"
+                                className="w-full p-3 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors gap-2"
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
                                     <span className="material-symbols-outlined text-orange-600 !text-[18px]">person</span>
                                   </div>
-                                  <div className="flex flex-col items-start">
-                                    <span className="font-bold text-slate-700 text-sm">{cashierKey}</span>
-                                    <span className="text-[11px] text-slate-500">{Object.keys(cashierData.days).length} Hari Aktif</span>
+                                  <div className="flex flex-col items-start min-w-0">
+                                    <span className="font-bold text-slate-700 text-sm truncate w-full text-left">{cashierKey}</span>
+                                    <span className="text-[11px] text-slate-500 truncate w-full text-left">{Object.keys(cashierData.days).length} Hari Aktif</span>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold text-emerald-600 text-sm">+{formatRupiah(cashierData.totalCash)}</span>
-                                  <span className={`material-symbols-outlined text-slate-400 text-sm transition-transform ${isCashierExpanded ? 'rotate-90' : ''}`}>chevron_right</span>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="font-bold text-emerald-600 text-sm whitespace-nowrap">+{formatRupiah(cashierData.totalCash)}</span>
+                                  <span className={`material-symbols-outlined text-slate-400 text-sm transition-transform shrink-0 ${isCashierExpanded ? 'rotate-90' : ''}`}>chevron_right</span>
                                 </div>
                               </button>
 
@@ -495,15 +495,15 @@ export default function RiwayatPage() {
                                       <button 
                                         key={dateKey}
                                         onClick={() => setSelectedGroup(group)}
-                                        className="w-full text-left bg-white border border-slate-200 p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98]"
+                                        className="w-full text-left bg-white border border-slate-200 p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98] gap-2"
                                       >
-                                        <div className="flex flex-col">
-                                          <h3 className="font-bold text-slate-800 text-sm mb-1">{dateKey}</h3>
-                                          <p className="text-xs text-slate-500">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                          <h3 className="font-bold text-slate-800 text-sm mb-1 truncate">{dateKey}</h3>
+                                          <p className="text-xs text-slate-500 truncate">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-bold text-emerald-600">+{formatRupiah(group.totalCash)}</span>
-                                          <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                                        <div className="flex items-center gap-2 shrink-0 text-right">
+                                          <span className="font-bold text-emerald-600 whitespace-nowrap">+{formatRupiah(group.totalCash)}</span>
+                                          <span className="material-symbols-outlined text-slate-400 shrink-0">chevron_right</span>
                                         </div>
                                       </button>
                                     );
