@@ -178,29 +178,19 @@ export default function RiwayatPage() {
 
       const dateKey = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
       if (!groups[monthKey].cashiers[cashier].days[dateKey]) {
-        groups[monthKey].cashiers[cashier].days[dateKey] = { totalCash: 0, products: {} };
+        groups[monthKey].cashiers[cashier].days[dateKey] = { 
+          dateKey,
+          cashierName: cashier,
+          totalCash: 0, 
+          transactions: [],
+          latestTime: tx.date
+        };
       }
       groups[monthKey].cashiers[cashier].days[dateKey].totalCash += tx.total;
-
-      const items = typeof tx.items === 'string' ? JSON.parse(tx.items) : (tx.items || []);
-      items.forEach(item => {
-        const prodId = item.productId || item.name; // fallback to name if no id
-        if (!groups[monthKey].cashiers[cashier].days[dateKey].products[prodId]) {
-          groups[monthKey].cashiers[cashier].days[dateKey].products[prodId] = {
-            name: item.name,
-            totalQty: 0,
-            totalCash: 0,
-            transactions: []
-          };
-        }
-        const prodGroup = groups[monthKey].cashiers[cashier].days[dateKey].products[prodId];
-        prodGroup.totalQty += item.qty;
-        prodGroup.totalCash += (item.price * item.qty);
-        
-        if (!prodGroup.transactions.find(t => t.id === tx.id)) {
-           prodGroup.transactions.push(tx);
-        }
-      });
+      groups[monthKey].cashiers[cashier].days[dateKey].transactions.push(tx);
+      if (new Date(tx.date) > new Date(groups[monthKey].cashiers[cashier].days[dateKey].latestTime)) {
+        groups[monthKey].cashiers[cashier].days[dateKey].latestTime = tx.date;
+      }
     });
     return groups;
   }, [filteredData, reportType]);
@@ -497,70 +487,25 @@ export default function RiwayatPage() {
                                 </div>
                               </button>
 
-                              {isCashierExpanded && (
+                                {isCashierExpanded && (
                                 <div className="p-3 bg-slate-50/50 space-y-3 border-t border-slate-100">
                                   {Object.keys(cashierData.days).map(dateKey => {
-                                    const dayData = cashierData.days[dateKey];
-                                    const dayNodeId = `${cashierNodeId}-${dateKey}`;
-                                    const isDayExpanded = expandedNodes[dayNodeId];
+                                    const group = cashierData.days[dateKey];
                                     return (
-                                      <div key={dateKey} className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-                                        <button 
-                                          onClick={() => setExpandedNodes(prev => ({...prev, [dayNodeId]: !prev[dayNodeId]}))}
-                                          className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                                        >
-                                          <span className="font-bold text-slate-600 text-xs">{dateKey}</span>
-                                          <div className="flex items-center gap-2">
-                                            <span className="font-bold text-emerald-600 text-xs">+{formatRupiah(dayData.totalCash)}</span>
-                                            <span className={`material-symbols-outlined text-slate-400 text-[16px] transition-transform ${isDayExpanded ? 'rotate-90' : ''}`}>chevron_right</span>
-                                          </div>
-                                        </button>
-
-                                        {isDayExpanded && (
-                                          <div className="p-3 bg-slate-50 space-y-2 border-t border-slate-100">
-                                            {Object.keys(dayData.products).map(prodId => {
-                                              const prodData = dayData.products[prodId];
-                                              const prodNodeId = `${dayNodeId}-${prodId}`;
-                                              const isProdExpanded = expandedNodes[prodNodeId];
-                                              return (
-                                                <div key={prodId} className="bg-white border border-slate-200 rounded-md overflow-hidden">
-                                                  <button 
-                                                    onClick={() => setExpandedNodes(prev => ({...prev, [prodNodeId]: !prev[prodNodeId]}))}
-                                                    className="w-full px-3 py-2 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                                                  >
-                                                    <div className="flex flex-col items-start">
-                                                      <span className="font-semibold text-slate-700 text-[11px] text-left">{prodData.name}</span>
-                                                      <span className="text-[10px] text-slate-500">{prodData.totalQty} pcs terjual</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                      <span className="font-bold text-emerald-600 text-[11px]">+{formatRupiah(prodData.totalCash)}</span>
-                                                      <span className={`material-symbols-outlined text-slate-400 text-[14px] transition-transform ${isProdExpanded ? 'rotate-90' : ''}`}>chevron_right</span>
-                                                    </div>
-                                                  </button>
-
-                                                  {isProdExpanded && (
-                                                    <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 space-y-1.5">
-                                                      {prodData.transactions.map(tx => (
-                                                        <button 
-                                                          key={tx.id}
-                                                          onClick={() => { setSelectedTx(tx); setIsDetailOpen(true); }}
-                                                          className="w-full p-2 bg-white border border-slate-200 rounded text-left flex items-center justify-between hover:border-orange-300 transition-colors"
-                                                        >
-                                                          <div className="flex flex-col">
-                                                            <span className="font-mono text-[10px] font-bold text-slate-600">{tx.id.split('-').pop()}</span>
-                                                            <span className="text-[9px] text-slate-400">{new Date(tx.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                          </div>
-                                                          <span className="material-symbols-outlined text-[14px] text-orange-500">receipt_long</span>
-                                                        </button>
-                                                      ))}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        )}
-                                      </div>
+                                      <button 
+                                        key={dateKey}
+                                        onClick={() => setSelectedGroup(group)}
+                                        className="w-full text-left bg-white border border-slate-200 p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-shadow active:scale-[0.98]"
+                                      >
+                                        <div className="flex flex-col">
+                                          <h3 className="font-bold text-slate-800 text-sm mb-1">{dateKey}</h3>
+                                          <p className="text-xs text-slate-500">{new Date(group.latestTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-bold text-emerald-600">+{formatRupiah(group.totalCash)}</span>
+                                          <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                                        </div>
+                                      </button>
                                     );
                                   })}
                                 </div>
