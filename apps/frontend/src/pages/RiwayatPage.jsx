@@ -165,7 +165,7 @@ export default function RiwayatPage() {
     const groups = {};
     filteredData.forEach(tx => {
       const d = new Date(tx.date);
-      const monthKey = `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+      const monthKey = `${MONTH_NAMES[d.getMonth()]}`;
       if (!groups[monthKey]) groups[monthKey] = { totalCash: 0, cashiers: {} };
       
       groups[monthKey].totalCash += tx.total;
