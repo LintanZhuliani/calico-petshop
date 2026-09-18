@@ -98,8 +98,8 @@ export const exportProductsToExcel = async (products, branchName) => {
     { header: 'Nama Produk', key: 'name', width: 40 },
     { header: 'Kategori', key: 'category', width: 20 },
     { header: 'Cabang', key: 'branch', width: 25 },
-    { header: 'Total Stok', key: 'total_qty', width: 15 },
-    { header: 'Rincian Batch (Qty | Expired)', key: 'batches', width: 40 },
+    { header: 'Jumlah (Per Batch)', key: 'batch_qty', width: 20 },
+    { header: 'Tanggal Kedaluwarsa', key: 'expired', width: 25 },
   ];
 
   // Style header
@@ -121,26 +121,36 @@ export const exportProductsToExcel = async (products, branchName) => {
         name: p.name,
         category: p.category,
         branch: '-',
-        total_qty: 0,
-        batches: '-'
+        batch_qty: 0,
+        expired: '-'
       });
       return;
     }
 
     p.stocks.forEach(stock => {
-      const batchesText = stock.batches && stock.batches.length > 0 
-        ? stock.batches.map(b => `${b.qty} (Exp: ${b.expiredDate || '-'})`).join(', ')
-        : '-';
-
-      worksheet.addRow({
-        no: rowNo++,
-        barcode: p.barcode || '-',
-        name: p.name,
-        category: p.category,
-        branch: stock.branchName,
-        total_qty: stock.totalQty,
-        batches: batchesText
-      });
+      if (stock.batches && stock.batches.length > 0) {
+        stock.batches.forEach(b => {
+          worksheet.addRow({
+            no: rowNo++,
+            barcode: p.barcode || '-',
+            name: p.name,
+            category: p.category,
+            branch: stock.branchName,
+            batch_qty: b.qty,
+            expired: b.expiredDate || '-'
+          });
+        });
+      } else {
+        worksheet.addRow({
+          no: rowNo++,
+          barcode: p.barcode || '-',
+          name: p.name,
+          category: p.category,
+          branch: stock.branchName,
+          batch_qty: 0,
+          expired: '-'
+        });
+      }
     });
   });
 
