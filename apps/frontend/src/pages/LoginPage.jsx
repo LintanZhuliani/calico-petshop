@@ -70,12 +70,13 @@ export default function LoginPage() {
 
         // Simpan data di state lokal untuk navigasi (opsional, karena auth tersimpan di cookie)
         setErrorMsg("");
-        saveSession({ role: user.role, branchName: branch, userName: user.name });
+        saveSession({ role: user.role, branchName: branch, userName: user.name, email: user.email });
         navigate("/dashboard", { 
           state: { 
             role: user.role, 
             branchName: branch, // Selalu gunakan cabang yang dipilih di dropdown
-            userName: user.name 
+            userName: user.name,
+            email: user.email
           } 
         });
       }

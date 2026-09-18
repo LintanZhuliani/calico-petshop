@@ -3,11 +3,11 @@ import { useLocation } from 'react-router-dom';
 const STORAGE_KEY = 'calico_session';
 
 /**
- * Saves session data (role, branchName, userName) to localStorage.
+ * Saves session data (role, branchName, userName, email) to localStorage.
  * Called once after successful login.
  */
-export function saveSession({ role, branchName, userName }) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ role, branchName, userName }));
+export function saveSession({ role, branchName, userName, email }) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ role, branchName, userName, email }));
 }
 
 /**
@@ -29,6 +29,8 @@ export function useSession() {
           role: parsed.role || 'kasir',
           branchName: parsed.branchName || 'pusat',
           userName: parsed.userName || '',
+          email: parsed.email || '',
+          user: { email: parsed.email || '' }, // Added for backward compatibility with user.email checks
         };
       }
     }
@@ -41,13 +43,20 @@ export function useSession() {
   const stateRole = location.state?.role;
   const stateBranch = location.state?.branchName;
   const stateUserName = location.state?.userName;
+  const stateEmail = location.state?.email;
 
   if (stateRole) {
-    const session = { role: stateRole, branchName: stateBranch || 'pusat', userName: stateUserName || '' };
+    const session = { 
+      role: stateRole, 
+      branchName: stateBranch || 'pusat', 
+      userName: stateUserName || '',
+      email: stateEmail || '',
+      user: { email: stateEmail || '' }
+    };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch {}
     return session;
   }
 
   // Absolute fallback
-  return { role: 'kasir', branchName: 'pusat', userName: '' };
+  return { role: 'kasir', branchName: 'pusat', userName: '', email: '', user: { email: '' } };
 }
