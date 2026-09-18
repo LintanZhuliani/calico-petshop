@@ -10,12 +10,50 @@ import {
   branchStock,
   batch,
   category,
+  branch,
 } from "../db/schema/index.js";
 import { generateId, daysUntilExpiry } from "../lib/utils.js";
 import { uploadBase64Image } from "../lib/cloudinary.js";
 import { getIo } from "../lib/socket.js";
 
 export const productService = {
+  /**
+   * Get all products with all branch stocks and batches for export.
+   * If branchId is provided (and not 'all'), it filters to only that branch.
+   */
+  async getAllExportData(branchId?: string) {
+    const products = await db.select().from(product).where(eq(product.isArchived, false));
+    const allBranches = await db.select().from(branch);
+    
+    // Fetch stocks
+    let stocks = await db.query.branchStock.findMany({
+      with: { batches: true }
+    });
+    
+    if (branchId && branchId !== 'all') {
+      stocks = stocks.filter(s => s.branchId === branchId);
+    }
+    
+    return products.map(p => {
+      const pStocks = stocks.filter(s => s.productId === p.id);
+      return {
+        ...p,
+        stocks: pStocks.map(s => {
+          const b = allBranches.find(br => br.id === s.branchId);
+          return {
+            branchId: s.branchId,
+            branchName: b ? b.name : "Unknown",
+            totalQty: s.batches.reduce((acc, curr) => acc + curr.qty, 0),
+            batches: s.batches.map(bt => ({
+              qty: bt.qty,
+              expiredDate: bt.expiredDate
+            }))
+          };
+        })
+      };
+    });
+  },
+
   /**
    * List all products with optional filters.
    * If branchId is provided, include stock info for that branch.

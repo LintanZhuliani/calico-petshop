@@ -87,3 +87,71 @@ export const exportToExcel = async (transactions, dateLabel) => {
   
   window.URL.revokeObjectURL(url);
 };
+
+export const exportProductsToExcel = async (products, branchName) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Data Produk');
+
+  worksheet.columns = [
+    { header: 'No', key: 'no', width: 5 },
+    { header: 'Barcode', key: 'barcode', width: 20 },
+    { header: 'Nama Produk', key: 'name', width: 40 },
+    { header: 'Kategori', key: 'category', width: 20 },
+    { header: 'Cabang', key: 'branch', width: 25 },
+    { header: 'Total Stok', key: 'total_qty', width: 15 },
+    { header: 'Rincian Batch (Qty | Expired)', key: 'batches', width: 40 },
+  ];
+
+  // Style header
+  worksheet.getRow(1).font = { bold: true };
+  worksheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF27AE60' } // Green theme
+  };
+  worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' }, bold: true };
+
+  let rowNo = 1;
+
+  products.forEach(p => {
+    if (!p.stocks || p.stocks.length === 0) {
+      worksheet.addRow({
+        no: rowNo++,
+        barcode: p.barcode || '-',
+        name: p.name,
+        category: p.category,
+        branch: '-',
+        total_qty: 0,
+        batches: '-'
+      });
+      return;
+    }
+
+    p.stocks.forEach(stock => {
+      const batchesText = stock.batches && stock.batches.length > 0 
+        ? stock.batches.map(b => `${b.qty} (Exp: ${b.expiredDate || '-'})`).join(', ')
+        : '-';
+
+      worksheet.addRow({
+        no: rowNo++,
+        barcode: p.barcode || '-',
+        name: p.name,
+        category: p.category,
+        branch: stock.branchName,
+        total_qty: stock.totalQty,
+        batches: batchesText
+      });
+    });
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Data_Produk_${branchName.replace(/\s+/g, '_')}.xlsx`;
+  a.click();
+  
+  window.URL.revokeObjectURL(url);
+};

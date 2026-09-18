@@ -57,6 +57,21 @@ router.get("/barcode/:code", requireAuth, async (req, res, next) => {
   }
 });
 
+// GET /api/products/export — Export products (Restricted)
+router.get("/export", requireAuth, async (req, res, next) => {
+  try {
+    if (req.user?.email !== 'lintanzhuliani840@gmail.com') {
+      res.status(403).json({ error: "Akses ditolak" });
+      return;
+    }
+    const branchId = req.query.branchId as string;
+    const data = await productService.getAllExportData(branchId);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/products — List products
 router.get("/", requireAuth, async (req, res, next) => {
   try {

@@ -5,7 +5,7 @@ import { useSession } from '../lib/useSession';
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { role } = useSession();
+  const { role, user } = useSession();
   const isAdmin = role === 'admin';
 
   // Toggle state for sidebar on desktop
@@ -57,6 +57,9 @@ export default function BottomNav() {
     allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/riwayat-notifikasi', icon: 'history', label: 'Riwayat Notifikasi' });
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
+    if (user?.email === 'lintanzhuliani840@gmail.com') {
+      allMenus.push({ path: '/data-produk', icon: 'download', label: 'Data Produk' });
+    }
   } else {
     allMenus.push({ path: '/dashboard', icon: 'home', label: 'Home' });
     allMenus.push({ path: '/products', icon: 'category', label: 'Produk' });
