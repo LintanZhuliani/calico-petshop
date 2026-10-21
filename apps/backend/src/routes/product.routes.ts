@@ -150,14 +150,15 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   }
 });
 
-// PATCH /api/products/:id/image — Update product image only (accessible by kasir)
+// PATCH /api/products/:id/image — Update product image & name only (accessible by kasir)
 router.patch("/:id/image", requireAuth, async (req, res, next) => {
   try {
-    const { image, imageEmoji } = req.body;
+    const { image, imageEmoji, name } = req.body;
     const product = await productService.updateImage(
       req.params.id as string,
       image ?? null,
-      imageEmoji ?? null
+      imageEmoji ?? null,
+      name ?? null
     );
     if (!product) {
       res.status(404).json({ error: "Product not found" });

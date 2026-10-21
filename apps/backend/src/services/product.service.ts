@@ -335,16 +335,21 @@ export const productService = {
   },
 
   /** Update product image only — accessible by kasir (non-admin) */
-  async updateImage(id: string, image: string | null, imageEmoji: string | null) {
+  async updateImage(id: string, image: string | null, imageEmoji: string | null, name: string | null = null) {
     // Upload to Cloudinary if base64 image provided
     let finalImage = image;
     if (image && image.startsWith('data:')) {
       finalImage = await uploadBase64Image(image);
     }
 
+    const updateFields: Record<string, any> = { updatedAt: new Date() };
+    if (finalImage !== null) updateFields.image = finalImage;
+    if (imageEmoji !== null) updateFields.imageEmoji = imageEmoji;
+    if (name !== null && name.trim() !== '') updateFields.name = name.trim();
+
     const results = await db
       .update(product)
-      .set({ image: finalImage ?? undefined, imageEmoji: imageEmoji ?? undefined, updatedAt: new Date() })
+      .set(updateFields)
       .where(eq(product.id, id))
       .returning();
 

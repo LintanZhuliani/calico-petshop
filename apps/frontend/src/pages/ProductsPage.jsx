@@ -1162,28 +1162,15 @@ export default function ProductsPage() {
                   onClick={() => !isAdmin && handleAddToCart(p)}
                 >
                   <div className="flex items-center gap-3 p-4">
-                    {/* Foto produk — di mode kasir bisa diklik untuk ganti foto */}
-                    <div className="relative shrink-0">
-                      <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
-                        {p.image ? (
-                          <img src={getOptimizedImageUrl(p.image)} className="w-full h-full object-cover" alt={p.name} />
-                        ) : p.imageEmoji ? (
-                          <span className={`material-symbols-outlined !text-[28px] md:!text-[32px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                            {p.imageEmoji}
-                          </span>
-                        ) : (
-                          <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
-                        )}
-                      </div>
-                      {/* Tombol kamera kecil — hanya tampil di mode kasir */}
-                      {!isAdmin && (
-                        <button
-                          onClick={e => { e.stopPropagation(); setEditImageTarget(p); }}
-                          className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#C0392B] rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform"
-                          title="Ganti foto"
-                        >
-                          <span className="material-symbols-outlined !text-[13px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
-                        </button>
+                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
+                      {p.image ? (
+                        <img src={getOptimizedImageUrl(p.image)} className="w-full h-full object-cover" alt={p.name} />
+                      ) : p.imageEmoji ? (
+                        <span className={`material-symbols-outlined !text-[28px] md:!text-[32px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                          {p.imageEmoji}
+                        </span>
+                      ) : (
+                        <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

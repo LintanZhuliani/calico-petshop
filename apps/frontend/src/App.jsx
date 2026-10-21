@@ -19,6 +19,7 @@ import NotifikasiPage from "./pages/NotifikasiPage";
 import RiwayatRekapPage from "./pages/RiwayatRekapPage";
 import DetailRekapPage from "./pages/DetailRekapPage";
 import DataProdukPage from "./pages/DataProdukPage";
+import KelolaProdukKasirPage from "./pages/KelolaProdukKasirPage";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/riwayat-rekap" element={<RiwayatRekapPage />} />
         <Route path="/riwayat-rekap/:id" element={<DetailRekapPage />} />
         <Route path="/data-produk" element={<DataProdukPage />} />
+        <Route path="/kelola-produk" element={<KelolaProdukKasirPage />} />
       </Routes>
     </BrowserRouter>
   );

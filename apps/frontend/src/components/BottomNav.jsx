@@ -70,6 +70,7 @@ export default function BottomNav() {
     allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/riwayat-notifikasi', icon: 'history', label: 'Riwayat Notifikasi' });
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
+    allMenus.push({ path: '/kelola-produk', icon: 'edit_square', label: 'Kelola Produk' });
   }
 
   const mainMenus = allMenus.slice(0, 4);
