@@ -287,7 +287,7 @@ export default function KelolaProdukKasirPage() {
           return (
             <div
               key={p.id}
-              className={`bg-white rounded-2xl border shadow-sm flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-200'}`}
+              className={`bg-white rounded-2xl border shadow-md flex flex-col justify-between ${isEmpty ? 'border-red-100 opacity-75' : isLow ? 'border-amber-100' : 'border-slate-200'}`}
             >
               <div className="flex items-center gap-3 p-4">
                 {/* Foto */}
