@@ -150,6 +150,25 @@ router.put("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   }
 });
 
+// PATCH /api/products/:id/image — Update product image only (accessible by kasir)
+router.patch("/:id/image", requireAuth, async (req, res, next) => {
+  try {
+    const { image, imageEmoji } = req.body;
+    const product = await productService.updateImage(
+      req.params.id as string,
+      image ?? null,
+      imageEmoji ?? null
+    );
+    if (!product) {
+      res.status(404).json({ error: "Product not found" });
+      return;
+    }
+    res.json(product);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // DELETE /api/products/:id — Delete product (Admin only)
 router.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   try {

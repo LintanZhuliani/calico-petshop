@@ -334,6 +334,24 @@ export const productService = {
     return results[0] || null;
   },
 
+  /** Update product image only — accessible by kasir (non-admin) */
+  async updateImage(id: string, image: string | null, imageEmoji: string | null) {
+    // Upload to Cloudinary if base64 image provided
+    let finalImage = image;
+    if (image && image.startsWith('data:')) {
+      finalImage = await uploadBase64Image(image);
+    }
+
+    const results = await db
+      .update(product)
+      .set({ image: finalImage ?? undefined, imageEmoji: imageEmoji ?? undefined, updatedAt: new Date() })
+      .where(eq(product.id, id))
+      .returning();
+
+    getIo()?.emit("DATA_UPDATED");
+    return results[0] || null;
+  },
+
   /** Delete a product (soft delete if transactions exist) */
   async delete(id: string) {
     try {

@@ -56,6 +56,86 @@ function StockBadge({ total, min }) {
   return <span className="text-[10px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full">Tersedia</span>;
 }
 
+// ── Modal Ganti Foto Produk (Kasir) ──
+function EditImageModal({ product, onClose, onSaved }) {
+  const [preview, setPreview] = useState(product.image || null);
+  const [base64, setBase64] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError('');
+    // Compress image sebelum upload (sama seperti mode admin)
+    const compressed = await compressImage(file, 800, 0.7);
+    setPreview(compressed);
+    setBase64(compressed);
+  };
+
+  const handleSave = async () => {
+    if (!base64) { setError('Pilih foto terlebih dahulu.'); return; }
+    setIsSaving(true);
+    setError('');
+    try {
+      const res = await apiFetch(`/products/${product.id}/image`, {
+        method: 'PATCH',
+        body: JSON.stringify({ image: base64, imageEmoji: null }),
+      });
+      onSaved(res);
+      onClose();
+    } catch (err) {
+      setError('Gagal menyimpan foto. Silakan coba lagi.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/60 flex items-end" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white w-full rounded-t-3xl p-6 pb-10 space-y-5 animate-[slideUp_0.25s_ease]">
+        <div className="flex justify-between items-center">
+          <h2 className="font-headline font-bold text-lg text-slate-900">Ganti Foto Produk</h2>
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 active:scale-95">
+            <span className="material-symbols-outlined text-slate-500">close</span>
+          </button>
+        </div>
+        <p className="text-sm text-slate-500 -mt-2">{product.name}</p>
+
+        {/* Preview */}
+        <div className="flex items-center gap-4">
+          <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+            {preview ? (
+              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+            ) : (
+              <span className="material-symbols-outlined text-slate-400 !text-[36px]">add_a_photo</span>
+            )}
+          </div>
+          <div className="flex-1">
+            <p className="text-xs text-slate-500 mb-2">Foto akan dikompresi otomatis sebelum diunggah untuk menjaga performa sistem.</p>
+            <label className="flex items-center gap-2 w-full px-4 py-3 bg-red-50 text-[#C0392B] border border-red-100 rounded-xl font-bold text-sm text-center active:scale-95 transition-all cursor-pointer">
+              <span className="material-symbols-outlined !text-[18px]">photo_library</span>
+              Pilih dari Galeri
+              <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            </label>
+          </div>
+        </div>
+
+        {error && <p className="text-sm font-semibold text-red-500">{error}</p>}
+
+        <button
+          onClick={handleSave}
+          disabled={isSaving || !base64}
+          className="w-full py-4 bg-[#C0392B] hover:bg-[#a93226] text-white font-bold rounded-2xl active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined !text-[20px]">{isSaving ? 'hourglass_empty' : 'save'}</span>
+          {isSaving ? 'Menyimpan...' : 'Simpan Foto'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Modal Tambah Produk (Admin) ──
 function AddProductModal({ onClose, onSave, categories }) {
   const [form, setForm] = useState({ name: '', category: categories[0]?.name || '', buyPrice: '', price: '', barcode: '', minStock: 5, image: '', qty: '', expiredDate: '' });
@@ -685,6 +765,7 @@ export default function ProductsPage() {
   const [addProductOpen, setAddProductOpen] = useState(false);
   const [addStockTarget, setAddStockTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
+  const [editImageTarget, setEditImageTarget] = useState(null); // Kasir: ganti foto produk
 
   // Cart (kasir)
   const [cart, setCart] = useState(() => {
@@ -1081,15 +1162,28 @@ export default function ProductsPage() {
                   onClick={() => !isAdmin && handleAddToCart(p)}
                 >
                   <div className="flex items-center gap-3 p-4">
-                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
-                      {p.image ? (
-                        <img src={getOptimizedImageUrl(p.image)} className="w-full h-full object-cover" alt={p.name} />
-                      ) : p.imageEmoji ? (
-                        <span className={`material-symbols-outlined !text-[28px] md:!text-[32px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                          {p.imageEmoji}
-                        </span>
-                      ) : (
-                        <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
+                    {/* Foto produk — di mode kasir bisa diklik untuk ganti foto */}
+                    <div className="relative shrink-0">
+                      <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center overflow-hidden ${isAdmin ? 'bg-orange-50' : 'bg-red-50'}`}>
+                        {p.image ? (
+                          <img src={getOptimizedImageUrl(p.image)} className="w-full h-full object-cover" alt={p.name} />
+                        ) : p.imageEmoji ? (
+                          <span className={`material-symbols-outlined !text-[28px] md:!text-[32px] ${isAdmin ? 'text-orange-500' : 'text-red-500'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {p.imageEmoji}
+                          </span>
+                        ) : (
+                          <span className="material-symbols-outlined !text-[28px] md:!text-[32px] text-slate-400">shopping_bag</span>
+                        )}
+                      </div>
+                      {/* Tombol kamera kecil — hanya tampil di mode kasir */}
+                      {!isAdmin && (
+                        <button
+                          onClick={e => { e.stopPropagation(); setEditImageTarget(p); }}
+                          className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#C0392B] rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform"
+                          title="Ganti foto"
+                        >
+                          <span className="material-symbols-outlined !text-[13px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
+                        </button>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1236,6 +1330,16 @@ export default function ProductsPage() {
       {addProductOpen && <AddProductModal onClose={() => setAddProductOpen(false)} onSave={handleSaveProduct} categories={apiCategories} />}
       {addStockTarget && <AddStockModal product={addStockTarget} onClose={() => setAddStockTarget(null)} onSave={handleAddStock} />}
       {editTarget && <EditProductModal product={editTarget} onClose={() => setEditTarget(null)} onSave={handleEditComplete} onRefresh={fetchProducts} categories={apiCategories} />}
+      {editImageTarget && (
+        <EditImageModal
+          product={editImageTarget}
+          onClose={() => setEditImageTarget(null)}
+          onSaved={(updatedProduct) => {
+            setProducts(prev => prev.map(p => p.id === updatedProduct.id ? { ...p, image: updatedProduct.image, imageEmoji: updatedProduct.imageEmoji } : p));
+            setEditImageTarget(null);
+          }}
+        />
+      )}
       {checkoutOpen && <CheckoutModal isAdmin={isAdmin} cart={cart} onClose={() => setCheckoutOpen(false)} onConfirm={handleConfirmCheckout} />}
       {showCategoryManager && <ManageCategoryModal onClose={() => setShowCategoryManager(false)} categories={apiCategories} onRefresh={fetchProducts} />}
 
