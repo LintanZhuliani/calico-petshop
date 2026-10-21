@@ -53,7 +53,7 @@ export default function BottomNav() {
     allMenus.push({ path: '/pesanan', icon: 'inventory_2', label: 'Daftar Pesanan' });
     allMenus.push({ path: '/profile', icon: 'person', label: 'Profil' });
     allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Request' });
-    allMenus.push({ path: '/products', icon: 'category', label: 'Kelola Produk' });
+    allMenus.push({ path: '/products', icon: 'edit_square', label: 'Kelola Produk' });
     allMenus.push({ path: '/riwayat', icon: 'receipt_long', label: 'Riwayat Transaksi' });
     allMenus.push({ path: '/riwayat-notifikasi', icon: 'history', label: 'Riwayat Notifikasi' });
     allMenus.push({ path: '/penjualan', icon: 'bar_chart', label: 'Penjualan' });
