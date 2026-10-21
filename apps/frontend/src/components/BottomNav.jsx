@@ -62,7 +62,7 @@ export default function BottomNav() {
     }
   } else {
     allMenus.push({ path: '/dashboard', icon: 'home', label: 'Home' });
-    allMenus.push({ path: '/products', icon: 'category', label: 'Produk' });
+    allMenus.push({ path: '/products', icon: 'shopping_cart_checkout', label: 'Checkout' });
     allMenus.push({ path: '/pesanan', icon: 'inventory_2', label: 'Daftar Pesanan' });
     allMenus.push({ path: '/profile', icon: 'person', label: 'Profil' });
     allMenus.push({ path: '/transfer', icon: 'swap_horiz', label: 'Request' });
